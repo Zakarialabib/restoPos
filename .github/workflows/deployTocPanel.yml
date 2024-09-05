@@ -1,4 +1,4 @@
-name: publish app
+name: Deploy to Server
 on:
   workflow_dispatch:
     inputs:
@@ -20,17 +20,23 @@ jobs:
     - name: 🚚 Get latest code
       uses: actions/checkout@v4
 
-    - name: Use Node.js 18
-      uses: actions/setup-node@v4
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
       with:
-        node-version: '18'
-      
-    - name: 🔨 Build Project
-      run: |
-        npm install
-        npm run build
+        php-version: '8.2'
     
-    - name: FTP-Deploy-Action
+    - name: 📦 Update Composer dependencies
+      run: composer update --no-dev --optimize-autoloader --no-interaction
+
+    - name: 🧹 Clear caches
+      run: |
+        php artisan cache:clear
+        php artisan config:clear
+        php artisan route:clear
+        php artisan view:clear
+
+
+    - name: 📂 Deploy to cPanel
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.FTP_SERVER }}
@@ -42,3 +48,5 @@ jobs:
           **/.git*
           **/.git*/**
           **/storage/**
+          .env
+          .env.example
