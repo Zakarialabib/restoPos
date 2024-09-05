@@ -9,6 +9,10 @@ import {
 import flatpickr from "flatpickr";
 window.flatpickr = flatpickr;
 
+import Swiper from 'swiper/bundle';
+import 'swiper/css/bundle';
+window.Swiper = Swiper;
+
 import mask from '@alpinejs/mask'; 
 Alpine.plugin(mask)
 

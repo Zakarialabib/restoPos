@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Livewire\CartComponent;
-use App\Livewire\CheckoutComponent;
 use App\Livewire\ComposableJuicesIndex;
 // use App\Livewire\ComposableJuiceDetails;
 
@@ -14,16 +13,13 @@ Volt::route('/compose', 'compose')
     ->name('compose');
 
 Route::get('/cart', CartComponent::class)->name('cart');
-Route::get('/checkout', CheckoutComponent::class)->name('checkout');
 Route::get('/composable-juices', ComposableJuicesIndex::class)->name('composable-juices.index');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
-Volt::route('/products', 'admin.products')
-    ->middleware(['auth', 'verified'])
-    ->name('admin.products');
+Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+    Volt::route('dashboard', 'admin.dashboard')->name('admin.dashboard');
+    Volt::route('/orders', 'admin.orders')->name('admin.orders');
+    Volt::route('/products', 'admin.products')->name('admin.products');
+});
 
 Route::view('profile', 'profile')
     ->middleware(['auth'])

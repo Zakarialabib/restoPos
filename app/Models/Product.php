@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -13,10 +14,12 @@ class Product extends Model
         'name',
         'description',
         'price',
-        'category',
+        'category_id',
         'is_available',
-        'image_url',
-        'is_composable',
+        'image',
+        'stock',
+        'low_stock_threshold',
+        'is_composable'
     ];
 
     protected $casts = [
@@ -26,9 +29,28 @@ class Product extends Model
         'ingredients' => 'array',
     ];
 
+    // slug boot method
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->slug = Str::slug($model->name);
+        });
+    }
+
+    public function isLowStock()
+    {
+        return $this->stock <= $this->low_stock_threshold;
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
-
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,10 +28,12 @@ class ProductFactory extends Factory
             'name' => fake()->name(),
             'description' => fake()->text(),
             'price' => fake()->randomFloat(2, 1, 100),
-            'image_url' => fake()->imageUrl(),
+            'image' => fake()->imageUrl(),
             'is_available' => fake()->boolean(),
-            'category' => fake()->randomElement(['Desserts', 'Drinks', 'Food', 'Other']),
+            'category_id' => Category::factory(),
             'is_composable' => fake()->boolean(),
+            'stock' => fake()->numberBetween(0, 100),
+            'low_stock_threshold' => fake()->numberBetween(10, 50),
         ];
     }
 }

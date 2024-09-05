@@ -1,253 +1,341 @@
 <div>
-    <div class="container mx-auto p-4" x-data="{ step: @entangle('step') }">
-        <h2 class="text-3xl font-bold mb-4 text-center">Compose Your Juice</h2>
-        <p class="text-center mb-8">Follow the steps to create your perfect juice blend.</p>
+    <div class="bg-retro-cream min-h-screen font-poppins">
+        <div class="container mx-auto p-4 sm:p-6 lg:p-8" x-data="{ step: @entangle('step') }">
+            <h2 class="text-4xl font-bold mb-4 text-center text-retro-blue">Compose Your Juice</h2>
+            <p class="text-center mb-8 text-retro-green text-lg">Follow the steps to create your perfect juice blend.</p>
 
-        <!-- Onboarding Section -->
-        <div class="onboarding mb-8">
-            <h3 class="text-xl font-semibold mb-2">Popular Composed Juices</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                @foreach ($composableJuices->take(4) as $juice)
-                    <div class="composed-juice-card border p-4 rounded-lg shadow">
-                        <img src="{{ $juice->image_url }}" alt="{{ $juice->name }}"
-                            class="w-full h-32 object-cover rounded">
-                        <h4 class="text-lg font-semibold mt-2">{{ $juice->name }}</h4>
-                        <p class="text-gray-600">{{ $juice->description }}</p>
-                        <p class="text-green-500 font-bold">{{ $juice->price }}DH</p>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
-        <!-- Main Content Area -->
-        <div class="flex">
-            <!-- Sidebar: Cart (1/4 width) -->
-            <div class="w-1/4 pr-4">
-                <div class="bg-white shadow-md rounded-lg px-6 py-2">
-                    <h3 class="text-2xl font-semibold">Your Juice</h3>
-                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                        <p class="text-sm text-gray-600 mb-1"><span class="font-medium">Fruit:</span>
-                            {{ implode(', ', $selectedFruits) }}</p>
-                        <p class="text-sm text-gray-600 mb-1"><span class="font-medium">Base:</span> {{ $selectedBase }}
-                        </p>
-                        <p class="text-sm text-gray-600 mb-1"><span class="font-medium">Sugar:</span>
-                            {{ $selectedSugar }}</p>
-                        <p class="text-sm text-gray-600"><span class="font-medium">Add-ons:</span>
-                            {{ implode(', ', $selectedAddons) }}</p>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3">Cart</h4>
-                    <div class="space-y-3 mb-6">
-                        @forelse ($cart as $index => $item)
-                            <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                <div>
-                                    <h5 class="font-medium">{{ $item['name'] }}</h5>
-                                    <p class="text-sm text-gray-500">Qty: {{ $item['quantity'] }}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-medium">{{ number_format($item['price'] * $item['quantity'], 2) }}
-                                    </p>
-                                    <button wire:click="removeFromCart({{ $index }})"
-                                        class="text-red-500 hover:text-red-700 text-xs">Remove</button>
+            <!-- Onboarding Section -->
+            @if (empty($composableJuices))
+                <div class="mb-12">
+                    <h3 class="text-2xl font-semibold mb-4 text-retro-orange">Popular Composed Juices</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        @foreach ($composableJuices->take(4) as $juice)
+                            <div
+                                class="bg-retro-yellow rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
+                                <img src="{{ $juice->image }}" alt="{{ $juice->name }}"
+                                    class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h4 class="text-xl font-semibold text-retro-blue mb-2">{{ $juice->name }}</h4>
+                                    <p class="text-retro-green mb-3">{{ $juice->description }}</p>
+                                    <p class="text-retro-orange font-bold text-lg">{{ $juice->price }}DH</p>
                                 </div>
                             </div>
-                        @empty
-                            <p class="text-gray-500 text-sm">Your cart is empty.</p>
-                        @endforelse
-                    </div>
-                    <div class="flex justify-between items-center font-semibold text-lg mb-6">
-                        <span>Total:</span>
-                        <span>{{ number_format(array_reduce($cart,function ($carry, $item) {return $carry + $item['price'] * $item['quantity'];},0),2) }}DH</span>
-                    </div>
-                    <div class="flex justify-center">
-                        <a href="{{ route('checkout') }}"
-                            class="block mb-4 w-full bg-green-500 text-white text-center px-2 py-3 rounded-lg hover:bg-green-600 transition duration-300">
-                            Checkout
-                        </a>
+                        @endforeach
                     </div>
                 </div>
-            </div>
+            @endif
 
-            <!-- Main Content: Stepper (3/4 width) -->
-            <div class="w-3/4">
+            <!-- Main Content Area -->
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar: Cart -->
+                <div class="lg:w-1/4 order-2 lg:order-1">
+                    <div class="border-retro-orange border-solid border-4 text-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-2xl text-retro-orange font-bold mb-4">Your Juice</h3>
+                        <div class="flex flex-col gap-y-6 rounded-lg mb-6 text-retro-blue">
+                            @if (count($selectedFruits) > 0)
+                                <div>
+                                    <span class="font-medium">Fruit:</span>
+                                    <p class="text-sm mb-1">
+                                        {{ implode(', ', $this->fruits->whereIn('id', $selectedFruits)->pluck('name')->toArray()) }}
+                                    </p>
+                                </div>
+                            @endif
+                            @if ($selectedBase)
+                                <div>
+                                    <span class="font-medium">Base:</span>
+                                    <p class="text-sm mb-1">
+                                        {{ $selectedBase }}
+                                    </p>
+                                </div>
+                            @endif
+                            @if ($selectedSugar)
+                                <div>
+                                    <span class="font-medium">Sugar:</span>
+                                    <p class="text-sm mb-1"> {{ $selectedSugar }}</p>
+                                </div>
+                            @endif
+                            @if (count($selectedAddons) > 0)
+                                <div>
+                                    <span class="font-medium">Add-ons:</span>
+                                    <p class="text-sm">
+                                        {{ implode(', ', $selectedAddons) }}</p>
+                                </div>
+                            @endif
+                            @if (count($selectedFruits) === 0 && !$selectedBase && !$selectedSugar && count($selectedAddons) === 0)
+                                <p class="text-sm text-retro-orange">Start composing your juice!</p>
+                            @endif
+                        </div>
+                        <h4 class="text-xl text-retro-orange font-bold mb-3">Cart</h4>
+                        <div class="space-y-3 mb-6">
+                            @forelse ($cart as $index => $item)
+                                <div class="flex justify-between items-center py-2 border-b border-retro-cream">
+                                    <div>
+                                        <h5 class="font-medium text-retro-blue">{{ $item['name'] }}</h5>
+                                        <p class="text-sm text-retro-blue">Qty: {{ $item['quantity'] }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium text-retro-blue">
+                                            {{ number_format($item['price'] * $item['quantity'], 2) }}DH
+                                        </p>
+                                        <button class="bg-red-600 text-white p-2 rounded-full text-xs"
+                                            wire:click="removeFromCart({{ $index }})" type="button">
+                                            <span class="material-icons">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-retro-blue text-sm">Your cart is empty.</p>
+                            @endforelse
+                        </div>
+                        <div class="flex justify-between items-center text-retro-blue font-bold text-lg mb-6">
+                            <span>Total:</span>
+                            <span>{{ number_format($this->cartTotal, 2) }}DH</span>
+                        </div>
+                        @if (count($cart) > 0)
+                            <button type="button" wire:click="toggleCheckout"
+                                class="w-full bg-retro-orange text-white py-2 px-4 rounded-full hover:bg-retro-yellow hover:text-retro-blue transition duration-300">
+                                {{ __('Proceed to Checkout') }}
+                            </button>
 
-                <div class="flex justify-center mb-8">
-                    <nav class="flex space-x-4">
-                        <button wire:click="$set('step', 1)"
-                            class="step-button relative px-4 py-2 text-gray-500 transition-colors duration-300 hover:text-blue-500"
-                            :class="{ 'text-blue-500': step === 1 }">
-                            <span>1. Select Your Fruits</span>
-                            <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 transition-transform duration-300"
-                                :class="{ 'scale-x-100': step === 1 }"></div>
-                        </button>
-                        <button wire:click="$set('step', 2)"
-                            class="step-button relative px-4 py-2 text-gray-500 transition-colors duration-300 hover:text-blue-500"
-                            :class="{ 'text-blue-500': step === 2 }">
-                            <span>2. Select Your Base</span>
-                            <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 transition-transform duration-300"
-                                :class="{ 'scale-x-100': step === 2 }"></div>
-                        </button>
-                        <button wire:click="$set('step', 3)"
-                            class="step-button relative px-4 py-2 text-gray-500 transition-colors duration-300 hover:text-blue-500"
-                            :class="{ 'text-blue-500': step === 3 }">
-                            <span>3. Do You Want Sugar?</span>
-                            <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 transition-transform duration-300"
-                                :class="{ 'scale-x-100': step === 3 }"></div>
-                        </button>
-                        <button wire:click="$set('step', 4)"
-                            class="step-button relative px-4 py-2 text-gray-500 transition-colors duration-300 hover:text-blue-500"
-                            :class="{ 'text-blue-500': step === 4 }">
-                            <span>4. Select Add-ons</span>
-                            <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 transition-transform duration-300"
-                                :class="{ 'scale-x-100': step === 4 }"></div>
-                        </button>
-                    </nav>
+                            @if ($showCheckout)
+                                <div class="mt-6 w-full grid grid-cols-1 gap-y-6 justify-center items-center">
+                                    <div>
+                                        <label for="customerName"
+                                            class="block text-sm font-medium text-gray-700">Name</label>
+                                        <input type="text" id="customerName" wire:model.defer="customerName"
+                                            class="mt-1 py-2 border rounded w-full">
+                                        @error('customerName')
+                                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <label for="customerPhone"
+                                            class="block text-sm font-medium text-gray-700">Phone</label>
+                                        <input type="tel" id="customerPhone" wire:model.defer="customerPhone"
+                                            class="mt-1 py-2 border rounded w-full">
+                                        @error('customerPhone')
+                                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                    <button type="button" wire:click="placeOrder"
+                                        class="w-full bg-retro-blue text-white py-2 px-4 rounded-full hover:bg-retro-yellow hover:text-retro-green transition duration-300">
+                                        Place Order
+                                    </button>
+                                </div>
+                            @endif
+                        @endif
+                    </div>
                 </div>
 
-                <!-- Step Content -->
-                <div>
-                    <template x-if="step === 1">
+                @if ($showSuccess)
+                    <div class="border-retro-orange border-solid border-4 text-white rounded-lg shadow-lg p-6">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-xl font-bold mt-4 text-black">Order Summary</h3>
+
+                            @if (!empty($order))
+                                <div class="mt-2">
+                                    <p class="text-gray-700">Thank you for your order,
+                                        {{ $order?->customer_name }}!
+                                        Here are the details of your order:</p>
+                                    <div class="space-y-4">
+                                        @foreach ($order->items as $item)
+                                            <div class="flex items-center justify-between border px-4">
+                                                <div class="w-1/2">
+                                                    <h4 class="text-lg font-semibold text-black">
+                                                        {{ $item->name }}
+                                                    </h4>
+                                                    <p class="text-gray-600">Quantity:
+                                                        {{ $item->quantity }}
+                                                    </p>
+                                                    <p class="text-gray-600">Price:
+                                                        {{ $item->price }}DH</p>
+                                                </div>
+                                                <div class="w-1/2">
+                                                    <p class="text-gray-600">Ingredients:</p>
+                                                    <div class="flex flex-col text-retro-blue">
+                                                        @php
+                                                            $ingredients = $item->details;
+                                                        @endphp
+                                                        <o><strong>Fruits:</strong>
+                                                            {{ implode(', ', $ingredients['fruits']) }}
+                                                        </o>
+                                                        <o><strong>Base:</strong>
+                                                            {{ $ingredients['base'] }}
+                                                        </o>
+                                                        <o><strong>Sugar:</strong>
+                                                            {{ $ingredients['sugar'] }}
+                                                        </o>
+                                                        <o><strong>Add-ons:</strong>
+                                                            {{ implode(', ', $ingredients['addons']) }}
+                                                        </o>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <h3 class="text-xl font-bold mt-4 text-black">Total:
+                                        {{ $order?->total_amount }}DH
+                                    </h3>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <x-button color="primaryOutline" wire:click="close" type="button">Close</x-button>
+                        </div>
+                    </div>
+                @else
+                    <!-- Main Content: Stepper -->
+                    <div class="lg:w-3/4 order-1 lg:order-2 border-retro-orange border-solid border-4 rounded-lg p-4">
+                        <div class="flex justify-center mb-8">
+                            <nav class="flex space-x-4">
+                                @foreach (['Select Fruits', 'Choose Base', 'Sugar Preference', 'Add-ons'] as $index => $stepName)
+                                    <x-button wire:click="$set('step', {{ $index + 1 }})" color="warningOutline"
+                                        type="button"
+                                        class="step-button relative px-4 py-2 text-retro-blue transition-colors duration-300 hover:text-retro-orange"
+                                        x-bind:class="{ 'text-retro-orange': step === {{ $index + 1 }} }">
+                                        <span>{{ $index + 1 }}. {{ $stepName }}</span>
+                                        <div class="absolute bottom-0 left-0 w-full h-0.5 bg-retro-orange transform scale-x-0 transition-transform duration-300"
+                                            :class="{ 'scale-x-100': step === {{ $index + 1 }} }"></div>
+                                    </x-button>
+                                @endforeach
+                            </nav>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="flex justify-between mt-8">
+                            <button wire:click="previousStep"
+                                class="bg-retro-blue text-white px-6 py-3 rounded-full hover:bg-retro-cream hover:text-retro-blue border-2 border-retro-blue transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-blue"
+                                :disabled="step === 1" x-show="step > 1">Previous</button>
+                            <button wire:click="nextStep"
+                                class="bg-retro-orange text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-blue border-2 border-retro-orange transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-orange"
+                                x-show="step < 4">Next</button>
+                            <button wire:click="addToCart"
+                                class="bg-retro-green text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-green border-2 border-retro-green transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-green"
+                                x-show="step === 4">Add to Cart</button>
+                        </div>
+
+                        <!-- Step Content -->
                         <div>
-                            <h3 class="text-xl font-semibold mb-2 text-black">Select Your Fruits</h3>
-                            <div class="relative">
-                                <div class="flex overflow-x-auto space-x-4 pb-4">
-                                    @foreach ($fruits as $fruit)
-                                        <div class="fruit-card border p-4 rounded-lg shadow cursor-pointer flex-shrink-0 hover:shadow-lg transition-shadow duration-300"
-                                            wire:click="toggleFruit('{{ $fruit->name }}')"
-                                            :class="{ 'border-blue-500': selectedFruits.includes('{{ $fruit->name }}') }">
-                                            <img src="{{ $fruit->image_url }}" alt="{{ $fruit->name }}"
-                                                class="w-32 h-32 object-cover rounded">
-                                            <h4 class="text-lg font-semibold mt-2 text-black">{{ $fruit->name }}</h4>
+                            <div x-show="step === 1">
+                                <div class="flex justify-between items-center my-2">
+                                    <h3 class="text-2xl font-semibold text-retro-blue">Select Your Fruits</h3>
+                                    <input type="text" wire:model.live="search"
+                                        class="w-1/2 p-2 border border-retro-orange rounded-md text-gray-800 bg-transparent placeholder-gray-800 focus:outline-none focus:ring-2 focus:ring-retro-orange"
+                                        placeholder="Search for fruits...">
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    @foreach ($this->fruits as $fruit)
+                                        <div wire:key="{{ $fruit->id }}">
+                                            <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden  cursor-pointer"
+                                                wire:click="toggleFruit({{ $fruit->id }})"
+                                                :class="{ 'ring-4 ring-retro-orange': {{ in_array($fruit->id, $selectedFruits) }} }">
+                                                <img src="{{ $fruit->image }}" alt="{{ $fruit->name }}"
+                                                    class="w-full h-32 object-cover">
+                                                <h4 class="text-lg text-center font-semibold text-retro-blue">
+                                                    {{ $fruit->name }}
+                                                </h4>
+
+                                                @if (in_array($fruit->id, $selectedFruits))
+                                                    <div
+                                                        class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
+                                                        <svg class="w-4 h-4 text-white" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24"
+                                                            xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                        </svg>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
-                            <div class="flex justify-between mt-4">
-                                <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                                    disabled>Previous</button>
-                                <button wire:click="nextStep"
-                                    class="bg-black text-white px-4 py-2 rounded hover:bg-white hover:text-black border border-black transition-colors duration-300">Next</button>
-                            </div>
-                        </div>
-                    </template>
 
-                    <template x-if="step === 2">
-                        <div>
-                            <h3 class="text-2xl font-bold mb-6 text-black">Select Your Base</h3>
-                            <div class="w-full flex flex-row justify-around items-center gap-6">
-                                @foreach ($bases as $base)
-                                    <div class="w-1/3 h-49 flex items-center relative overflow-hidden rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                        wire:click="$set('selectedBase', '{{ $base }}')"
-                                        :class="{ 'ring-4 ring-red-500': selectedBase === '{{ $base }}' }">
-                                        <div
-                                            class="absolute inset-0 bg-gradient-to-br from-white/60 to-white/30 backdrop-blur-sm z-10">
+                            <!-- Step 2: Choose Base -->
+                            <div x-show="step === 2">
+                                <h3 class="text-2xl font-semibold mb-6 text-retro-blue">Select Your Base</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    @foreach ($bases as $base)
+                                        <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer"
+                                            :class="{ 'ring-4 ring-retro-orange': selectedBase === '{{ $base }}' }"
+                                            wire:click="$set('selectedBase', '{{ $base }}')">
+                                            <h4 class="text-lg font-semibold text-retro-blue text-center">
+                                                {{ $base }}
+                                            </h4>
+                                            @if ($selectedBase === $base)
+                                                <div class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
+                                                    <svg class="w-4 h-4 text-white" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </div>
+                                            @endif
                                         </div>
-                                        <img src="{{ asset('images/' . strtolower(str_replace(' ', '-', $base)) . '.jpg') }}"
-                                            alt="{{ $base }}" class="w-full h-48 object-cover">
-                                        <div
-                                            class="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm z-20">
-                                            <h4 class="text-lg font-semibold text-black">{{ $base }}</h4>
-                                        </div>
-                                        <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 z-30 transition-opacity duration-300"
-                                            :class="{ 'opacity-100': selectedBase === '{{ $base }}', 'opacity-0': selectedBase !== '{{ $base }}' }">
-                                            <svg class="w-4 h-4 text-white mx-auto my-1" fill="none"
-                                                stroke="currentColor" viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="flex justify-between mt-8">
-                                <button wire:click="previousStep"
-                                    class="bg-black text-white px-6 py-3 rounded-full hover:bg-white hover:text-black border-2 border-black transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">Previous</button>
-                                <button wire:click="nextStep"
-                                    class="bg-black text-white px-6 py-3 rounded-full hover:bg-white hover:text-black border-2 border-black transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">Next</button>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="step === 3">
-                        <div>
-                            <h3 class="text-2xl font-bold mb-6 text-black">Sugar Preference</h3>
-                            <div class="flex flex-row justify-center items-center gap-6">
-                                <div class="w-full sm:w-1/2 h-40 flex items-center relative overflow-hidden rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                    wire:click="$set('selectedSugar', 'Yes')"
-                                    :class="{ 'ring-4 ring-red-500': selectedSugar === 'Yes' }">
-                                    <div
-                                        class="absolute inset-0 bg-gradient-to-br from-white/60 to-white/30 backdrop-blur-sm z-10">
-                                    </div>
-                                    <img src="{{ asset('images/sugar.jpg') }}" alt="Sugar"
-                                        class="w-full h-40 object-cover">
-                                    <div
-                                        class="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm z-20">
-                                        <h4 class="text-lg font-semibold text-black">Yes, I want sugar</h4>
-                                    </div>
-                                    <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 z-30 transition-opacity duration-300"
-                                        :class="{ 'opacity-100': selectedSugar === 'Yes', 'opacity-0': selectedSugar !== 'Yes' }">
-                                        <svg class="w-4 h-4 text-white mx-auto my-1" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="w-full sm:w-1/2 h-40 flex items-center relative overflow-hidden rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                    wire:click="$set('selectedSugar', 'No')"
-                                    :class="{ 'ring-4 ring-red-500': selectedSugar === 'No' }">
-                                    <div
-                                        class="absolute inset-0 bg-gradient-to-br from-white/60 to-white/30 backdrop-blur-sm z-10">
-                                    </div>
-                                    <img src="{{ asset('images/no-sugar.jpg') }}" alt="No Sugar"
-                                        class="w-full h-40 object-cover">
-                                    <div
-                                        class="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm z-20">
-                                        <h4 class="text-lg font-semibold text-black">No sugar, please</h4>
-                                    </div>
-                                    <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 z-30 transition-opacity duration-300"
-                                        :class="{ 'opacity-100': selectedSugar === 'No', 'opacity-0': selectedSugar !== 'No' }">
-                                        <svg class="w-4 h-4 text-white mx-auto my-1" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
-                            <div class="flex justify-between mt-8">
-                                <button wire:click="previousStep"
-                                    class="bg-black text-white px-6 py-3 rounded-full hover:bg-white hover:text-black border-2 border-black transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">Previous</button>
-                                <button wire:click="nextStep"
-                                    class="bg-black text-white px-6 py-3 rounded-full hover:bg-white hover:text-black border-2 border-black transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">Next</button>
-                            </div>
-                        </div>
-                    </template>
 
-                    <template x-if="step === 4">
-                        <div>
-                            <h3 class="text-xl font-semibold mb-2 text-black">Select Add-ons</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                                @foreach ($addons as $addon)
-                                    <div class="border p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-300"
-                                        wire:click="toggleAddon('{{ $addon }}')"
-                                        x-data="{ isSelected: @entangle('selectedAddons').('{{ $addon }}') }"
-                                        :class="{ 'border-blue-500': isSelected }">
-                                        <h4 class="text-lg font-semibold text-black">{{ $addon }}</h4>
-                                    </div>
-                                @endforeach
+                            <!-- Step 3: Sugar Preference -->
+                            <div x-show="step === 3">
+                                <h3 class="text-2xl font-semibold mb-6 text-retro-blue">Sugar Preference</h3>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                                    @foreach (['No Sugar', 'Light', 'Medium', 'Sweet'] as $sugarOption)
+                                        <div class="relative bg-white p-4 rounded-lg shadow hover:shadow-lg transition-all duration-300  cursor-pointer"
+                                            wire:click="$set('selectedSugar', '{{ $sugarOption }}')"
+                                            :class="{ 'ring-4 ring-retro-orange': selectedSugar === '{{ $sugarOption }}' }">
+
+                                            <h4 class="text-lg font-semibold text-retro-blue text-center">
+                                                {{ $sugarOption }}
+                                            </h4>
+
+                                            @if ($selectedSugar === $sugarOption)
+                                                <div class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
+                                                    <svg class="w-4 h-4 text-white" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
-                            <div class="flex justify-between mt-4">
-                                <button wire:click="previousStep"
-                                    class="bg-black text-white px-4 py-2 rounded hover:bg-white hover:text-black border border-black transition-colors duration-300">Previous</button>
-                                <button wire:click="addToCart"
-                                    class="bg-black text-white px-4 py-2 rounded hover:bg-white hover:text-black border border-black transition-colors duration-300">Next</button>
+
+                            <!-- Step 4: Add-ons -->
+                            <div x-show="step === 4">
+                                <h3 class="text-2xl font-semibold mb-6 text-retro-blue">Select Add-ons</h3>
+                                <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                                    @foreach ($addons as $addon)
+                                        <div class="relative cursor-pointer"
+                                            wire:click="toggleAddon('{{ $addon }}')">
+                                            <div class="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-all duration-300"
+                                                :class="{ 'ring-4 ring-retro-orange': {{ in_array($addon, $selectedAddons) }} }">
+                                                <h4 class="text-lg font-semibold text-center text-retro-blue">
+                                                    {{ $addon }}</h4>
+                                                @if (in_array($addon, $selectedAddons))
+                                                    <div
+                                                        class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
+                                                        <svg class="w-4 h-4 text-white" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24"
+                                                            xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                        </svg>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
-                    </template>
-                </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

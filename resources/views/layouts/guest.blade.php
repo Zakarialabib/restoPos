@@ -67,8 +67,9 @@
 </head>
 
 
-<body class="font-poppins antialiased bg-gray-100">
-    <main class="min-h-screen">
+<body class="bg-retro-cream text-retro-blue">
+    {{-- <x-header /> --}}
+    <main class="min-h-screen w-full p-0">
         {{ $slot }}
     </main>
 </body>

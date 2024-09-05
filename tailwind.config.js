@@ -24,7 +24,13 @@ export default {
 
             black: '#000',
             white: '#fff',
-
+            retro: {
+                orange: '#FF6B35',
+                yellow: '#F7C59F',
+                green: '#1A936F',
+                blue: '#114B5F',
+                cream: '#EFEFD0',
+              },
             gray: {
                 50: '#F1F5FB',
                 100: '#F2F5F8',

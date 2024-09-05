@@ -15,11 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description');
+            $table->string('slug')->unique();
             $table->decimal('price', 8, 2);
-            $table->string('category');
+            $table->foreignId('category_id')->constrained('categories');
             $table->boolean('is_available')->default(true);
-            $table->string('image_url')->nullable();
+            $table->string('image')->nullable();
             $table->boolean('is_composable')->default(false);
+            $table->integer('stock')->default(0);
+            $table->integer('low_stock_threshold')->default(10);
+            $table->date('expiry_date')->nullable();
             $table->timestamps();
         });
     }
