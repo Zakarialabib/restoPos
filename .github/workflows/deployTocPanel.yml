@@ -28,14 +28,6 @@ jobs:
     - name: 📦 Update Composer dependencies
       run: composer update --no-dev --optimize-autoloader --no-interaction
 
-    - name: 🧹 Clear caches
-      run: |
-        php artisan cache:clear
-        php artisan config:clear
-        php artisan route:clear
-        php artisan view:clear
-
-
     - name: 📂 Deploy to cPanel
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -44,9 +36,3 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: 21
         timeout: 60000
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/storage/**
-          .env
-          .env.example
