@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,7 +35,7 @@ class OrderItem extends Model
     }
 
     // Mutator for the details (JSON)
-    public function setDetailsAttribute($value)
+    public function setDetailsAttribute($value): void
     {
         $this->attributes['details'] = json_encode($value);
     }

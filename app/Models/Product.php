@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,16 +31,6 @@ class Product extends Model
         'ingredients' => 'array',
     ];
 
-    // slug boot method
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->slug = Str::slug($model->name);
-        });
-    }
-
     public function isLowStock()
     {
         return $this->stock <= $this->low_stock_threshold;
@@ -52,5 +44,15 @@ class Product extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    // slug boot method
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($model): void {
+            $model->slug = Str::slug($model->name);
+        });
     }
 }

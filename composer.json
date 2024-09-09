@@ -12,6 +12,7 @@
         "livewire/volt": "^1.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.13",
         "fakerphp/faker": "^1.23",
         "kkomelin/laravel-translatable-string-exporter": "^1.22",
         "laravel/breeze": "^2.1",

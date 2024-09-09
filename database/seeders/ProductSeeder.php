@@ -1,18 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Product;
 use App\Models\Category;
-
-use function Symfony\Component\String\b;
+use App\Models\Product;
+use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $fruitCategory = Category::firstOrCreate(['name' => 'Fruits']);
+        $fruitCategory = Category::firstOrCreate([
+            'id' => 1,
+            'name' => 'Fruits'
+        ]);
 
         $fruits = [
             [
@@ -111,8 +114,85 @@ class ProductSeeder extends Seeder
             Product::create(array_merge($fruit, ['category_id' => $fruitCategory->id]));
         }
 
-        // dried fruits category 
-        $driedFruitsCategory = Category::firstOrCreate(['name' => 'Dried Fruits']);
+        // coffee category
+        $coffeeCategory = Category::firstOrCreate([
+            'id' => 2,
+            'name' => 'Coffee'
+        ]);
+
+        $coffee = [
+            [
+                'name' => 'Espresso',
+                'description' => 'A strong and concentrated coffee drink.',
+                'price' => 2.99,
+                'image' => 'https://example.com/images/espresso.jpg',
+                'is_available' => true,
+                'is_composable' => false,
+                'stock' => 100,
+                'low_stock_threshold' => 20,
+            ],
+            [
+                'name' => 'Cappuccino',
+                'description' => 'A classic Italian coffee drink with a frothy top.',
+                'price' => 3.99,
+                'image' => 'https://example.com/images/cappuccino.jpg',
+                'is_available' => true,
+                'is_composable' => false,
+                'stock' => 80,
+                'low_stock_threshold' => 15,
+            ],
+            [
+                'name' => 'Latte',
+                'description' => 'A smooth and creamy coffee drink with steamed milk.',
+                'price' => 3.49,
+                'image' => 'https://example.com/images/latte.jpg',
+                'is_available' => true,
+                'is_composable' => false,
+                'stock' => 90,
+                'low_stock_threshold' => 18,
+            ],
+            [
+                'name' => 'Mocha',
+                'description' => 'A chocolate-flavored coffee drink with a hint of sweetness.',
+                'price' => 3.99,
+                'image' => 'https://example.com/images/mocha.jpg',
+                'is_available' => true,
+                'is_composable' => false,
+                'stock' => 70,
+                'low_stock_threshold' => 15,
+            ],
+            [
+                'name' => 'Caramel Macchiato',
+                'description' => 'A coffee drink with a caramel-flavored topping.',
+                'price' => 4.49,
+                'image' => 'https://example.com/images/caramel_macchiato.jpg',
+                'is_available' => true,
+                'is_composable' => false,
+                'stock' => 60,
+                'low_stock_threshold' => 12,
+            ],
+            [
+                'name' => 'Iced Coffee',
+                'description' => 'A refreshing iced coffee drink.',
+                'price' => 3.99,
+                'image' => 'https://example.com/images/iced_coffee.jpg',
+                'is_available' => true,
+                'is_composable' => false,
+                'stock' => 55,
+                'low_stock_threshold' => 10,
+            ],
+        ];
+
+        foreach ($coffee as $coffeeItem) {
+            Product::create(array_merge($coffeeItem, ['category_id' => $coffeeCategory->id]));
+        }
+
+
+        // dried fruits category
+        $driedFruitsCategory = Category::firstOrCreate([
+            'id' => 3,
+            'name' => 'Dried Fruits'
+        ]);
 
         $driedFruits = [
             [
@@ -191,8 +271,11 @@ class ProductSeeder extends Seeder
             Product::create(array_merge($driedFruit, ['category_id' => $driedFruitsCategory->id]));
         }
 
-        // base juices category 
-        $baseJuicesCategory = Category::firstOrCreate(['name' => 'Base Juices']);
+        // base juices category
+        $baseJuicesCategory = Category::firstOrCreate([
+            'id' => 4,
+            'name' => 'Base Juices'
+        ]);
 
         $baseJuices = [
             [

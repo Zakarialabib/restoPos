@@ -68,11 +68,14 @@
 </head>
 
 
-<body class="bg-retro-cream text-retro-blue">
-    {{-- <x-header /> --}}
-    <main class="min-h-screen w-full p-0">
-        {{ $slot }}
-    </main>
+<body class="bg-retro-cream text-retro-blue p-0">
+    <div x-data="{ isOpen: false }">
+        <x-header />
+        <main class="min-h-screen w-full">
+            {{ $slot }}
+        </main>
+        <x-theme-switcher />
+    </div>
 </body>
 
 </html>

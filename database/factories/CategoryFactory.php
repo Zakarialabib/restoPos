@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -17,8 +19,8 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => fake()->unique()->numberBetween(1, 100),
             'name' => fake()->name(),
-            'image' => fake()->imageUrl(),
         ];
     }
 }

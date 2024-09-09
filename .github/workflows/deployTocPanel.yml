@@ -25,8 +25,26 @@ jobs:
       with:
         php-version: '8.2'
     
-    - name: 📦 Update Composer dependencies
-      run: composer update --no-dev --optimize-autoloader --no-interaction
+    - name: 📦 Install Composer dependencies
+      run: composer install --no-dev --optimize-autoloader --no-interaction
+
+    - name: Optimize cache
+      run: php artisan optimize:clear
+
+    - name: Migrate database
+      run: php artisan migrate --force --no-interaction
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'node-modules'
+
+    - name: 🎨 Install Node.js dependencies
+      run: npm install
+
+    - name: 📦 Build assets
+      run: npm run build
 
     - name: 📂 Deploy to cPanel
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5

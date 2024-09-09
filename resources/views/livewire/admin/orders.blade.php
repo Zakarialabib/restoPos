@@ -74,7 +74,7 @@ $deleteOrder = function (Order $order) {
     <div class="py-12">
         <div class="flex flex-wrap mt-4 px-2">
             <form wire:submit="saveOrder" class="w-1/2 space-y-4">
-                <x-accordion :title="$editingOrderId ? 'Edit Order' : 'Add New Order'" open="true">
+                <x-accordion :title="$editingOrderId ? __('Edit Order') : __('Add New Order')" open="true">
                     <div>
                         <x-input-label for="customerName" :value="__('Customer Name')" />
                         <x-input type="text" wire:model="customerName" id="customerName" class="mt-1 block w-full"
@@ -98,7 +98,7 @@ $deleteOrder = function (Order $order) {
                                 <div class="flex items-center space-x-2">
                                     <select wire:model="orderItems.{{ $index }}.product_id"
                                         class="mt-1 block w-full">
-                                        <option value="">Select Product</option>
+                                        <option value="">{{ __('Select Product') }}</option>
                                         @foreach ($products as $product)
                                             <option value="{{ $product->id }}">{{ $product->name }}</option>
                                         @endforeach
@@ -108,10 +108,14 @@ $deleteOrder = function (Order $order) {
                                     <x-input type="number" wire:model="orderItems.{{ $index }}.price"
                                         class="mt-1 block w-full" placeholder="Price" required />
                                     <button type="button" wire:click="removeOrderItem({{ $index }})"
-                                        class="text-red-500">Remove</button>
+                                        class="text-red-500">
+                                        {{ __('Remove') }}
+                                    </button>
                                 </div>
                             @endforeach
-                            <button type="button" wire:click="addOrderItem" class="text-blue-500">Add Item</button>
+                            <button type="button" wire:click="addOrderItem" class="text-blue-500">
+                                {{ __('Add Item') }}
+                            </button>
                         </div>
                         @error('orderItems')
                             <span class="text-red-500">{{ $message }}</span>
@@ -126,13 +130,13 @@ $deleteOrder = function (Order $order) {
                         @enderror
                     </div>
                     <div class="flex justify-end mt-2">
-                        <x-button type="submit" color="primary">Save</x-button>
+                        <x-button type="submit" color="primary">{{ __('Save') }}</x-button>
                     </div>
                 </x-accordion>
             </form>
             <div class="w-1/2 ">
 
-                <h3 class="text-2xl font-semibold mb-4 text-center">Order List</h3>
+                <h3 class="text-2xl font-semibold mb-4 text-center">{{ __('Order List') }}</h3>
                 <div class="px-6">
                     <div
                         class="my-5 p-5 bg-white text-black text-base rounded-lg overflow-x-auto overflow-y-auto relative">
@@ -141,21 +145,19 @@ $deleteOrder = function (Order $order) {
                                 <tr>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Order ID
+                                        {{ __('Order ID') }}
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Customer
-                                        Name
+                                        {{ __('Customer Name') }}
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total
-                                        Amount
+                                        {{ __('Total Amount') }}
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
+                                        {{ __('Actions') }}
                                     </th>
                                 </tr>
                             </thead>
@@ -184,6 +186,5 @@ $deleteOrder = function (Order $order) {
                 </div>
             </div>
         </div>
-
     </div>
 </div>

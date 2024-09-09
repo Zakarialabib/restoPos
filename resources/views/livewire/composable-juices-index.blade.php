@@ -1,5 +1,4 @@
 <div>
-    <livewire:lang-switcher />
     <div class="bg-retro-cream min-h-screen font-poppins">
         <div class="container mx-auto p-4 sm:p-6 lg:p-8" x-data="{
             step: @entangle('step'),
@@ -29,9 +28,10 @@
                         @foreach ($composableJuices->take(4) as $juice)
                             <div
                                 class="bg-retro-yellow rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
-                                {{--  make a js error of not founding image remove it  --}}
-                                <img src="{{ $juice->image }}" alt="{{ $juice->name }}" class="w-full h-48 object-cover"
-                                    onerror="this.onerror=null">
+                                @if ($juice->image)
+                                    <img src="{{ $juice->image }}" alt="{{ $juice->name }}"
+                                        class="w-full h-48 object-cover">
+                                @endif
                                 <div class="p-4">
                                     <h4 class="text-xl font-semibold text-retro-blue mb-2">{{ $juice->name }}</h4>
                                     <p class="text-retro-green mb-3">{{ $juice->description }}</p>
@@ -297,7 +297,7 @@
                                                     'ring-4 ring-retro-orange': {{ in_array($fruit->id, $selectedFruits) }}
                                                 }">
                                                 <img src="{{ $fruit->image }}" alt="{{ $fruit->name }}"
-                                                    class="w-full h-32 object-cover">
+                                                    onerror="this.onerror=null" class="w-full h-32 object-cover">
                                                 <h4 class="text-lg text-center font-semibold text-retro-blue">
                                                     {{ $fruit->name }}
                                                 </h4>

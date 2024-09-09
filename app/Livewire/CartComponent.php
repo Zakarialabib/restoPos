@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Product;
-use App\Models\Order;
-use App\Models\OrderItem;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Component;
 
 #[Layout('layouts.guest')]
 #[Title('Cart')]
@@ -15,16 +15,16 @@ class CartComponent extends Component
 {
     public $cart = [];
 
-    public function mount()
+    public function mount(): void
     {
         $this->cart = session()->get('cart', []);
     }
 
-    public function addToCart($productId)
+    public function addToCart($productId): void
     {
         $product = Product::find($productId);
 
-        if (!$product) {
+        if ( ! $product) {
             return;
         }
 
@@ -37,13 +37,13 @@ class CartComponent extends Component
         session()->put('cart', $this->cart);
     }
 
-    public function removeFromCart($productId)
+    public function removeFromCart($productId): void
     {
         unset($this->cart[$productId]);
         session()->put('cart', $this->cart);
     }
 
-    public function updateQuantity($productId, $quantity)
+    public function updateQuantity($productId, $quantity): void
     {
         if (isset($this->cart[$productId])) {
             $this->cart[$productId]['quantity'] = $quantity;
@@ -53,9 +53,7 @@ class CartComponent extends Component
 
     public function getTotalAmount()
     {
-        return array_reduce($this->cart, function ($carry, $item) {
-            return $carry + ($item['price'] * $item['quantity']);
-        }, 0);
+        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function render()

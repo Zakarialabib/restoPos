@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
-use Livewire\Component;
+use App\Models\Category;
 use App\Models\ComposableJuice;
 use App\Models\InventoryAlert;
 use App\Models\Order;
@@ -12,6 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
+use Livewire\Component;
 
 #[Layout('layouts.guest')]
 #[Title('Composable Juices')]
@@ -39,7 +42,7 @@ class ComposableJuicesIndex extends Component
 
     public $showCheckout = false;
 
-    public function mount()
+    public function mount(): void
     {
         $this->cart = session()->get('cart', []);
     }
@@ -48,31 +51,32 @@ class ComposableJuicesIndex extends Component
     public function fruits()
     {
         return Product::where('is_composable', true)
+            ->where('category_id', Category::where('name', 'Fruits')->first()->id)
             ->where('stock', '>', 0)
             ->where('name', 'like', '%' . $this->search . '%')
             ->get();
     }
 
-    public function boot()
+    public function boot(): void
     {
         session()->forget('cart');
     }
 
-    public function nextStep()
+    public function nextStep(): void
     {
         $this->step++;
     }
 
-    public function previousStep()
+    public function previousStep(): void
     {
         $this->step--;
     }
 
-    public function toggleFruit($fruitId)
+    public function toggleFruit($fruitId): void
     {
         $fruit = Product::find($fruitId);
 
-        if (!$fruit) {
+        if ( ! $fruit) {
             $this->addError('invalidFruit', "The selected fruit is not available.");
             return;
         }
@@ -84,7 +88,7 @@ class ComposableJuicesIndex extends Component
         }
     }
 
-    public function calculatePrice()
+    public function calculatePrice(): void
     {
         $this->totalPrice = 0;
         foreach ($this->selectedFruits as $fruitId) {
@@ -96,13 +100,13 @@ class ComposableJuicesIndex extends Component
         // Add price calculations for base, sugar, and add-ons
         // This is just a placeholder, adjust according to your pricing logic
         $this->totalPrice += 5; // Base price
-        if ($this->selectedSugar !== 'No Sugar') {
+        if ('No Sugar' !== $this->selectedSugar) {
             $this->totalPrice += 2; // Sugar price
         }
         $this->totalPrice += count($this->selectedAddons) * 3; // Addons price
     }
 
-    public function toggleAddon($addon)
+    public function toggleAddon($addon): void
     {
         if (in_array($addon, $this->selectedAddons)) {
             $this->selectedAddons = array_diff($this->selectedAddons, [$addon]);
@@ -114,23 +118,21 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, function ($carry, $item) {
-            return $carry + ($item['price'] * $item['quantity']);
-        }, 0);
+        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
-    public function toggleCheckout()
+    public function toggleCheckout(): void
     {
-        $this->showCheckout = !$this->showCheckout;
+        $this->showCheckout = ! $this->showCheckout;
     }
 
-    public function addToCart()
+    public function addToCart(): void
     {
         $this->calculatePrice();
 
         foreach ($this->selectedFruits as $fruitId) {
             $fruit = Product::find($fruitId);
-            if (!$fruit || $fruit->stock <= 0) {
+            if ( ! $fruit || $fruit->stock <= 0) {
                 $this->addError('outOfStock', "{$fruit->name} is out of stock.");
                 return;
             }
@@ -162,7 +164,7 @@ class ComposableJuicesIndex extends Component
         $this->step = 1;
     }
 
-    public function removeFromCart($index)
+    public function removeFromCart($index): void
     {
         unset($this->cart[$index]);
         session()->put('cart', $this->cart);
@@ -175,7 +177,7 @@ class ComposableJuicesIndex extends Component
         return view('livewire.composable-juices-index', ['composableJuices' => $composableJuices]);
     }
 
-    public function placeOrder()
+    public function placeOrder(): void
     {
         $this->validate([
             'customerName' => 'required|string|max:255',
@@ -206,7 +208,7 @@ class ComposableJuicesIndex extends Component
         $this->order = $order;
     }
 
-    public function close()
+    public function close(): void
     {
         $this->showSuccess = false;
         $this->reset([

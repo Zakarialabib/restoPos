@@ -1,97 +1,3 @@
-<?php
-
-use App\Models\Product;
-use App\Models\InventoryAlert;
-use function Livewire\Volt\{state, layout, rules, computed, title, paginate};
-use function Livewire\Volt\{with, usesPagination};
-
-usesPagination();
-
-layout('layouts.app');
-title('Products');
-
-state([
-    'search' => '',
-    'name' => '',
-    'description' => '',
-    'price' => '',
-    'category' => '',
-    'is_available' => true,
-    'image' => '',
-    'is_composable' => false,
-    'editingProductId' => null,
-]);
-
-with(
-    fn() => [
-        'products' => Product::query()
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%');
-            })
-            ->when($this->category, function ($query) {
-                $query->where('category', $this->category);
-            })
-            ->where('is_available', true)
-            ->paginate(10),
-    ],
-);
-
-rules([
-    'name' => 'required|string|max:255',
-    'description' => 'required|string',
-    'price' => 'required|numeric|min:0',
-    'category' => 'required|string|max:255',
-    'is_available' => 'boolean',
-    'image' => 'nullable|url',
-    // 'low_stock_threshold' => 'required|integer|min:1',
-    'is_composable' => 'boolean',
-    'stock' => 'required|integer|min:0',
-]);
-
-$saveProduct = function () {
-    $this->validate();
-
-    if ($this->editingProductId) {
-        $product = Product::find($this->editingProductId);
-        $product->update($this->only(['name', 'description', 'price', 'category', 'is_available', 'image', 'stock', 'is_composable']));
-
-        if ($product->isLowStock()) {
-            InventoryAlert::create([
-                'product_id' => $product->id,
-                'message' => "Low stock alert for {$product->name}",
-            ]);
-        }
-    } else {
-        Product::create($this->only(['name', 'description', 'price', 'category', 'is_available', 'image', 'stock', 'is_composable']));
-    }
-
-    $this->reset(['name', 'description', 'price', 'category', 'is_available', 'image', 'stock', 'is_composable', 'editingProductId']);
-    $this->products = Product::paginate(10);
-};
-
-$editProduct = function (Product $product) {
-    $this->editingProductId = $product->id;
-    $this->name = $product->name;
-    $this->description = $product->description;
-    $this->price = $product->price;
-    $this->category = $product->category;
-    $this->is_available = $product->is_available;
-    $this->image = $product->image;
-    $this->stock = $product->stock;
-    // $this->low_stock_threshold = $product->low_stock_threshold;
-    $this->is_composable = $product->is_composable;
-};
-
-$deleteProduct = function (Product $product) {
-    $product->delete();
-    $this->products = Product::all();
-};
-
-$cancelEdit = function () {
-    $this->reset(['name', 'description', 'price', 'category', 'is_available', 'image', 'editingProductId', 'stock', 'is_composable']);
-};
-
-?>
 <div>
     <div class="py-12">
 
@@ -123,10 +29,13 @@ $cancelEdit = function () {
                         </div>
 
                         <div>
-                            <x-input-label for="category" :value="__('Category')" />
-                            <x-input wire:model="category" id="category" class="block mt-1 w-full" type="text"
-                                name="category" required />
-                            <x-input-error :messages="$errors->get('category')" class="mt-2" />
+                            <x-input-label for="category_id" :value="__('Category')" />
+                            <select wire:model="category_id" id="category_id" class="block mt-1 w-full">
+                                <option value="">Select Category</option>
+                                <option value="1">Juice</option>
+                                <option value="2">Coffee</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
                         </div>
 
                         <div>
@@ -169,7 +78,9 @@ $cancelEdit = function () {
                     <div class="flex items-center justify-end  px-4 mt-4">
                         @if ($editingProductId)
                             <x-button type="button" color="secondary" wire:click="cancelEdit">
-                                {{ __('Cancel') }}
+                                <span class="material-icons">
+                                    cancel
+                                </span>
                             </x-button>
                         @endif
                         <x-button type="submit" color="primary">
@@ -192,7 +103,7 @@ $cancelEdit = function () {
                 </div> --}}
 
             <div class="w-3/4 ">
-                <h2 class="text-2xl font-semibold mb-4 text-center">Product List</h2>
+                <h2 class="text-2xl font-semibold mb-4 text-center">{{ __('Product List') }}</h2>
                 <div class="px-6">
                     <div
                         class="my-5 p-5 bg-white text-black text-base rounded-lg overflow-x-auto overflow-y-auto relative">
@@ -201,32 +112,32 @@ $cancelEdit = function () {
                                 <tr class="text-left leading-5">
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
+                                        {{ __('Name') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Price</th>
+                                        {{ __('Price') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Category</th>
+                                        {{ __('Category') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Available</th>
+                                        {{ __('Available') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Stock</th>
+                                        {{ __('Stock') }}</th>
                                     {{-- <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Low Stock Threshold</th> --}}
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Is Composable</th>
+                                        {{ __('Is Composable') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($products as $product)
+                                @forelse ($this->products as $product)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -249,14 +160,18 @@ $cancelEdit = function () {
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             {{ $product->is_composable ? 'Yes' : 'No' }}
                                         </td>
-                                        <td class="px-6 py-4 flex flex-col gap-2 whitespace-nowrap text-sm font-medium">
+                                        <td class="flex gap-2">
                                             <x-button wire:click="editProduct({{ $product->id }})" type="button"
                                                 size="sm" color="primary">
-                                                Edit
+                                                <span class="material-icons">
+                                                    edit
+                                                </span>
                                             </x-button>
                                             <x-button type="button" color="danger" size="sm"
                                                 wire:click="deleteProduct({{ $product->id }})">
-                                                Delete
+                                                <span class="material-icons">
+                                                    delete
+                                                </span>
                                             </x-button>
                                         </td>
                                     </tr>
@@ -272,7 +187,7 @@ $cancelEdit = function () {
 
                         {{-- pagination --}}
                         <div class="mt-4">
-                            {{ $products->links() }}
+                            {{ $this->products->links() }}
                         </div>
                     </div>
                 </div>

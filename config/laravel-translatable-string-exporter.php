@@ -1,7 +1,9 @@
 <?php
+
+declare(strict_types=1);
 return [
     // Directories to search in.
-    'directories'=> [
+    'directories' => [
         'app',
         'resources',
     ],
@@ -11,11 +13,11 @@ return [
     // Please note, these directories should be relative to the ones listed in 'directories'.
     // For example, if you have 'resources' in 'directories', then to ignore the 'resources/ignored' directory,
     // you need to add 'ignored' to the 'excluded-directories' list.
-    'excluded-directories'=> [
+    'excluded-directories' => [
     ],
 
     // File Patterns to search for.
-    'patterns'=> [
+    'patterns' => [
         '*.php',
         '*.js',
     ],
@@ -27,7 +29,7 @@ return [
     // Example of a custom transform function:
     // 'transform' => fn ($s) => \strtoupper(\str_replace(["-","_"], " ", $s))
     // If your function name contains $ escape it using \$ .
-    'functions'=> [
+    'functions' => [
         '__',
         '_t',
         '@lang',
