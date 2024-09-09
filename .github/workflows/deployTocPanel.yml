@@ -36,3 +36,11 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: 21
         timeout: 60000
+        exclude: |
+          **/storage/**
+          .env
+          .env.example
+          vendor/
+          node_modules/
+          package.json
+          yarn.lock

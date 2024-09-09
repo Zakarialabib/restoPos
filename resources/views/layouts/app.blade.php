@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html x-data="mainTheme" lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+<html class="scroll-smooth" lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="mainTheme"
+    dir="{{ isRtl() ? 'rtl' : 'ltr' }}">
+
 
 <head>
     <meta charset="utf-8">
@@ -16,6 +18,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <title>{{ $title ?? '' }} - {{ config('app.name', 'RestoPos') }} </title>
 
@@ -54,26 +57,28 @@
 
 </head>
 
-<body class="font-poppins antialiased">
+<body class="antialiased bg-body text-body font-body">
 
-    <div class="min-h-screen pb-6 bg-gray-100">
-        {{-- <x-loading size="sm" sizing="sm" /> --}}
+    {{-- <x-loading size="sm" sizing="sm" /> --}}
+    <div @resize.window="handleWindowResize">
+        <div class="min-h-screen">
 
-        <livewire:layout.navigation />
+            <livewire:sidebar />
 
-        <!-- Page Heading -->
-        @if (isset($header))
-            <header class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    {{ $header }}
-                </div>
-            </header>
-        @endif
+            <!-- Page Wrapper -->
+            <div class="flex flex-col min-h-screen"
+                :class="{
+                    'lg:ml-64': isSidebarOpen,
+                    'lg:ml-16': !isSidebarOpen,
+                }"
+                style="transition-property: margin; transition-duration: 150ms;">
 
-        <!-- Page Content -->
-        <main>
-            {{ $slot }}
-        </main>
+                <!-- Page Content -->
+                <main class="flex-1 px-6 pb-10">
+                    {{ $slot }}
+                </main>
+            </div>
+        </div>
     </div>
 </body>
 

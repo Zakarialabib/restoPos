@@ -1,4 +1,4 @@
-<?php
+`<?php
 
 use function Livewire\Volt\{layout, state, computed, title};
 use function Livewire\Volt\{with};

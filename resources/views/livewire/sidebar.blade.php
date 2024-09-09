@@ -1,6 +1,15 @@
+<?php
+
+use Livewire\Volt\Component;
+// use function Livewire\Volt\{title};
+// title('Menu');
+?>
+
+<div>
+
     <x-sidebar.overlay />
 
-    <aside class="fixed inset-y-0 z-20 flex flex-col py-2 space-y-6 bg-blue-800 shadow-lg"
+    <aside class="fixed inset-y-0 z-20 flex flex-col py-2 space-y-6 bg-gray-100 shadow-lg"
         :class="{
             'translate-x-0 w-64': isSidebarOpen || isSidebarHovered,
             'w-16 translate-x-0 hidden lg:block': !isSidebarOpen && !isSidebarHovered,
@@ -14,3 +23,5 @@
 
         <x-sidebar.footer />
     </aside>
+
+</div>
