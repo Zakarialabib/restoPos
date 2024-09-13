@@ -5,73 +5,98 @@
 
             <form wire:submit="saveProduct" class="w-1/4">
                 <x-accordion :title="$editingProductId ? 'Edit Product' : 'Add New Product'" open="true">
-                    <div class="space-y-4 px-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <x-input-label for="name" :value="__('Name')" />
-                            <x-input wire:model="name" id="name" class="block mt-1 w-full" type="text"
-                                name="name" required />
-                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" id="name" wire:model="name"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            @error('name')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <div>
-                            <x-input-label for="description" :value="__('Description')" />
-                            <textarea wire:model="description" id="description" name="description"
-                                class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                                required></textarea>
-                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                            <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+                            <input type="number" step="0.01" id="price" wire:model="price"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            @error('price')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <div>
-                            <x-input-label for="price" :value="__('Price')" />
-                            <x-input wire:model="price" id="price" class="block mt-1 w-full" type="number"
-                                name="price" step="0.01" required />
-                            <x-input-error :messages="$errors->get('price')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="category_id" :value="__('Category')" />
-                            <select wire:model="category_id" id="category_id" class="block mt-1 w-full">
-                                <option value="">Select Category</option>
-                                <option value="1">Juice</option>
-                                <option value="2">Coffee</option>
+                            <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                            <select id="category_id" wire:model="category_id"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="">Select a category</option>
+                                @foreach ($this->categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
+                            @error('category_id')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <div>
-                            <label for="is_available" class="inline-flex items-center">
-                                <input wire:model="is_available" id="is_available" type="checkbox"
-                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                                    name="is_available">
-                                <span class="ml-2 text-sm text-gray-600">{{ __('Available') }}</span>
-                            </label>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="stock" class="block mb-2">Stock</label>
-                            <x-input type="number" id="stock" wire:model="stock" class="block mt-1 w-full" />
+                            <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+                            <input type="number" id="stock" wire:model="stock"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            @error('stock')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <div>
-                            <x-input-label for="image" :value="__('Image URL')" />
-                            <x-input wire:model="image" id="image" class="block mt-1 w-full" type="url"
-                                name="image" />
-                            <x-input-error :messages="$errors->get('image')" class="mt-2" />
+                            <label for="image" class="block text-sm font-medium text-gray-700">Image URL</label>
+                            <input type="text" id="image" wire:model="image"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            @error('image')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
                         </div>
 
+                        <div class="col-span-2">
+                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea id="description" wire:model="description" rows="3"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                            @error('description')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-                        {{-- <div class="mb-4">
-                                <label for="low_stock_threshold" class="block mb-2">Low Stock Threshold</label>
-                                <input type="number" id="low_stock_threshold" wire:model="low_stock_threshold"
-                                    class="w-full px-3 py-2 border rounded">
-                            </div> --}}
-                        <div class="mb-4">
-                            <label for="is_composable" class="inline-flex items-center">
-                                <input type="checkbox" id="is_composable" wire:model="is_composable"
-                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                                    name="is_composable">
-                                Is Composable
-                            </label>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="is_available" wire:model="is_available"
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                            <label for="is_available" class="ml-2 block text-sm text-gray-900">Available</label>
+                        </div>
+
+                        <div class="flex items-center">
+                            <input type="checkbox" id="is_composable" wire:model="is_composable"
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                            <label for="is_composable" class="ml-2 block text-sm text-gray-900">Composable</label>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Ingredients</h3>
+                            <div class="space-y-2">
+                                @foreach ($this->ingredients as $ingredient)
+                                    <div class="flex items-center space-x-2">
+                                        <input type="checkbox" wire:model="selectedIngredients.{{ $ingredient->id }}.id"
+                                            value="{{ $ingredient->id }}" id="ingredient-{{ $ingredient->id }}"
+                                            class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                                        <label for="ingredient-{{ $ingredient->id }}"
+                                            class="text-sm text-gray-700">{{ $ingredient->name }}</label>
+                                        <input type="number"
+                                            wire:model="selectedIngredients.{{ $ingredient->id }}.quantity"
+                                            placeholder="Quantity"
+                                            class="mt-1 block w-20 rounded-md border-gray-300 shadow-sm">
+                                    </div>
+                                @endforeach
+                            </div>
+                            @error('selectedIngredients')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
                         </div>
 
                     </div>
@@ -121,6 +146,9 @@
                                         {{ __('Category') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Ingredients</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         {{ __('Available') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -144,6 +172,13 @@
                                             {{ number_format($product->price, 2) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $product->category?->name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @foreach($product->ingredients as $ingredient)
+                                                {{ $ingredient->name }} ({{ $ingredient->pivot->quantity }})
+                                                @if(!$loop->last), @endif
+                                            @endforeach
+                                        </td>
+
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if ($product->is_available)
                                                 <span

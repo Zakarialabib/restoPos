@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Admin\InventoryDashboard;
+use App\Livewire\Admin\OrderManagement;
 use App\Livewire\CartComponent;
 use App\Livewire\ComposableCoffeesIndex;
 use App\Livewire\ComposableDriedFruitsIndex;
 use App\Livewire\ComposableJuicesIndex;
+use App\Livewire\IngredientManagement;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -25,6 +28,9 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function (): voi
     Volt::route('dashboard', 'admin.dashboard')->name('admin.dashboard');
     Volt::route('/orders', 'admin.orders')->name('admin.orders');
     Volt::route('/products', 'admin.products')->name('admin.products');
+    Route::get('/ingredients', IngredientManagement::class)->name('admin.ingredients');
+    Route::get('/inventory', InventoryDashboard::class)->name('admin.inventory');
+    Route::get('/order-management', OrderManagement::class)->name('admin.order-management');
 });
 
 Route::view('profile', 'profile')

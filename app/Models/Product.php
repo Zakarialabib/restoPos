@@ -46,6 +46,17 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function inventoryAlerts()
+    {
+        return $this->hasMany(InventoryAlert::class);
+    }
+
+    public function ingredients()
+    {
+        return $this->belongsToMany(Ingredient::class, 'product_ingredients')
+            ->withPivot('quantity');
+    }
+
     // slug boot method
     protected static function boot(): void
     {

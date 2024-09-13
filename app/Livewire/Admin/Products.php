@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Models\Category;
+use App\Models\Ingredient;
 use App\Models\InventoryAlert;
 use App\Models\Product;
 use Livewire\Attributes\Computed;
@@ -25,6 +27,21 @@ class Products extends Component
     public $image = '';
     public $is_composable = false;
     public $editingProductId = null;
+    public $selectedIngredients = [];
+
+    protected $rules = [
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'price' => 'required|numeric|min:0',
+        'category_id' => 'required|exists:categories,id',
+        'stock' => 'required|integer|min:0',
+        'is_available' => 'boolean',
+        'image' => 'nullable|string',
+        'is_composable' => 'boolean',
+        'selectedIngredients' => 'array',
+        'selectedIngredients.*.id' => 'exists:ingredients,id',
+        'selectedIngredients.*.quantity' => 'required|numeric|min:0',
+    ];
 
     #[Computed]
     public function products()
@@ -37,7 +54,20 @@ class Products extends Component
                 $query->where('category_id', $this->category_id);
             })
             ->where('is_available', true)
+            ->with('ingredients')
             ->paginate(10);
+    }
+
+    #[Computed]
+    public function categories()
+    {
+        return Category::all();
+    }
+
+    #[Computed]
+    public function ingredients()
+    {
+        return Ingredient::all();
     }
 
     public function saveProduct(): void
@@ -47,19 +77,24 @@ class Products extends Component
         if ($this->editingProductId) {
             $product = Product::find($this->editingProductId);
             $product->update($this->only(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'stock', 'is_composable']));
-
-            if ($product->isLowStock()) {
-                InventoryAlert::create([
-                    'product_id' => $product->id,
-                    'message' => "Low stock alert for {$product->name}",
-                ]);
-            }
         } else {
-            Product::create($this->only(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'stock', 'is_composable']));
+            $product = Product::create($this->only(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'stock', 'is_composable']));
         }
 
-        $this->reset(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'stock', 'is_composable', 'editingProductId']);
-        // $this->products = Product::paginate(10);
+        // Update ingredients
+        $product->ingredients()->detach();
+        foreach ($this->selectedIngredients as $ingredientData) {
+            $product->ingredients()->attach($ingredientData['id'], ['quantity' => $ingredientData['quantity']]);
+        }
+
+        if ($product->isLowStock()) {
+            InventoryAlert::create([
+                'product_id' => $product->id,
+                'message' => "Low stock alert for {$product->name}",
+            ]);
+        }
+
+        $this->reset(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'stock', 'is_composable', 'editingProductId', 'selectedIngredients']);
     }
 
     public function editProduct(Product $product): void
@@ -72,37 +107,27 @@ class Products extends Component
         $this->is_available = $product->is_available;
         $this->image = $product->image;
         $this->stock = $product->stock;
-        // $this->low_stock_threshold = $product->low_stock_threshold;
         $this->is_composable = $product->is_composable;
+        $this->selectedIngredients = $product->ingredients->map(function ($ingredient) {
+            return [
+                'id' => $ingredient->id,
+                'quantity' => $ingredient->pivot->quantity,
+            ];
+        })->toArray();
     }
 
     public function deleteProduct(Product $product): void
     {
         $product->delete();
-        // $this->products = Product::all();
     }
 
     public function cancelEdit(): void
     {
-        $this->reset(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'editingProductId', 'stock', 'is_composable']);
+        $this->reset(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'editingProductId', 'stock', 'is_composable', 'selectedIngredients']);
     }
 
     public function render()
     {
         return view('livewire.admin.products');
-    }
-
-    protected function rules()
-    {
-        return [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|string|max:255',
-            'is_available' => 'boolean',
-            'image' => 'nullable|url',
-            'is_composable' => 'boolean',
-            'stock' => 'required|integer|min:0',
-        ];
     }
 }

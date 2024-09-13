@@ -169,7 +169,8 @@
                 </div>
 
                 @if ($showSuccess)
-                    <div class="border-retro-orange border-solid border-4 text-white rounded-lg shadow-lg p-6">
+                    <div
+                        class="lg:w-3/4 order-1 lg:order-2 border-retro-orange border-solid border-4 text-white rounded-lg shadow-lg p-6">
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                             <h3 class="text-xl font-bold mt-4 text-black">
                                 {{ __('Order Summary') }}
@@ -282,7 +283,8 @@
                         <div>
                             <div x-show="step === 1">
                                 <div class="flex justify-between items-center my-2">
-                                    <h3 class="text-2xl font-semibold text-retro-blue">{{ __('Select Your Fruits') }}
+                                    <h3 class="text-2xl font-semibold text-retro-blue">
+                                        {{ __('Select Your Fruits') }}
                                     </h3>
                                     <input type="text" wire:model.live="search"
                                         class="w-1/2 p-2 border border-retro-orange rounded-md text-gray-800 bg-transparent placeholder-gray-800 focus:outline-none focus:ring-2 focus:ring-retro-orange"
@@ -412,4 +414,3 @@
             </div>
         </div>
     </div>
-</div>

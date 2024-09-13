@@ -76,7 +76,7 @@ class ComposableJuicesIndex extends Component
     {
         $fruit = Product::find($fruitId);
 
-        if ( ! $fruit) {
+        if (! $fruit) {
             $this->addError('invalidFruit', "The selected fruit is not available.");
             return;
         }
@@ -118,7 +118,7 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
+        return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function toggleCheckout(): void
@@ -132,7 +132,7 @@ class ComposableJuicesIndex extends Component
 
         foreach ($this->selectedFruits as $fruitId) {
             $fruit = Product::find($fruitId);
-            if ( ! $fruit || $fruit->stock <= 0) {
+            if (! $fruit || $fruit->stock <= 0) {
                 $this->addError('outOfStock', "{$fruit->name} is out of stock.");
                 return;
             }
@@ -190,16 +190,18 @@ class ComposableJuicesIndex extends Component
             'total_amount' => $this->cartTotal,
             'status' => 'pending',
         ]);
-
+        $orderItems = [];
         foreach ($this->cart as $item) {
-            OrderItem::create([
+            $orderItem = OrderItem::create([
                 'order_id' => $order->id,
                 'name' => $item['name'],
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
                 'details' => $item['ingredients'],
             ]);
+            $orderItems[] = $orderItem;
         }
+        // $this->deductIngredients($orderItems);
 
         $this->reset(['cart', 'customerName', 'customerPhone', 'showCheckout']);
         session()->forget('cart');
@@ -222,5 +224,15 @@ class ComposableJuicesIndex extends Component
             'selectedAddons'
         ]);
         session()->forget('cart');
+    }
+
+    private function deductIngredients($orderItems): void
+    {
+        foreach ($orderItems as $item) {
+            $product = Product::find($item['product_id']);
+            foreach ($product->ingredients as $ingredient) {
+                $ingredient->decrement('quantity', $ingredient->pivot->quantity * $item['quantity']);
+            }
+        }
     }
 }
