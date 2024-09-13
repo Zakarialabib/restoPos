@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Notifications\LowStockAlert;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Notification;
@@ -50,15 +51,21 @@ class Order extends Model
 
     public function updateInventory(): void
     {
+        $this->load('items.product.ingredients');
+
         foreach ($this->items as $item) {
             $product = $item->product;
-            foreach ($product->ingredients as $ingredient) {
-                $quantity = $ingredient->pivot->quantity * $item->quantity;
-                $ingredient->decrement('quantity', $quantity);
+            if ($product) {
+                foreach ($product->ingredients as $ingredient) {
+                    if ($ingredient) {
+                        $quantity = $ingredient->pivot->quantity * $item->quantity;
+                        $ingredient->decrement('quantity', $quantity);
 
-                if ($ingredient->quantity <= $ingredient->reorder_level) {
-                    // TODO: Implement low stock alert system
-                    // This could be a notification to admin or an event that triggers an email
+                        if ($ingredient->quantity <= $ingredient->reorder_level) {
+                            Notification::route('mail', 'admin@example.com')
+                                ->notify(new LowStockAlert($ingredient));
+                        }
+                    }
                 }
             }
         }

@@ -77,19 +77,31 @@ class OrderManagement extends Component
     {
         $this->validate();
 
+        // Fetch all products needed for the order items in a single query
+        $productIds = array_column($this->orderItems, 'product_id');
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        // Calculate the total amount using the fetched product data
+        $totalAmount = 0;
+        foreach ($this->orderItems as $item) {
+            $totalAmount += $products[$item['product_id']]->price * $item['quantity'];
+        }
+
+        // Create the order
         $order = Order::create([
             'customer_name' => $this->customerName,
             'customer_phone' => $this->customerPhone,
             'status' => 'pending',
-            'total_amount' => $this->calculateTotal(),
+            'total_amount' => $totalAmount,
         ]);
 
+        // Create the order items using the fetched product data
         foreach ($this->orderItems as $item) {
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
                 'quantity' => $item['quantity'],
-                'price' => Product::find($item['product_id'])->price,
+                'price' => $products[$item['product_id']]->price,
             ]);
         }
 

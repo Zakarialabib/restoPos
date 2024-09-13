@@ -226,13 +226,13 @@ class ComposableJuicesIndex extends Component
         session()->forget('cart');
     }
 
-    private function deductIngredients($orderItems): void
-    {
-        foreach ($orderItems as $item) {
-            $product = Product::find($item['product_id']);
-            foreach ($product->ingredients as $ingredient) {
-                $ingredient->decrement('quantity', $ingredient->pivot->quantity * $item['quantity']);
-            }
-        }
-    }
+    // private function deductIngredients($orderItems): void
+    // {
+    //     foreach ($orderItems as $item) {
+    //         $product = Product::find($item['product_id']);
+    //         foreach ($product->ingredients as $ingredient) {
+    //             $ingredient->decrement('quantity', $ingredient->pivot->quantity * $item['quantity']);
+    //         }
+    //     }
+    // }
 }

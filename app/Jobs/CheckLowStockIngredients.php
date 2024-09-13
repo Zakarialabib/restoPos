@@ -17,18 +17,14 @@ class CheckLowStockIngredients implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     /**
      * Execute the job.
      */
     public function handle(): void
     {
-        $lowStockIngredients = Ingredient::where('quantity', '<=', 'reorder_level')->get();
-
+        $lowStockIngredients = Ingredient::whereColumn('quantity', '<=', 'reorder_level')->get();
         foreach ($lowStockIngredients as $ingredient) {
             Notification::send($ingredient->users, new LowStockAlert($ingredient));
         }

@@ -14,6 +14,7 @@ class InventoryDashboard extends Component
     public $lowStockIngredients;
     public $lowStockProducts;
     public $recentAlerts;
+
     public function mount(): void
     {
         $this->loadInventoryData();
@@ -21,8 +22,8 @@ class InventoryDashboard extends Component
 
     public function loadInventoryData(): void
     {
-        $this->lowStockProducts = Product::where('stock', '<=', 'low_stock_threshold')->get();
-        $this->lowStockIngredients = Ingredient::where('quantity', '<=', 'reorder_level')->get();
+        $this->lowStockProducts = Product::whereColumn('stock', '<=', 'low_stock_threshold')->get();
+        $this->lowStockIngredients = Ingredient::whereColumn('quantity', '<=', 'reorder_level')->get();
         $this->recentAlerts = InventoryAlert::latest()->take(5)->get();
     }
 
