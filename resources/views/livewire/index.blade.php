@@ -1,4 +1,7 @@
 <div>
+    <x-slot name="header">
+        <x-header />
+    </x-slot>
     <div x-data="{
         currentTheme: @entangle('currentTheme'),
         themes: @entangle('themes'),
@@ -65,7 +68,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-1 gap-4">
                 @foreach ($this->products as $product)
                     <div class="text-center px-4 cursor-pointer" x-bind:class="getTheme('card').bg">
                         <img src="{{ $product->image }}" alt="{{ $product->name }}" onerror="this.onerror=null;"
@@ -75,8 +78,8 @@
                                 {{ $product->name }}</h3>
                             <p class="text-sm" x-bind:class="getTheme('card').product_description">
                                 {{ Str::limit($product->description, 50) }}</p>
-                            <p class="text-lg font-bold mt-2 text-center" x-bind:class="getTheme('card').button">
-                                {{ number_format($product->price, 2) }} DH</p>
+                            <span class="text-lg font-bold mt-2 text-center" x-bind:class="getTheme('card').button">
+                                {{ number_format($product->price, 2) }} DH</span>
                         </div>
                     </div>
                 @endforeach
@@ -90,26 +93,23 @@
             x-transition:leave="transition ease-in duration-300"
             x-transition:leave-start="opacity-100 transform scale-100"
             x-transition:leave-end="opacity-0 transform scale-90" class="flex-grow">
-            <div class="swiper-container h-full">
+            <div class="swiper-container h-full flex items-center align-middle">
                 <div class="swiper-wrapper">
-                    @foreach ($this->products->chunk(6) as $chunk)
+                    @foreach ($this->products->chunk(9) as $chunk)
                         <div class="swiper-slide">
-                            <div class="grid grid-cols-3 gap-6 p-8">
+                            <div class="grid grid-cols-3 gap-x-6 gap-y-2 px-4 my-4 py-4 items-center">
                                 @foreach ($chunk as $product)
                                     <div class="text-center px-4" x-bind:class="getTheme('card').bg">
                                         @if ($product->image)
                                             <img src="{{ $product->image }}" alt="{{ $product->name }}"
                                                 class="w-full h-48 object-cover rounded-t">
                                         @endif
-                                        <div class="p-4">
-                                            <h3 class="text-2xl font-bold mb-2"
-                                                x-bind:class="getTheme('card').product_name">{{ $product->name }}</h3>
-                                            <p class="text-lg mb-4"
-                                                x-bind:class="getTheme('card').product_description">
-                                                {{ Str::limit($product->description, 100) }}</p>
-                                            <p class="text-3xl font-bold" x-bind:class="getTheme('card').button">
-                                                {{ number_format($product->price, 2) }} DH</p>
-                                        </div>
+                                        <h3 class="text-2xl font-bold mb-2"
+                                            x-bind:class="getTheme('card').product_name">{{ $product->name }}</h3>
+                                        <p class="text-lg mb-4" x-bind:class="getTheme('card').product_description">
+                                            {{ Str::limit($product->description, 100) }}</p>
+                                        <p class="text-lg font-bold" x-bind:class="getTheme('card').button">
+                                            {{ number_format($product->price, 2) }} DH</p>
                                     </div>
                                 @endforeach
                             </div>
@@ -118,6 +118,6 @@
                 </div>
             </div>
         </div>
-      
+
     </div>
 </div>

@@ -56,11 +56,6 @@ class ComposableCoffeesIndex extends Component
             ->get();
     }
 
-    public function boot(): void
-    {
-        session()->forget('cart');
-    }
-
     public function nextStep(): void
     {
         $this->step++;
@@ -75,7 +70,7 @@ class ComposableCoffeesIndex extends Component
     {
         $coffee = Product::find($coffeeId);
 
-        if ( ! $coffee) {
+        if (!$coffee) {
             $this->addError('invalidCoffee', "The selected coffee is not available.");
             return;
         }
@@ -96,10 +91,8 @@ class ComposableCoffeesIndex extends Component
                 $this->totalPrice += $coffee->price;
             }
         }
-        // Add price calculations for base, sugar, and add-ons
-        // This is just a placeholder, adjust according to your pricing logic
         $this->totalPrice += 5; // Base price
-        if ('No Sugar' !== $this->selectedSugar) {
+        if ($this->selectedSugar && $this->selectedSugar !== 'No Sugar') {
             $this->totalPrice += 2; // Sugar price
         }
         $this->totalPrice += count($this->selectedAddons) * 3; // Addons price
@@ -131,7 +124,7 @@ class ComposableCoffeesIndex extends Component
 
         foreach ($this->selectedCoffees as $coffeeId) {
             $coffee = Product::find($coffeeId);
-            if ( ! $coffee || $coffee->stock <= 0) {
+            if (!$coffee || $coffee->stock <= 0) {
                 $this->addError('outOfStock', "{$coffee->name} is out of stock.");
                 return;
             }
@@ -160,6 +153,15 @@ class ComposableCoffeesIndex extends Component
                 ]);
             }
         }
+        $this->resetSelections();
+    }
+
+    public function resetSelections(): void
+    {
+        $this->selectedCoffees = [];
+        $this->selectedBase = null;
+        $this->selectedSugar = null;
+        $this->selectedAddons = [];
         $this->step = 1;
     }
 
@@ -167,7 +169,7 @@ class ComposableCoffeesIndex extends Component
     {
         unset($this->cart[$index]);
         session()->put('cart', $this->cart);
-        $this->reset(['selectedCoffees', 'selectedBase', 'selectedSugar', 'selectedAddons']);
+        $this->resetSelections();
     }
 
     public function render()
@@ -181,6 +183,9 @@ class ComposableCoffeesIndex extends Component
         $this->validate([
             'customerName' => 'required|string|max:255',
             'customerPhone' => 'required|string|max:255',
+        ], [
+            'customerName.required' => __('Please enter your name.'),
+            'customerPhone.required' => __('Please enter your phone number.'),
         ]);
 
         $order = Order::create([
@@ -210,16 +215,7 @@ class ComposableCoffeesIndex extends Component
     public function close(): void
     {
         $this->showSuccess = false;
-        $this->reset([
-            'cart',
-            'customerName',
-            'customerPhone',
-            'showCheckout',
-            'selectedCoffees',
-            'selectedBase',
-            'selectedSugar',
-            'selectedAddons'
-        ]);
+        $this->resetSelections();
         session()->forget('cart');
     }
 }

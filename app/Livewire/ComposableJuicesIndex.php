@@ -74,6 +74,11 @@ class ComposableJuicesIndex extends Component
 
     public function toggleFruit($fruitId): void
     {
+        if (count($this->selectedFruits) >= 5 && !in_array($fruitId, $this->selectedFruits)) { // Limit to 5 fruits
+            $this->addError('fruitLimit', "You can only select up to 5 fruits.");
+            return;
+        }
+
         $fruit = Product::find($fruitId);
 
         if (! $fruit) {
@@ -97,14 +102,13 @@ class ComposableJuicesIndex extends Component
                 $this->totalPrice += $fruit->price;
             }
         }
-        // Add price calculations for base, sugar, and add-ons
-        // This is just a placeholder, adjust according to your pricing logic
         $this->totalPrice += 5; // Base price
-        if ('No Sugar' !== $this->selectedSugar) {
+        if ($this->selectedSugar && $this->selectedSugar !== 'No Sugar') {
             $this->totalPrice += 2; // Sugar price
         }
         $this->totalPrice += count($this->selectedAddons) * 3; // Addons price
     }
+
 
     public function toggleAddon($addon): void
     {

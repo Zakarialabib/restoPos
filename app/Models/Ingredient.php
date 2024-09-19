@@ -16,8 +16,15 @@ class Ingredient extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'quantity', 'reorder_level', 'batch_number', 'expiry_date'
+        'name', 'price', 'composable_juice_id'
     ];
+
+    // Define the inverse relationship with ComposableJuice
+    public function composableJuice()
+    {
+        return $this->belongsTo(ComposableJuice::class);
+    }
+
     public function products()
     {
         return $this->belongsToMany(Product::class, 'product_ingredients')

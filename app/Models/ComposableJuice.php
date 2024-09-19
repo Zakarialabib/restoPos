@@ -14,4 +14,16 @@ class ComposableJuice extends Model
     protected $fillable = [
         'name', 'description', 'price', 'image', 'ingredients'
     ];
+
+    // Define the relationship with the Ingredient model
+    public function ingredients()
+    {
+        return $this->hasMany(Ingredient::class);
+    }
+
+    // Accessor for formatted price
+    public function getFormattedPriceAttribute()
+    {
+        return number_format($this->price, 2) . ' DH'; // Format price with currency
+    }
 }

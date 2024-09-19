@@ -19,9 +19,20 @@ $switch = function () {
 ?>
 
 <div>
-    <select name="locale" wire:model.live="locale">
-        <option value="ar"{{ app()->getLocale() == 'ar' ? ' selected' : '' }}>العربية</option>
-        <option value="en"{{ app()->getLocale() == 'en' ? ' selected' : '' }}>English</option>
-        <option value="fr"{{ app()->getLocale() == 'fr' ? ' selected' : '' }}>Français</option>
-    </select>
+    <x-dropdown>
+        <x-slot name="trigger">
+            <p class="mr-1 text-white">{{ strtoupper(app()->getLocale()) }}</p>
+        </x-slot>
+        <x-slot name="content">
+            <x-dropdown-link as="button" wire:click="$set('locale', 'ar')" class="{{ app()->getLocale() == 'ar' ? 'font-bold' : '' }}">
+                العربية
+            </x-dropdown-link>
+            <x-dropdown-link as="button" wire:click="$set('locale', 'en')" class="{{ app()->getLocale() == 'en' ? 'font-bold' : '' }}">
+                English
+            </x-dropdown-link>
+            <x-dropdown-link as="button" wire:click="$set('locale', 'fr')" class="{{ app()->getLocale() == 'fr' ? 'font-bold' : '' }}">
+                Français
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
 </div>

@@ -45,9 +45,11 @@ class CartComponent extends Component
 
     public function updateQuantity($productId, $quantity): void
     {
-        if (isset($this->cart[$productId])) {
+        if (isset($this->cart[$productId]) && $quantity > 0) {
             $this->cart[$productId]['quantity'] = $quantity;
             session()->put('cart', $this->cart);
+        } elseif ($quantity <= 0) {
+            $this->removeFromCart($productId);
         }
     }
 

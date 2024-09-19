@@ -70,7 +70,8 @@
 
 <body class="bg-retro-cream text-retro-blue p-0">
     <div x-data="{ isOpen: false }">
-        <x-header />
+        {{-- header slot dynamic  --}}
+        {{ $header ?? '' }}
         <main class="min-h-screen w-full">
             {{ $slot }}
         </main>

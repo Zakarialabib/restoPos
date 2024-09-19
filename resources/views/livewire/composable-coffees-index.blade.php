@@ -1,5 +1,8 @@
 <div>
-    <div class="bg-retro-cream min-h-screen font-poppins">
+    <x-slot name="header">
+        <x-header />
+    </x-slot>
+    <div class="bg-retro-cream min-h-screen font-poppins" x-data="{ loading: false }">
         <div class="container mx-auto p-4 sm:p-6 lg:p-8" x-data="{
             step: @entangle('step'),
             selectedSugar: @entangle('selectedSugar'),
@@ -11,7 +14,8 @@
             customerPhone: @entangle('customerPhone'),
             showCheckout: @entangle('showCheckout'),
             showSuccess: @entangle('showSuccess'),
-            order: @entangle('order')
+            order: @entangle('order'),
+            loading: false
         }">
             <h2 class="text-4xl font-bold mb-4 text-center text-retro-blue">{{ __('Compose Your Coffee') }}</h2>
             <p class="text-center mb-8 text-retro-green text-lg">
@@ -28,7 +32,6 @@
                         @foreach ($composableCoffees->take(4) as $coffee)
                             <div
                                 class="bg-retro-yellow rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
-                                {{--  make a js error of not founding image remove it  --}}
                                 <img src="{{ $coffee->image }}" alt="{{ $coffee->name }}"
                                     class="w-full h-48 object-cover" onerror="this.onerror=null">
                                 <div class="p-4">
@@ -103,7 +106,10 @@
                                     <div>
                                         <h5 class="font-medium text-retro-blue">{{ $item['name'] }}</h5>
                                         <p class="text-sm text-retro-blue">
-                                            {{ __('Qty') }}: {{ $item['quantity'] }}
+                                            {{ __('Qty') }}:
+                                            <input type="number" wire:model="cart.{{ $index }}.quantity"
+                                                wire:change="updateQuantity({{ $index }}, $event.target.value)"
+                                                class="w-16 p-1 border rounded" min="1">
                                         </p>
                                     </div>
                                     <div class="text-right">
@@ -111,7 +117,8 @@
                                             {{ number_format($item['price'] * $item['quantity'], 2) }}DH
                                         </p>
                                         <button class="bg-red-600 text-white p-2 rounded-full text-xs"
-                                            wire:click="removeFromCart({{ $index }})" type="button">
+                                            wire:click="removeFromCart({{ $index }})" type="button"
+                                            wire:loading.attr="disabled" wire:loading.class="opacity-50">
                                             <span class="material-icons">delete</span>
                                         </button>
                                     </div>
@@ -132,41 +139,43 @@
                         </div>
                         @if (count($cart) > 0)
                             <button type="button" wire:click="toggleCheckout"
-                                class="w-full bg-retro-orange text-white py-2 px-4 rounded-full hover:bg-retro-yellow hover:text-retro-blue transition duration-300">
+                                class="w-full bg-retro-orange text-white py-2 px-4 rounded-full hover:bg-retro-yellow hover:text-retro-blue transition duration-300"
+                                wire:loading.attr="disabled" wire:loading.class="opacity-50">
                                 {{ __('Proceed to Checkout') }}
                             </button>
 
                             @if ($showCheckout)
-                                <div class="mt-6 w-full grid grid-cols-1 gap-y-6 justify-center items-center">
-                                    <div>
-                                        <label for="customerName" class="block text-sm font-medium text-gray-700">
-                                            {{ __('Name') }}
-                                        </label>
-                                        <input type="text" id="customerName" wire:model="customerName"
-                                            class="mt-1 py-2 border rounded w-full">
-                                        @error('customerName')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
+                                <div class="hidden md:flex">
+                                    <div class="gap-4 mt-6 w-full grid grid-cols-1 gap-y-6 justify-center items-center">
+                                        <div>
+                                            <label for="customerName" class="block text-sm font-medium text-gray-700">
+                                                {{ __('Name') }}
+                                            </label>
+                                            <input type="text" id="customerName" wire:model="customerName"
+                                                class="mt-1 py-2 border rounded w-full">
+                                            @error('customerName')
+                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label for="customerPhone"
+                                                class="block text-sm font-medium text-gray-700">{{ __('Phone') }}</label>
+                                            <input type="tel" id="customerPhone" wire:model="customerPhone"
+                                                class="mt-1 py-2 border rounded w-full">
+                                            @error('customerPhone')
+                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                            @enderror
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label for="customerPhone"
-                                            class="block text-sm font-medium text-gray-700">{{ __('Phone') }}</label>
-                                        <input type="tel" id="customerPhone" wire:model="customerPhone"
-                                            class="mt-1 py-2 border rounded w-full">
-                                        @error('customerPhone')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <button type="button" wire:click="placeOrder"
-                                        class="w-full bg-retro-blue text-white py-2 px-4 rounded-full hover:bg-retro-yellow hover:text-retro-green transition duration-300">
-                                        {{ __('Place Order') }}
-                                    </button>
                                 </div>
+                                <button type="button" wire:click="placeOrder"
+                                    class="w-full bg-retro-blue text-white py-2 px-4 rounded-full hover:bg-retro-yellow hover:text-retro-green transition duration-300">
+                                    {{ __('Place Order') }}
+                                </button>
                             @endif
                         @endif
                     </div>
                 </div>
-
                 @if ($showSuccess)
                     <div class="border-retro-orange border-solid border-4 text-white rounded-lg shadow-lg p-6">
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
@@ -237,7 +246,8 @@
                             @endif
                         </div>
                         <div class="w-full flex justify-center">
-                            <x-button color="primaryOutline" wire:click="close" type="button">
+                            <x-button color="primaryOutline" wire:click="close" type="button"
+                                wire:loading.attr="disabled" wire:loading.class="opacity-50">
                                 {{ __('Close') }}
                             </x-button>
                         </div>
@@ -245,43 +255,47 @@
                 @else
                     <!-- Main Content: Stepper -->
                     <div class="lg:w-3/4 order-1 lg:order-2 border-retro-orange border-solid border-4 rounded-lg p-4">
-                        <div class="flex justify-center mb-8">
-                            <nav class="flex space-x-4">
-                                @foreach (['Select Coffees', 'Choose Base', 'Sugar Preference', 'Add-ons'] as $index => $stepName)
-                                    <x-button wire:click="$set('step', {{ $index + 1 }})" color="warningOutline"
-                                        type="button"
-                                        class="step-button relative px-4 py-2 text-retro-blue transition-colors duration-300 hover:text-retro-orange"
-                                        x-bind:class="{ 'text-retro-orange': step === {{ $index + 1 }} }">
-                                        <span>{{ $index + 1 }}. {{ $stepName }}</span>
-                                        <div class="absolute bottom-0 left-0 w-full h-0.5 bg-retro-orange transform scale-x-0 transition-transform duration-300"
-                                            :class="{ 'scale-x-100': step === {{ $index + 1 }} }"></div>
-                                    </x-button>
-                                @endforeach
-                            </nav>
-                        </div>
+                        <nav class="grid grid-cols-2 md:grid-cols-4 gap-6 justify-center mb-8">
+                            @foreach (['Select Coffees', 'Choose Base', 'Sugar Preference', 'Add-ons'] as $index => $stepName)
+                                <x-button wire:click="$set('step', {{ $index + 1 }})" color="warningOutline"
+                                    type="button"
+                                    class="step-button relative px-4 py-2 text-retro-blue transition-colors duration-300 hover:text-retro-orange"
+                                    x-bind:class="{ 'text-retro-orange': step === {{ $index + 1 }} }"
+                                    wire:loading.attr="disabled" wire:loading.class="opacity-50">
+                                    <span>{{ $index + 1 }}. {{ $stepName }}</span>
+                                    <div class="absolute bottom-0 left-0 w-full h-0.5 bg-retro-orange transform scale-x-0 transition-transform duration-300"
+                                        :class="{ 'scale-x-100': step === {{ $index + 1 }} }"></div>
+                                </x-button>
+                            @endforeach
+                        </nav>
+
 
                         <!-- Navigation Buttons -->
                         <div class="flex justify-between mt-8">
                             <button wire:click="previousStep"
                                 class="bg-retro-blue text-white px-6 py-3 rounded-full hover:bg-retro-cream hover:text-retro-blue border-2 border-retro-blue transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-blue"
-                                :disabled="step === 1" x-show="step > 1">
+                                :disabled="step === 1" x-show="step > 1" wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50">
                                 {{ __('Previous') }}
                             </button>
                             <button wire:click="nextStep"
                                 class="bg-retro-orange text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-blue border-2 border-retro-orange transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-orange"
-                                x-show="step < 4">
+                                x-show="step < 4" wire:loading.attr="disabled" wire:loading.class="opacity-50">
                                 {{ __('Next') }}
                             </button>
                             <button wire:click="addToCart"
                                 class="bg-retro-green text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-green border-2 border-retro-green transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-green"
-                                x-show="step === 4">{{ __('Add to Cart') }}</button>
+                                x-show="step === 4" wire:loading.attr="disabled" wire:loading.class="opacity-50">
+                                {{ __('Add to Cart') }}
+                            </button>
                         </div>
 
                         <!-- Step Content -->
                         <div>
                             <div x-show="step === 1">
                                 <div class="flex justify-between items-center my-2">
-                                    <h3 class="text-2xl font-semibold text-retro-blue">{{ __('Select Your Coffees') }}
+                                    <h3 class="text-2xl font-semibold text-retro-blue">
+                                        {{ __('Select Your Coffees') }}
                                     </h3>
                                     <input type="text" wire:model.live="search"
                                         class="w-1/2 p-2 border border-retro-orange rounded-md text-gray-800 bg-transparent placeholder-gray-800 focus:outline-none focus:ring-2 focus:ring-retro-orange"
@@ -325,7 +339,7 @@
                                 <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
                                     {{ __('Select Your Base') }}
                                 </h3>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                                     @foreach ($bases as $base)
                                         <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer"
                                             :class="{ 'ring-4 ring-retro-orange': selectedBase === '{{ $base }}' }"

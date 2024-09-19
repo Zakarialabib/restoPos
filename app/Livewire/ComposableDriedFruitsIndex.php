@@ -17,7 +17,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 #[Layout('layouts.guest')]
-#[Title('Composable Coffees')]
+#[Title('Composable Dried Fruits')]
 class ComposableDriedFruitsIndex extends Component
 {
     #[Url('step', 'keep')]
@@ -71,7 +71,7 @@ class ComposableDriedFruitsIndex extends Component
     {
         $driedFruit = Product::find($driedFruitId);
 
-        if ( ! $driedFruit) {
+        if (!$driedFruit) {
             $this->addError('invalidDriedFruit', "The selected dried fruit is not available.");
             return;
         }
@@ -92,9 +92,6 @@ class ComposableDriedFruitsIndex extends Component
                 $this->totalPrice += $driedFruit->price;
             }
         }
-        // Add price calculations for base, sugar, and add-ons
-        // This is just a placeholder, adjust according to your pricing logic
-        $this->totalPrice += 5; // Base price
         $this->totalPrice += count($this->selectedAddons) * 3; // Addons price
     }
 
@@ -123,9 +120,9 @@ class ComposableDriedFruitsIndex extends Component
         $this->calculatePrice();
 
         foreach ($this->selectedDriedFruits as $driedFruitId) {
-            $coffee = Product::find($driedFruitId);
-            if ( ! $coffee || $coffee->stock <= 0) {
-                $this->addError('outOfStock', "{$coffee->name} is out of stock.");
+            $driedFruit = Product::find($driedFruitId);
+            if (!$driedFruit || $driedFruit->stock <= 0) {
+                $this->addError('outOfStock', "{$driedFruit->name} is out of stock.");
                 return;
             }
         }
@@ -142,15 +139,22 @@ class ComposableDriedFruitsIndex extends Component
         session()->put('cart', $this->cart);
 
         foreach ($this->selectedDriedFruits as $driedFruitId) {
-            $coffee = Product::find($driedFruitId);
-            $coffee->decrement('stock');
-            if ($coffee->isLowStock()) {
+            $driedFruit = Product::find($driedFruitId);
+            $driedFruit->decrement('stock');
+            if ($driedFruit->isLowStock()) {
                 InventoryAlert::create([
-                    'product_id' => $coffee->id,
-                    'message' => "Low stock alert for {$coffee->name}",
+                    'product_id' => $driedFruit->id,
+                    'message' => "Low stock alert for {$driedFruit->name}",
                 ]);
             }
         }
+        $this->resetSelections();
+    }
+
+    public function resetSelections(): void
+    {
+        $this->selectedDriedFruits = [];
+        $this->selectedAddons = [];
         $this->step = 1;
     }
 
@@ -158,7 +162,7 @@ class ComposableDriedFruitsIndex extends Component
     {
         unset($this->cart[$index]);
         session()->put('cart', $this->cart);
-        $this->reset(['selectedDriedFruits', 'selectedAddons']);
+        $this->resetSelections();
     }
 
     public function render()
@@ -201,14 +205,7 @@ class ComposableDriedFruitsIndex extends Component
     public function close(): void
     {
         $this->showSuccess = false;
-        $this->reset([
-            'cart',
-            'customerName',
-            'customerPhone',
-            'showCheckout',
-            'selectedDriedFruits',
-            'selectedAddons'
-        ]);
+        $this->resetSelections();
         session()->forget('cart');
     }
 }
