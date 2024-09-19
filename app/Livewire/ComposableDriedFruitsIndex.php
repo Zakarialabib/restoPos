@@ -27,8 +27,6 @@ class ComposableDriedFruitsIndex extends Component
     public $cart = [];
     public $totalPrice = 0;
 
-    public $addons = ['Box', 'Gift Box', 'Bag'];
-
     public $customerName;
     public $customerPhone;
     public $showSuccess = false;
@@ -41,6 +39,18 @@ class ComposableDriedFruitsIndex extends Component
     public function mount(): void
     {
         $this->cart = session()->get('cart', []);
+    }
+
+    #[Computed]
+    public function steps()
+    {
+        return [__('Select Dried Fruits'), __('Add-ons')];
+    }
+
+    #[Computed]
+    public function addons(): array
+    {
+        return [__('Box'), __('Gift Box'), __('Bag')];
     }
 
     #[Computed]
@@ -107,7 +117,7 @@ class ComposableDriedFruitsIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
+        return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function toggleCheckout(): void

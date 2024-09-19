@@ -29,10 +29,6 @@ class ComposableCoffeesIndex extends Component
     public $cart = [];
     public $totalPrice = 0;
 
-    public $bases = ['Milk', 'Cream', 'Almond Milk', 'Coconut Milk'];
-    public $sugars = ['No Sugar', 'Light', 'Medium', 'Sweet'];
-    public $addons = ['Honey', 'Cream', 'Caramel', 'Vanilla', 'Chocolate'];
-
     public $customerName;
     public $customerPhone;
     public $showSuccess = false;
@@ -45,6 +41,46 @@ class ComposableCoffeesIndex extends Component
     public function mount(): void
     {
         $this->cart = session()->get('cart', []);
+    }
+
+    #[Computed]
+    public function steps()
+    {
+        return [__('Select Coffees'), __('Choose Base'), __('Sugar Preference'), __('Add-ons')];
+    }
+
+    #[Computed]
+    public function bases(): array
+    {
+        return [
+            __('Milk'),
+            __('Cream'),
+            __('Almond Milk'),
+            __('Coconut Milk'),
+        ];
+    }
+
+    #[Computed]
+    public function sugars(): array
+    {
+        return [
+            __('No Sugar'),
+            __('Light'),
+            __('Medium'),
+            __('Sweet'),
+        ];
+    }
+
+    #[Computed]
+    public function addons(): array
+    {
+        return [
+            __('Honey'),
+            __('Cream'),
+            __('Caramel'),
+            __('Vanilla'),
+            __('Chocolate'),
+        ];
     }
 
     #[Computed]
@@ -110,7 +146,7 @@ class ComposableCoffeesIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
+        return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function toggleCheckout(): void

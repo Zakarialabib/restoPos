@@ -226,39 +226,19 @@
                     <!-- Main Content: Stepper -->
                     <div class="lg:w-3/4 order-1 lg:order-2 border-retro-orange border-solid border-4 rounded-lg p-4">
                         <nav class="grid grid-cols-2 md:grid-cols-4 gap-6 justify-center mb-8">
-                            @foreach (['Select Dried Fruits', 'Add-ons'] as $index => $stepName)
+                            @foreach ($this->steps as $index => $stepName)
                                 <x-button wire:click="$set('step', {{ $index + 1 }})" color="warningOutline"
                                     type="button"
                                     class="step-button relative px-4 py-2 text-retro-blue transition-colors duration-300 hover:text-retro-orange"
                                     x-bind:class="{ 'text-retro-orange': step === {{ $index + 1 }} }"
                                     wire:loading.attr="disabled" wire:loading.class="opacity-50">
-                                    <span>{{ $index + 1 }}. {{ $stepName }}</span>
+                                    <span>{{ $stepName }}</span>
                                     <div class="absolute bottom-0 left-0 w-full h-0.5 bg-retro-orange transform scale-x-0 transition-transform duration-300"
                                         :class="{ 'scale-x-100': step === {{ $index + 1 }} }"></div>
                                 </x-button>
                             @endforeach
                         </nav>
 
-
-                        <!-- Navigation Buttons -->
-                        <div class="flex justify-between mt-8">
-                            <button wire:click="previousStep"
-                                class="bg-retro-blue text-white px-6 py-3 rounded-full hover:bg-retro-cream hover:text-retro-blue border-2 border-retro-blue transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-blue"
-                                :disabled="step === 1" x-show="step > 1" wire:loading.attr="disabled"
-                                wire:loading.class="opacity-50">
-                                {{ __('Previous') }}
-                            </button>
-                            <button wire:click="nextStep"
-                                class="bg-retro-orange text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-blue border-2 border-retro-orange transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-orange"
-                                x-show="step < 4" wire:loading.attr="disabled" wire:loading.class="opacity-50">
-                                {{ __('Next') }}
-                            </button>
-                            <button wire:click="addToCart"
-                                class="bg-retro-green text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-green border-2 border-retro-green transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-green"
-                                x-show="step === 4" wire:loading.attr="disabled" wire:loading.class="opacity-50">
-                                {{ __('Add to Cart') }}
-                            </button>
-                        </div>
 
                         <!-- Step Content -->
                         <div>
@@ -269,7 +249,7 @@
                                     </h3>
                                     <input type="text" wire:model.live="search"
                                         class="w-1/2 p-2 border border-retro-orange rounded-md text-gray-800 bg-transparent placeholder-gray-800 focus:outline-none focus:ring-2 focus:ring-retro-orange"
-                                        placeholder="Search for driedFruits...">
+                                        placeholder="{{ __('Search for driedFruits') }}...">
                                 </div>
                                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                                     @foreach ($this->driedFruits as $driedFruit)
@@ -311,7 +291,7 @@
                                     {{ __('Select Add-ons') }}
                                 </h3>
                                 <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                                    @foreach ($addons as $addon)
+                                    @foreach ($this->addons as $addon)
                                         <div class="relative cursor-pointer"
                                             wire:click="toggleAddon('{{ $addon }}')">
                                             <div class="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-all duration-300"
@@ -335,6 +315,27 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="flex justify-between mt-8">
+                            <button wire:click="previousStep"
+                                class="bg-retro-blue text-white px-6 py-3 rounded-full hover:bg-retro-cream hover:text-retro-blue border-2 border-retro-blue transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-blue"
+                                :disabled="step === 1" x-show="step > 1" wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50">
+                                {{ __('Previous') }}
+                            </button>
+                            <button wire:click="nextStep"
+                                class="bg-retro-orange text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-blue border-2 border-retro-orange transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-orange"
+                                x-show="step < 4" wire:loading.attr="disabled" wire:loading.class="opacity-50">
+                                {{ __('Next') }}
+                            </button>
+                            <button wire:click="addToCart"
+                                class="bg-retro-green text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-green border-2 border-retro-green transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-green"
+                                x-show="step === 4" wire:loading.attr="disabled" wire:loading.class="opacity-50">
+                                {{ __('Add to Cart') }}
+                            </button>
+                        </div>
+
                     </div>
                 @endif
             </div>

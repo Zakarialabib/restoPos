@@ -29,9 +29,6 @@ class ComposableJuicesIndex extends Component
     public $cart = [];
     public $totalPrice = 0;
 
-    public $bases = ['Water', 'Orange Juice', 'Milk'];
-    public $sugars = ['No Sugar', 'Light', 'Medium', 'Sweet'];
-    public $addons = ['Dried Fruits', 'Nuts', 'Seeds'];
 
     public $customerName;
     public $customerPhone;
@@ -46,6 +43,44 @@ class ComposableJuicesIndex extends Component
     {
         $this->cart = session()->get('cart', []);
     }
+
+    #[Computed]
+    public function steps()
+    {
+        return [__('Select Fruits'), __('Choose Base'), __('Sugar Preference'), __('Add-ons')];
+    }
+
+    #[Computed]
+    public function bases(): array
+    {
+        return [
+            __('Water'),
+            __('Orange Juice'),
+            __('Milk'),
+        ];
+    }
+
+    #[Computed]
+    public function sugars(): array
+    {
+        return [
+            __('No Sugar'),
+            __('Light'),
+            __('Medium'),
+            __('Sweet'),
+        ];
+    }
+
+    #[Computed]
+    public function addons(): array
+    {
+        return [
+            __('Dried Fruits'),
+            __('Nuts'),
+            __('Seeds'),
+        ];
+    }
+
 
     #[Computed]
     public function fruits()
