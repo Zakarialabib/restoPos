@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Models\Category;
-use App\Models\ComposableDriedFruit;
+use App\Models\Composable;
 use App\Models\InventoryAlert;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -60,6 +60,12 @@ class ComposableDriedFruitsIndex extends Component
             ->where('stock', '>', 0)
             ->where('name', 'like', '%' . $this->search . '%')
             ->get();
+    }
+
+    #[Computed]
+    public function composables()
+    {
+        return Composable::with('products', 'ingredients')->get();
     }
 
     public function boot(): void
@@ -177,7 +183,7 @@ class ComposableDriedFruitsIndex extends Component
 
     public function render()
     {
-        $composableDriedFruits = ComposableDriedFruit::all();
+        $composableDriedFruits = Composable::all();
         return view('livewire.composable-dried-fruits-index', ['composableDriedFruits' => $composableDriedFruits]);
     }
 

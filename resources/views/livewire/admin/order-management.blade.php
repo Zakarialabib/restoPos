@@ -21,7 +21,7 @@
                 @if ($showOrderForm)
                     <div class="mb-8 bg-gray-100 p-4 rounded">
                         <h3 class="text-lg font-semibold mb-2">Create New Order</h3>
-                        <form wire:submit.prevent="createOrder">
+                        <form wire:submit="createOrder">
                             <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label for="customerName" class="block text-sm font-medium text-gray-700">Customer
@@ -68,7 +68,7 @@
                             </div>
 
                             <div>
-                                <button type="submit"
+                                <button type="button" wire:click="createOrder"
                                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create
                                     Order</button>
                             </div>

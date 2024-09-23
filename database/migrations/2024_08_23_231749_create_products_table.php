@@ -25,6 +25,7 @@ return new class () extends Migration {
             $table->integer('stock')->default(0);
             $table->integer('low_stock_threshold')->default(10);
             $table->date('expiry_date')->nullable();
+            $table->text('instructions')->nullable();
             $table->timestamps();
         });
     }

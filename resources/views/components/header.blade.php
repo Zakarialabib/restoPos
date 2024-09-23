@@ -37,14 +37,11 @@
                             <div class="border-t border-green-800"></div>
 
                             <!-- Authentication -->
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
+                            <button wire:click="logout" class="w-full text-start" type="button">
+                                <x-dropdown-link>
                                     {{ __('Log Out') }}
                                 </x-dropdown-link>
-                            </form>
+                            </button>
                         </x-slot>
                     </x-dropdown>
                 @else

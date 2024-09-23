@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Models\Category;
-use App\Models\ComposableCoffee;
+use App\Models\Composable;
 use App\Models\InventoryAlert;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -90,6 +90,12 @@ class ComposableCoffeesIndex extends Component
             ->where('stock', '>', 0)
             ->where('name', 'like', '%' . $this->search . '%')
             ->get();
+    }
+
+    #[Computed]
+    public function composables()
+    {
+        return Composable::with('products', 'ingredients')->get();
     }
 
     public function nextStep(): void
@@ -210,7 +216,7 @@ class ComposableCoffeesIndex extends Component
 
     public function render()
     {
-        $composableCoffees = ComposableCoffee::all();
+        $composableCoffees = Composable::all();
         return view('livewire.composable-coffees-index', ['composableCoffees' => $composableCoffees]);
     }
 

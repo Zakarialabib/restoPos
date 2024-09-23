@@ -1,111 +1,101 @@
 <div>
     <div class="py-12">
-
         <div class="flex flex-wrap mt-4 px-2">
-
             <form wire:submit="saveProduct" class="w-1/4">
-                <x-accordion :title="$editingProductId ? 'Edit Product' : 'Add New Product'" open="true">
-                    <div class="grid grid-cols-2 gap-4">
+                <x-accordion :title="$editingProductId ? __('Edit Product') : __('Add New Product')" open="true">
+                    <div class="grid grid-cols-1 gap-4">
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                            <input type="text" id="name" wire:model="name"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <x-input-label for="name" :value="__('Name')" />
+                            <x-input type="text" id="name" wire:model="name" />
                             @error('name')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                                <x-input-error :messages="$message" />
                             @enderror
                         </div>
 
                         <div>
-                            <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
-                            <input type="number" step="0.01" id="price" wire:model="price"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <x-input-label for="price" :value="__('Price')" />
+                            <x-input type="number" step="0.01" id="price" wire:model="price" />
                             @error('price')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                                <x-input-error :messages="$message" />
                             @enderror
                         </div>
 
                         <div>
-                            <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
-                            <select id="category_id" wire:model="category_id"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                                <option value="">Select a category</option>
+                            <x-input-label for="category_id" :value="__('Categories')" />
+                            <select id="category_id" wire:model="category_id" :label="__('Categories')"
+                                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                name="category_id">
+                                <option value="">{{ __('Select a category') }}</option>
                                 @foreach ($this->categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
                             </select>
                             @error('category_id')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                                <x-input-error :messages="$message" />
                             @enderror
                         </div>
 
                         <div>
-                            <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
-                            <input type="number" id="stock" wire:model="stock"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <x-input-label for="stock" :value="__('Stock')" />
+                            <x-input type="number" id="stock" wire:model="stock" />
                             @error('stock')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                                <x-input-error :messages="$message" />
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="image" class="block text-sm font-medium text-gray-700">Image URL</label>
-                            <input type="text" id="image" wire:model="image"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <div class="col-span-full mx-auto">
+                            <x-media-upload wire:model="image" single="true" preview="true" path="products"
+                                file="{{ $image }}" />
                             @error('image')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                                <x-input-error :messages="$message" />
                             @enderror
                         </div>
 
                         <div class="col-span-2">
-                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea id="description" wire:model="description" rows="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                            <x-input-label for="description" value="Description" />
+                            <x-textarea id="description" wire:model="description" rows="3" />
                             @error('description')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                                <x-input-error :messages="$message" />
                             @enderror
                         </div>
 
                         <div class="flex items-center">
-                            <input type="checkbox" id="is_available" wire:model="is_available"
-                                class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                            <label for="is_available" class="ml-2 block text-sm text-gray-900">Available</label>
+                            <x-checkbox id="is_available" wire:model="is_available" label="Available" />
                         </div>
 
                         <div class="flex items-center">
-                            <input type="checkbox" id="is_composable" wire:model="is_composable"
-                                class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                            <label for="is_composable" class="ml-2 block text-sm text-gray-900">Composable</label>
+                            <x-checkbox id="is_composable" wire:model="is_composable" label="Composable" />
                         </div>
 
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">Ingredients</h3>
                             <div class="space-y-2">
-                                @foreach ($this->ingredients as $ingredient)
-                                    <div class="flex items-center space-x-2">
-                                        <input type="checkbox" wire:model="selectedIngredients.{{ $ingredient->id }}.id"
-                                            value="{{ $ingredient->id }}" id="ingredient-{{ $ingredient->id }}"
-                                            class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                                        <label for="ingredient-{{ $ingredient->id }}"
-                                            class="text-sm text-gray-700">{{ $ingredient->name }}</label>
-                                        <input type="number"
-                                            wire:model="selectedIngredients.{{ $ingredient->id }}.quantity"
-                                            placeholder="Quantity"
-                                            class="mt-1 block w-20 rounded-md border-gray-300 shadow-sm">
-                                    </div>
-                                @endforeach
+                                {{-- @if ($selectedIngredients)
+                                    @foreach ($selectedIngredients as $ingredient)
+                                        <div class="flex items-center space-x-2">
+                                            <input type="checkbox"
+                                                wire:model="selectedIngredients.{{ $ingredient->id }}.id"
+                                                value="{{ $ingredient->id }}" id="ingredient-{{ $ingredient->id }}"
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                                            <label for="ingredient-{{ $ingredient->id }}"
+                                                class="text-sm text-gray-700">{{ $ingredient->name }}</label>
+                                            <input type="number"
+                                                wire:model="selectedIngredients.{{ $ingredient->id }}.quantity"
+                                                placeholder="Quantity"
+                                                class="mt-1 block w-20 rounded-md border-gray-300 shadow-sm">
+                                        </div>
+                                    @endforeach
+                                @endif --}}
                             </div>
                             @error('selectedIngredients')
                                 <span class="text-red-500 text-xs">{{ $message }}</span>
                             @enderror
                         </div>
-
                     </div>
-                    <div class="flex items-center justify-end  px-4 mt-4">
+                    <div class="flex items-center justify-end px-4 mt-4">
                         @if ($editingProductId)
                             <x-button type="button" color="secondary" wire:click="cancelEdit">
-                                <span class="material-icons">
-                                    cancel
-                                </span>
+                                <span class="material-icons">cancel</span>
                             </x-button>
                         @endif
                         <x-button type="submit" color="primary">
@@ -113,7 +103,6 @@
                         </x-button>
                     </div>
                 </x-accordion>
-
             </form>
             <!-- Inventory Alerts -->
             {{-- <div class="mb-8">
@@ -146,16 +135,10 @@
                                         {{ __('Category') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Ingredients</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         {{ __('Available') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         {{ __('Stock') }}</th>
-                                    {{-- <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Low Stock Threshold</th> --}}
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         {{ __('Is Composable') }}</th>
@@ -168,59 +151,33 @@
                                 @forelse ($this->products as $product)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            {{ number_format($product->price, 2) }}
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ number_format($product->price, 2) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $product->category?->name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @foreach($product->ingredients as $ingredient)
-                                                {{ $ingredient->name }} ({{ $ingredient->pivot->quantity }})
-                                                @if(!$loop->last), @endif
-                                            @endforeach
-                                        </td>
-
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if ($product->is_available)
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Yes</span>
-                                            @else
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">No</span>
-                                            @endif
-                                        </td>
+                                            {{ $product->is_available ? 'Yes' : 'No' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $product->stock }}</td>
-                                        {{-- <td class="px-6 py-4 whitespace-nowrap">
-                                                {{ $product->low_stock_threshold }}
-                                            </td> --}}
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            {{ $product->is_composable ? 'Yes' : 'No' }}
-                                        </td>
+                                            {{ $product->is_composable ? 'Yes' : 'No' }}</td>
                                         <td class="flex gap-2">
                                             <x-button wire:click="editProduct({{ $product->id }})" type="button"
                                                 size="sm" color="primary">
-                                                <span class="material-icons">
-                                                    edit
-                                                </span>
+                                                <span class="material-icons">edit</span>
                                             </x-button>
                                             <x-button type="button" color="danger" size="sm"
                                                 wire:click="deleteProduct({{ $product->id }})">
-                                                <span class="material-icons">
-                                                    delete
-                                                </span>
+                                                <span class="material-icons">delete</span>
                                             </x-button>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center">No
-                                            products
+                                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center">No products
                                             found</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
-
-                        {{-- pagination --}}
                         <div class="mt-4">
                             {{ $this->products->links() }}
                         </div>
@@ -228,6 +185,5 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>

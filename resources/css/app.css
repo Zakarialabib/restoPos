@@ -29,6 +29,10 @@
   font-feature-settings: 'liga';
 }
 
+body {
+  font-family: 'Cairo', sans-serif;
+}
+
 .toggle-checkbox:checked {
     right: 0;
     border-color: #68D391;

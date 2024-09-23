@@ -71,8 +71,8 @@
             <div class="grid grid-cols-2 md:grid-cols-1 gap-4">
                 @foreach ($this->products as $product)
                     <div class="text-center px-4 cursor-pointer" x-bind:class="getTheme('card').bg">
-                        <img src="{{ $product->image }}" alt="{{ $product->name }}" onerror="this.onerror=null;"
-                            class="w-full h-32 object-cover rounded-t">
+                        <img src="{{ asset('images/products/' . $product->image) }}" alt="{{ $product->name }}"
+                            onerror="this.onerror=null;" class="w-full h-32 object-cover rounded-t">
                         <div class="p-2">
                             <h3 class="text-lg font-semibold" x-bind:class="getTheme('card').product_name">
                                 {{ $product->name }}</h3>
@@ -101,8 +101,8 @@
                                 @foreach ($chunk as $product)
                                     <div class="text-center px-4" x-bind:class="getTheme('card').bg">
                                         @if ($product->image)
-                                            <img src="{{ $product->image }}" alt="{{ $product->name }}"
-                                                class="w-full h-48 object-cover rounded-t">
+                                            <img src="{{ asset('images/' . $product->image) }}"
+                                                alt="{{ $product->name }}" class="w-full h-auto object-cover rounded-t">
                                         @endif
                                         <h3 class="text-2xl font-bold mb-2"
                                             x-bind:class="getTheme('card').product_name">{{ $product->name }}</h3>

@@ -27,21 +27,15 @@
                     <h3 class="text-2xl font-semibold mb-4 text-retro-orange">
                         {{ __('Popular Composed Juices') }}
                     </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        @foreach ($composableJuices->take(4) as $juice)
-                            <div
-                                class="bg-retro-yellow rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
-                                @if ($juice->image)
-                                    <img src="{{ $juice->image }}" alt="{{ $juice->name }}"
-                                        class="w-full h-48 object-cover">
-                                @endif
-                                <div class="p-4">
-                                    <h4 class="text-xl font-semibold text-retro-blue mb-2">{{ $juice->name }}</h4>
-                                    <p class="text-retro-green mb-3">{{ $juice->description }}</p>
-                                    <p class="text-retro-orange font-bold text-lg">{{ $juice->price }}DH</p>
-                                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {{-- @foreach ($popularJuices as $juice)
+                            <div class="border p-4 rounded-lg shadow-md bg-white">
+                                <h4 class="text-xl font-bold">{{ $juice->name }}</h4>
+                                <p>{{ $juice->description }}</p>
+                                <p>{{ $juice->price }} DH</p>
+                                <button wire:click="addToCart({{ $juice->id }})" class="bg-green-500 text-white px-4 py-2 rounded mt-2">Add to Cart</button>
                             </div>
-                        @endforeach
+                        @endforeach --}}
                     </div>
                 </div>
             @endif
@@ -268,7 +262,7 @@
                             @endforeach
                         </nav>
                         <!-- Step Content -->
-                        <div>
+                        <div x-data="{ step: 1 }">
                             <div x-show="step === 1">
                                 <div class="flex justify-between items-center my-2">
                                     <h3 class="text-2xl font-semibold text-retro-blue">
@@ -309,7 +303,6 @@
                                 </div>
                             </div>
 
-                            <!-- Step 2: Choose Base -->
                             <div x-show="step === 2">
                                 <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
                                     {{ __('Select Your Base') }}
@@ -337,7 +330,6 @@
                                 </div>
                             </div>
 
-                            <!-- Step 3: Sugar Preference -->
                             <div x-show="step === 3">
                                 <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
                                     {{ __('Sugar Preference') }}
@@ -367,7 +359,6 @@
                                 </div>
                             </div>
 
-                            <!-- Step 4: Add-ons -->
                             <div x-show="step === 4">
                                 <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
                                     {{ __('Select Add-ons') }}
@@ -397,8 +388,8 @@
                                 </div>
                             </div>
                         </div>
-                         <!-- Navigation Buttons -->
-                         <div class="flex justify-between mt-8">
+                        <!-- Navigation Buttons -->
+                        <div class="flex justify-between mt-8">
                             <button wire:click="previousStep"
                                 class="bg-retro-blue text-white px-6 py-3 rounded-full hover:bg-retro-cream hover:text-retro-blue border-2 border-retro-blue transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-blue"
                                 :disabled="step === 1" x-show="step > 1">

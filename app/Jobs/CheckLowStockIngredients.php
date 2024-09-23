@@ -24,7 +24,7 @@ class CheckLowStockIngredients implements ShouldQueue
      */
     public function handle(): void
     {
-        $lowStockIngredients = Ingredient::whereColumn('quantity', '<=', 'reorder_level')->get();
+        $lowStockIngredients = Ingredient::whereColumn('stock', '<=', 'reorder_level')->get();
         foreach ($lowStockIngredients as $ingredient) {
             Notification::send($ingredient->users, new LowStockAlert($ingredient));
         }

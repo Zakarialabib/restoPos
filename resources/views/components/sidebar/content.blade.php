@@ -18,7 +18,9 @@
             </span>
         </x-slot>
         <x-sidebar.sublink title="{{ __('Products') }}" href="{{ route('admin.products') }}" :active="request()->routeIs('admin.products')" />
-
+        <x-sidebar.sublink title="{{ __('Categories') }}" href="{{ route('admin.categories') }}" :active="request()->routeIs('admin.categories')" />
+        <x-sidebar.sublink title="{{ __('Ingredients') }}" href="{{ route('admin.ingredients') }}" :active="request()->routeIs('admin.ingredients')" />
+        <x-sidebar.sublink title="{{ __('Recipes') }}" href="{{ route('admin.recipes') }}" :active="request()->routeIs('admin.recipes')" />
     </x-sidebar.dropdown>
 
     <x-sidebar.dropdown title="{{ __('Transactions') }}" :active="request()->routeIs(['admin.orders'])">

@@ -12,11 +12,14 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\WithFileUploads;
 
 #[Layout('layouts.app')]
 #[Title('Products')]
 class Products extends Component
 {
+    use WithFileUploads;
+
     public $search = '';
     public $name = '';
     public $description = '';
@@ -24,7 +27,7 @@ class Products extends Component
     public $category_id = '';
     public $stock = '';
     public $is_available = true;
-    public $image = '';
+    public $image;
     public $is_composable = false;
     public $editingProductId = null;
     public $selectedIngredients = [];
@@ -36,11 +39,11 @@ class Products extends Component
         'category_id' => 'required|exists:categories,id',
         'stock' => 'required|integer|min:0',
         'is_available' => 'boolean',
-        'image' => 'nullable|string',
+        // 'image' => 'nullable|string',
         'is_composable' => 'boolean',
         'selectedIngredients' => 'array',
-        'selectedIngredients.*.id' => 'exists:ingredients,id',
-        'selectedIngredients.*.quantity' => 'required|numeric|min:0',
+        // 'selectedIngredients.*.id' => 'exists:ingredients,id',
+        // 'selectedIngredients.*.stock' => 'required|numeric|min:0',
     ];
 
     #[Computed]
@@ -57,6 +60,7 @@ class Products extends Component
             ->with('ingredients')
             ->paginate(10);
     }
+
 
     #[Computed]
     public function categories()
@@ -76,15 +80,20 @@ class Products extends Component
 
         if ($this->editingProductId) {
             $product = Product::find($this->editingProductId);
+            $filename = $this->name . '-' . $this->editingProductId . '.' . $this->image->getClientOriginalExtension();
+            $imagePath = $this->image->storeAs('products', $filename, 'public');
+            $this->image = $imagePath;
+            
             $product->update($this->only(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'stock', 'is_composable']));
         } else {
+
             $product = Product::create($this->only(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'stock', 'is_composable']));
         }
 
         // Update ingredients
         $product->ingredients()->detach();
         foreach ($this->selectedIngredients as $ingredientData) {
-            $product->ingredients()->attach($ingredientData['id'], ['quantity' => $ingredientData['quantity']]);
+            $product->ingredients()->attach($ingredientData['id'], ['stock' => $ingredientData['stock']]);
         }
 
         if ($product->isLowStock()) {
@@ -108,12 +117,14 @@ class Products extends Component
         $this->image = $product->image;
         $this->stock = $product->stock;
         $this->is_composable = $product->is_composable;
-        $this->selectedIngredients = $product->ingredients->map(function ($ingredient) {
-            return [
-                'id' => $ingredient->id,
-                'quantity' => $ingredient->pivot->quantity,
-            ];
-        })->toArray();
+        // $this->selectedIngredients = $product->ingredients->map(function ($ingredient) {
+        //     return [
+        //         'id' => $ingredient->id,
+        //         'stock' => $ingredient->stock,
+        //     ];
+        // })->toArray();
+
+        
     }
 
     public function deleteProduct(Product $product): void
@@ -125,6 +136,13 @@ class Products extends Component
     {
         $this->reset(['name', 'description', 'price', 'category_id', 'is_available', 'image', 'editingProductId', 'stock', 'is_composable', 'selectedIngredients']);
     }
+
+    
+    // public function bulkDelete()
+    // {
+    //     Product::destroy($this->selectedProducts);
+    //     $this->products = Product::all(); // Refresh the product list
+    // }
 
     public function render()
     {

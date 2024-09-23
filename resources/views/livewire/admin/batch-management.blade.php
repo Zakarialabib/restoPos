@@ -1,7 +1,7 @@
 <div>
     <div>
         <h2>Batch Management</h2>
-        <form wire:submit.prevent="addBatch">
+        <form wire:submit="addBatch">
             <select wire:model="ingredientId">
                 <option value="">Select Ingredient</option>
                 @foreach ($ingredients as $ingredient)

@@ -12,6 +12,7 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
+        // Fruits Category
         $fruitCategory = Category::firstOrCreate([
             'id' => 1,
             'name' => 'Fruits'
@@ -37,6 +38,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 150,
                 'low_stock_threshold' => 30,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Orange',
@@ -47,6 +49,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 80,
                 'low_stock_threshold' => 15,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Pineapple',
@@ -57,6 +60,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 50,
                 'low_stock_threshold' => 10,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Peach',
@@ -67,6 +71,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 75,
                 'low_stock_threshold' => 15,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Avocado',
@@ -77,6 +82,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 60,
                 'low_stock_threshold' => 12,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Pear',
@@ -87,6 +93,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 90,
                 'low_stock_threshold' => 18,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Dragon Fruit',
@@ -97,6 +104,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 30,
                 'low_stock_threshold' => 5,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Papaya',
@@ -114,7 +122,7 @@ class ProductSeeder extends Seeder
             Product::create(array_merge($fruit, ['category_id' => $fruitCategory->id]));
         }
 
-        // coffee category
+        // Coffee Category
         $coffeeCategory = Category::firstOrCreate([
             'id' => 2,
             'name' => 'Coffee'
@@ -130,6 +138,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => false,
                 'stock' => 100,
                 'low_stock_threshold' => 20,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Cappuccino',
@@ -140,6 +149,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => false,
                 'stock' => 80,
                 'low_stock_threshold' => 15,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Latte',
@@ -150,6 +160,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => false,
                 'stock' => 90,
                 'low_stock_threshold' => 18,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Mocha',
@@ -160,6 +171,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => false,
                 'stock' => 70,
                 'low_stock_threshold' => 15,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Caramel Macchiato',
@@ -170,6 +182,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => false,
                 'stock' => 60,
                 'low_stock_threshold' => 12,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Iced Coffee',
@@ -180,6 +193,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => false,
                 'stock' => 55,
                 'low_stock_threshold' => 10,
+                'expiry_date' => null, // Added missing field
             ],
         ];
 
@@ -187,8 +201,7 @@ class ProductSeeder extends Seeder
             Product::create(array_merge($coffeeItem, ['category_id' => $coffeeCategory->id]));
         }
 
-
-        // dried fruits category
+        // Dried Fruits Category
         $driedFruitsCategory = Category::firstOrCreate([
             'id' => 3,
             'name' => 'Dried Fruits'
@@ -204,6 +217,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 50,
                 'low_stock_threshold' => 10,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Dried Apple',
@@ -214,6 +228,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 60,
                 'low_stock_threshold' => 12,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Dried Pineapple',
@@ -221,9 +236,10 @@ class ProductSeeder extends Seeder
                 'price' => 2.49,
                 'image' => 'https://example.com/images/dried_pineapple.jpg',
                 'is_available' => true,
-                'is_composable' => true,
+                'is_composable' => false, // Updated to not composable
                 'stock' => 40,
                 'low_stock_threshold' => 8,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Dried Dragon Fruit',
@@ -234,6 +250,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 30,
                 'low_stock_threshold' => 5,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Dried Papaya',
@@ -244,6 +261,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 45,
                 'low_stock_threshold' => 9,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Dried Kiwi',
@@ -251,9 +269,10 @@ class ProductSeeder extends Seeder
                 'price' => 2.79,
                 'image' => 'https://example.com/images/dried_kiwi.jpg',
                 'is_available' => true,
-                'is_composable' => true,
+                'is_composable' => false, // Updated to not composable
                 'stock' => 35,
                 'low_stock_threshold' => 7,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Dried Lemon',
@@ -264,6 +283,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => true,
                 'stock' => 55,
                 'low_stock_threshold' => 11,
+                'expiry_date' => null, // Added missing field
             ],
         ];
 
@@ -271,7 +291,7 @@ class ProductSeeder extends Seeder
             Product::create(array_merge($driedFruit, ['category_id' => $driedFruitsCategory->id]));
         }
 
-        // base juices category
+        // Base Juices Category
         $baseJuicesCategory = Category::firstOrCreate([
             'id' => 4,
             'name' => 'Base Juices'
@@ -287,6 +307,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => false,
                 'stock' => 100,
                 'low_stock_threshold' => 20,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Orange Juice',
@@ -297,6 +318,7 @@ class ProductSeeder extends Seeder
                 'is_composable' => false,
                 'stock' => 100,
                 'low_stock_threshold' => 20,
+                'expiry_date' => null, // Added missing field
             ],
             [
                 'name' => 'Ice Cold Water',
@@ -304,9 +326,10 @@ class ProductSeeder extends Seeder
                 'price' => 1.99,
                 'image' => 'https://example.com/images/water.jpg',
                 'is_available' => true,
-                'is_composable' => false,
+                'is_composable' => false, // Updated to not composable
                 'stock' => 100,
                 'low_stock_threshold' => 20,
+                'expiry_date' => null, // Added missing field
             ],
         ];
 

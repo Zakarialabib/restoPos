@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html x-data="mainTheme" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ isRtl() ? 'rtl' : 'ltr' }}"
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ isRtl() ? 'rtl' : 'ltr' }}" x-data="mainTheme"
     class="scroll-smooth">
 
 <head>
@@ -12,6 +12,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="canonical" href="{{ URL::current() }}">
     <meta name="title" content="{{ $title }}">
+
+    <title>{{ $title ?? config('app.name', 'RestoApp') }}</title>
+
+    <!-- SEO Meta Tags -->
     <meta name="description" content="Financial Services">
     <meta name="keywords" content="Financial Services">
     <meta property="og:title" content="{{ $title }}">
@@ -24,14 +28,16 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <meta name="robots" content="all,follow">
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    <title>{{ $title ?? '' }} | {{ config('app.name', 'RestoApp') }} </title>
-
+    <!-- Styles -->
+    @livewireStyles
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-    @stack('styles')
-
+    @vite(['resources/css/app.css'])
     <style>
         [x-cloak] {
             display: none;
@@ -58,25 +64,34 @@
         }
     </style>
 
+    @stack('styles')
     <!-- Scripts -->
-    @livewireStyles
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/js/app.js'])
     @livewireScriptConfig
-
     @stack('scripts')
-
 </head>
 
-
-<body class="bg-retro-cream text-retro-blue p-0">
-    <div x-data="{ isOpen: false }">
-        {{-- header slot dynamic  --}}
+<body class="font-sans antialiased bg-retro-cream text-retro-blue">
+    <div x-data="{ isOpen: false }" x-cloak>
+        <!-- Header -->
         {{ $header ?? '' }}
-        <main class="min-h-screen w-full">
+
+        <!-- Main Content -->
+        <main class="min-h-screen">
             {{ $slot }}
         </main>
+
+        <!-- Footer -->
+        <footer class="bg-retro-orange text-white py-4">
+            <div class="container mx-auto text-center">
+                &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+            </div>
+        </footer>
+
+        <!-- Theme Switcher -->
         <x-theme-switcher />
     </div>
 </body>
+
 
 </html>

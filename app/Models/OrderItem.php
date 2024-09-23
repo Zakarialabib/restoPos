@@ -13,9 +13,9 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
+        'composable_juice_id',
         'quantity',
-        'price',
-        'details'
+        'subtotal'
     ];
 
     protected $casts = [
@@ -31,6 +31,11 @@ class OrderItem extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function composableJuice()
+    {
+        return $this->belongsTo(Composable::class);
     }
 
     // Accessor for the details (JSON)

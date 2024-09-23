@@ -18,6 +18,7 @@ class OrderManagement extends Component
     public $showOrderDetails = false;
     public $selectedOrder;
     public $orderStatuses = ['pending', 'processing', 'completed', 'cancelled'];
+    public $orderStatus;
 
     // New order form fields
     public $customerName;
@@ -117,5 +118,10 @@ class OrderManagement extends Component
             $total += $product->price * $item['quantity'];
         }
         return $total;
+    }
+
+    public function getOrderHistory($customerId)
+    {
+        return Order::where('user_id', $customerId)->get();
     }
 }

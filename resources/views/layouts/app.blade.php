@@ -68,13 +68,16 @@
             <!-- Page Wrapper -->
             <div class="flex flex-col min-h-screen"
                 :class="{
-                    'lg:ml-64': isSidebarOpen,
-                    'lg:ml-16': !isSidebarOpen,
+                        // Start of Selection
+                        'lg:ml-64': isSidebarOpen && !isRtl,
+                        'lg:mr-64': isSidebarOpen && isRtl,
+                        'lg:ml-16': !isSidebarOpen && !isRtl,
+                        'lg:mr-16': !isSidebarOpen && isRtl,
                 }"
                 style="transition-property: margin; transition-duration: 150ms;">
 
                 <!-- Page Content -->
-                <main class="flex-1 px-6 pb-10">
+                <main class="flex-1 rtl:pr-24 rtl:pl-16 rtl:lg:pr-24 rtl:lg:pl-16 ltr:pl-24 ltr:pr-16 ltr:lg:pl-24 ltr:lg:pr-16 px-6 pb-10">
                     {{ $slot }}
                 </main>
             </div>
