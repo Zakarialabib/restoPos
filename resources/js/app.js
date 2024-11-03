@@ -63,5 +63,4 @@ Alpine.data("mainTheme", () => {
         scrollingUp: false,
     };
 });
-
 Livewire.start()

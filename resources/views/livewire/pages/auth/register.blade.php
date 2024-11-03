@@ -40,7 +40,7 @@ $register = function () {
 ?>
 
 <div>
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="container mx-auto">
         <form wire:submit="register">
             <!-- Name -->
             <div>

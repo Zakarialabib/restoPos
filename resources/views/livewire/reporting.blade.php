@@ -1,1 +1,0 @@
-<input type="text" wire:model="search" placeholder="Search ingredients...">

@@ -35,8 +35,6 @@ class RecommendationService
             ->limit(10)
             ->get();
 
-        return $popularProducts->filter(function ($product) use ($currentItems) {
-            return !in_array($product->name, $currentItems);
-        })->take($limit);
+        return $popularProducts->filter(fn ($product) => ! in_array($product->name, $currentItems))->take($limit);
     }
 }

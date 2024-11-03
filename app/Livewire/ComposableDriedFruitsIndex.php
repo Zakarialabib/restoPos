@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Composable;
 use App\Models\InventoryAlert;
@@ -32,6 +33,7 @@ class ComposableDriedFruitsIndex extends Component
     public $showSuccess = false;
     public $order;
 
+    public $cartTotal;
     public $search = '';
 
     public $showCheckout = false;
@@ -87,7 +89,7 @@ class ComposableDriedFruitsIndex extends Component
     {
         $driedFruit = Product::find($driedFruitId);
 
-        if (!$driedFruit) {
+        if ( ! $driedFruit) {
             $this->addError('invalidDriedFruit', "The selected dried fruit is not available.");
             return;
         }
@@ -123,7 +125,7 @@ class ComposableDriedFruitsIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
+        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function toggleCheckout(): void
@@ -137,7 +139,7 @@ class ComposableDriedFruitsIndex extends Component
 
         foreach ($this->selectedDriedFruits as $driedFruitId) {
             $driedFruit = Product::find($driedFruitId);
-            if (!$driedFruit || $driedFruit->stock <= 0) {
+            if ( ! $driedFruit || $driedFruit->stock <= 0) {
                 $this->addError('outOfStock', "{$driedFruit->name} is out of stock.");
                 return;
             }
@@ -189,16 +191,19 @@ class ComposableDriedFruitsIndex extends Component
 
     public function placeOrder(): void
     {
-        $this->validate([
-            'customerName' => 'required|string|max:255',
-            'customerPhone' => 'required|string|max:255',
-        ]);
+        // $this->validate([
+        //     'customerName' => 'required|string|max:255',
+        //     'customerPhone' => 'required|string|max:255',
+        // ], [
+        //     'customerName.required' => __('Please enter your name.'),
+        //     'customerPhone.required' => __('Please enter your phone number.'),
+        // ]);
 
         $order = Order::create([
             'customer_name' => $this->customerName,
             'customer_phone' => $this->customerPhone,
             'total_amount' => $this->cartTotal,
-            'status' => 'pending',
+            'status' => OrderStatus::Pending,
         ]);
 
         foreach ($this->cart as $item) {

@@ -12,6 +12,7 @@ use App\Models\InventoryAlert;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -31,15 +32,14 @@ class ComposableJuicesIndex extends Component
     public $cart = [];
     public $totalPrice = 0;
 
-    public $customerName;
-    public $customerPhone;
+    // public $customerName;
+    // public $customerPhone;
     public $showSuccess = false;
     public $order;
     public $recipes;
 
+    public $cartTotal;
     public $search = '';
-
-    public $showCheckout = false;
 
     public function mount(): void
     {
@@ -49,7 +49,32 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function steps()
     {
-        return [__('Select Fruits'), __('Choose Base'), __('Sugar Preference'), __('Add-ons')];
+        return [
+            __('Select Fruits'),
+            __('Choose Base'),
+            __('Sugar Preference'),
+            __('Add-ons'),
+            // size 
+        ];
+    }
+
+    #[Computed]
+    public function sizes(): array
+    {
+        return [
+            'small' => [
+                'name' => __('Small'),
+                'capacity' => '150ml',
+            ],
+            'medium' => [
+                'name' => __('Medium'),
+                'capacity' => '250ml',
+            ],
+            'large' => [
+                'name' => __('Large'),
+                'capacity' => '500ml',
+            ],
+        ];
     }
 
     #[Computed]
@@ -86,8 +111,8 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function fruits()
     {
-        return Product::where('is_composable', true)
-            ->where('category_id', Category::where('name', 'Fruits')->first()->id)
+        return Ingredient::where('category_id', Category::where('name', 'Fruits')->first()->id)
+            ->where('is_composable', true)
             ->where('stock', '>', 0)
             ->where('name', 'like', '%' . $this->search . '%')
             ->get();
@@ -107,6 +132,7 @@ class ComposableJuicesIndex extends Component
 
     public function nextStep(): void
     {
+        // if selected fruit is orange should skip base step  
         $this->step++;
     }
 
@@ -117,14 +143,14 @@ class ComposableJuicesIndex extends Component
 
     public function toggleFruit($fruitId): void
     {
-        if (count($this->selectedFruits) >= 5 && !in_array($fruitId, $this->selectedFruits)) {
+        if (count($this->selectedFruits) >= 5 && ! in_array($fruitId, $this->selectedFruits)) {
             $this->addError('fruitLimit', "You can only select up to 5 fruits.");
             return;
         }
 
         $fruit = Product::find($fruitId);
 
-        if (!$fruit) {
+        if (! $fruit) {
             $this->addError('invalidFruit', "The selected fruit is not available.");
             return;
         }
@@ -140,16 +166,12 @@ class ComposableJuicesIndex extends Component
     {
         $this->totalPrice = 0;
         foreach ($this->selectedFruits as $fruitId) {
-            $fruit = Product::find($fruitId);
+            $fruit = Ingredient::find($fruitId);
             if ($fruit) {
-                $this->totalPrice += $fruit->price;
+                $this->totalPrice += (int) ($fruit->price);
             }
         }
-        $this->totalPrice += 5; // Base price
-        if ($this->selectedSugar && $this->selectedSugar !== 'No Sugar') {
-            $this->totalPrice += 2; // Sugar price
-        }
-        $this->totalPrice += count($this->selectedAddons) * 3; // Addons price
+        // addons and size should be calculated as well  
     }
 
     public function toggleAddon($addon): void
@@ -167,13 +189,14 @@ class ComposableJuicesIndex extends Component
         return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
-    public function toggleCheckout(): void
-    {
-        $this->showCheckout = !$this->showCheckout;
-    }
-
     public function addToCart(): void
     {
+        // Check if the current item is already in the cart
+        if (empty($this->selectedFruits)) {
+            $this->addError('emptySelection', __("Please select at least one fruit for your juice."));
+            return;
+        }
+
         $this->calculatePrice();
 
         $this->validate([
@@ -185,7 +208,7 @@ class ComposableJuicesIndex extends Component
 
         foreach ($this->selectedFruits as $fruitId) {
             $fruit = Product::find($fruitId);
-            if (!$fruit || $fruit->stock <= 0) {
+            if (! $fruit || $fruit->stock <= 0) {
                 $this->addError('outOfStock', "{$fruit->name} is out of stock.");
                 return;
             }
@@ -205,11 +228,11 @@ class ComposableJuicesIndex extends Component
         session()->put('cart', $this->cart);
 
         foreach ($this->selectedFruits as $fruitId) {
-            $fruit = Product::find($fruitId);
+            $fruit = Ingredient::find($fruitId);
             $fruit->decrement('stock');
             if ($fruit->isLowStock()) {
                 InventoryAlert::create([
-                    'product_id' => $fruit->id,
+                    'ingredient_id' => $fruit->id,
                     'message' => "Low stock alert for {$fruit->name}",
                 ]);
             }
@@ -232,17 +255,21 @@ class ComposableJuicesIndex extends Component
 
     public function placeOrder(): void
     {
-        $this->validate([
-            'customerName' => 'required|string|max:255',
-            'customerPhone' => 'required|string|max:255',
-        ]);
+        // $this->validate([
+        //     'customerName' => 'required|string|max:255',
+        //     'customerPhone' => 'required|string|max:255',
+        // ], [
+        //     'customerName.required' => __('Please enter your name.'),
+        //     'customerPhone.required' => __('Please enter your phone number.'),
+        // ]);
 
         $order = Order::create([
-            'customer_name' => $this->customerName,
-            'customer_phone' => $this->customerPhone,
+            'customer_name' => 'Shop',
+            'customer_phone' => '0000000000',
             'total_amount' => $this->cartTotal,
             'status' => OrderStatus::Pending,
         ]);
+
         $orderItems = [];
         foreach ($this->cart as $item) {
             $orderItem = OrderItem::create([
@@ -255,7 +282,10 @@ class ComposableJuicesIndex extends Component
             $orderItems[] = $orderItem;
         }
 
-        $this->reset(['cart', 'customerName', 'customerPhone', 'showCheckout']);
+        $this->reset([
+            'cart',
+            //  'customerName', 'customerPhone',
+        ]);
         session()->forget('cart');
 
         $this->showSuccess = true;
@@ -267,9 +297,8 @@ class ComposableJuicesIndex extends Component
         $this->showSuccess = false;
         $this->reset([
             'cart',
-            'customerName',
-            'customerPhone',
-            'showCheckout',
+            // 'customerName',
+            // 'customerPhone',
             'selectedFruits',
             'selectedBase',
             'selectedSugar',

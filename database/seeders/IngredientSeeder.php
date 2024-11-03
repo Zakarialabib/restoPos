@@ -4,134 +4,311 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Enums\Unit;
+use App\Models\Category;
 use App\Models\Ingredient;
+use Illuminate\Database\Seeder;
 
 class IngredientSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $ingredients = [
+            // Base Ingredients
             [
-                'name' => 'Apple',
-                'type' => 'fruit',
-                'unit' => 'g',
+                'name' => 'Ble - قمح',
+                'category_id' => Category::where('name', 'Base')->first()->id,
+                'unit' => Unit::Gram->value,
                 'conversion_rate' => 1,
                 'stock' => 1000,
-                'batch_number' => 'BATCH001',
                 'expiry_date' => '2024-12-31',
-                'reorder_level' => 200,
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
             ],
             [
-                'name' => 'Banana',
-                'type' => 'fruit',
-                'unit' => 'g',
-                'conversion_rate' => 1,
-                'stock' => 1500,
-                'batch_number' => 'BATCH002',
-                'expiry_date' => '2024-12-31',
-                'reorder_level' => 300,
-            ],
-            [
-                'name' => 'Orange',
-                'type' => 'fruit',
-                'unit' => 'g',
+                'name' => 'Blilola - بليلولة',
+                'category_id' => Category::where('name', 'Base')->first()->id,
+                'unit' => Unit::Gram->value,
                 'conversion_rate' => 1,
                 'stock' => 800,
-                'batch_number' => 'BATCH003',
                 'expiry_date' => '2024-12-31',
-                'reorder_level' => 150,
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
             ],
+
             [
-                'name' => 'Pineapple',
-                'type' => 'fruit',
-                'unit' => 'g',
-                'conversion_rate' => 1,
-                'stock' => 500,
-                'batch_number' => 'BATCH004',
-                'expiry_date' => '2024-12-31',
-                'reorder_level' => 100,
-            ],
-            [
-                'name' => 'Peach',
-                'type' => 'fruit',
-                'unit' => 'g',
-                'conversion_rate' => 1,
-                'stock' => 750,
-                'batch_number' => 'BATCH005',
-                'expiry_date' => '2024-12-31',
-                'reorder_level' => 150,
-            ],
-            [
-                'name' => 'Avocado',
-                'type' => 'fruit',
-                'unit' => 'g',
-                'conversion_rate' => 1,
-                'stock' => 600,
-                'batch_number' => 'BATCH006',
-                'expiry_date' => '2024-12-31',
-                'reorder_level' => 120,
-            ],
-            [
-                'name' => 'Pear',
-                'type' => 'fruit',
-                'unit' => 'g',
-                'conversion_rate' => 1,
-                'stock' => 900,
-                'batch_number' => 'BATCH007',
-                'expiry_date' => '2024-12-31',
-                'reorder_level' => 180,
-            ],
-            [
-                'name' => 'Dragon Fruit',
-                'type' => 'fruit',
-                'unit' => 'g',
-                'conversion_rate' => 1,
-                'stock' => 300,
-                'batch_number' => 'BATCH008',
-                'expiry_date' => '2024-12-31',
-                'reorder_level' => 60,
-            ],
-            [
-                'name' => 'Papaya',
-                'type' => 'fruit',
-                'unit' => 'g',
+                'name' => 'Oreo - اوريو',
+                'category_id' => Category::where('name', 'Topping')->first()->id,
+                'unit' => Unit::Gram->value,
                 'conversion_rate' => 1,
                 'stock' => 400,
-                'batch_number' => 'BATCH009',
                 'expiry_date' => '2024-12-31',
-                'reorder_level' => 80,
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
             ],
             [
-                'name' => 'Milk',
-                'type' => 'liquid',
-                'unit' => 'ml',
+                'name' => 'Chocolate - شوكولاطة',
+                'category_id' => Category::where('name', 'Topping')->first()->id,
+                'unit' => Unit::Gram->value,
                 'conversion_rate' => 1,
-                'stock' => 1000,
-                'batch_number' => 'BATCH010',
+                'stock' => 400,
                 'expiry_date' => '2024-12-31',
-                'reorder_level' => 200,
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
             ],
+            // Fruits
             [
-                'name' => 'Ice',
-                'type' => 'ice',
-                'unit' => 'g',
-                'conversion_rate' => 1,
-                'stock' => 1000,
-                'batch_number' => 'BATCH011',
-                'expiry_date' => '2024-12-31',
-                'reorder_level' => 200,
-            ],
-            [
-                'name' => 'Lemon',
-                'type' => 'fruit',
-                'unit' => 'g',
+                'name' => 'Orange - برتقال',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
                 'conversion_rate' => 1,
                 'stock' => 500,
-                'batch_number' => 'BATCH012',
-                'expiry_date' => '2024-12-31',
-                'reorder_level' => 100,
+                'expiry_date' => '2024-06-30',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
             ],
+            [
+                'name' => 'Dragon Fruit - فاكهة التنين',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 300,
+                'expiry_date' => '2024-06-30',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Pomme - تفاح',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 1000,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Bannane - الموز',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 1500,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Ananas - اناناس',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 500,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Peach - الخوخ',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 750,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Avocate - الافوكادو',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 600,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Pear - الاجاص',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 900,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Papaya - البابايا',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 400,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Citron - الحامض',
+                'category_id' => Category::where('name', 'Liquid')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 500,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Mangue - المانجو',
+                'category_id' => Category::where('name', 'Fruits')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 500,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Lait - حليب',
+                'category_id' => Category::where('name', 'Liquid')->first()->id,
+                'unit' => Unit::Mililitre->value,
+                'conversion_rate' => 1,
+                'stock' => 1000,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            [
+                'name' => 'Glace - الماء مثلج',
+                'category_id' => Category::where('name', 'Liquid')->first()->id,
+                'unit' => Unit::Mililitre->value,
+                'conversion_rate' => 1,
+                'stock' => 1000,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+
+            [
+                'name' => 'Sucre - سكر',
+                'category_id' => Category::where('name', 'Sweetener')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 5000,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ],
+            // Add toppings/addons
+            [
+                'name' => 'Fruits Secs - فواكه مجففة',
+                'category_id' => Category::where('name', 'Topping')->first()->id,
+                'unit' => Unit::Gram->value,
+                'conversion_rate' => 1,
+                'stock' => 1000,
+                'expiry_date' => '2024-12-31',
+                'is_composable' => true,
+                'nutritional_info' => [
+                    'calories' => 47,
+                    'protein' => 0.9,
+                    'carbs' => 12,
+                    'fat' => 0.1
+                ]
+            ]
+            // noix de coco 
+            // miel 
+            // poudre de cacao 
+            // poudre de vanille 
+            // 
         ];
 
         foreach ($ingredients as $ingredient) {

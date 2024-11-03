@@ -4,76 +4,134 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Enums\Unit;
 use App\Models\Category;
 use App\Models\Ingredient;
-use App\Models\Product;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class IngredientManagement extends Component
 {
-    public $products;
-    public $categories;
-    public $ingredients;
-    public $newProduct = [];
-    public $editingProduct = null;
+    use WithPagination;
 
-    public static $rules = [
+    public $search = '';
+    public $type = '';
+    public $showForm = false;
+    public $editingId = null;
+
+    // Form fields
+    public $name = '';
+    public $unit;
+    public $conversionRate = 1;
+    public $stock = 0;
+    public $expiryDate = '';
+    public $supplierInfo = [];
+    public $instructions = [];
+    public $storageConditions = [];
+    public $categoryId = '';
+
+    protected $rules = [
         'name' => 'required|string|max:255',
-        'stock' => 'required|integer|min:0',
-        'reorder_level' => 'required|integer|min:0',
-        'batch_number' => 'nullable|string|max:255',
-        'expiry_date' => 'nullable|date|after:today',
-        'volume' => 'nullable|integer', // Add volume validation
-        'instructions' => 'nullable|string', // Add instructions validation
+        'unit' => 'required',
+        'conversionRate' => 'required|numeric|min:0',
+        'stock' => 'required|numeric|min:0',
+        'expiryDate' => 'nullable|date|after:today',
+        'supplierInfo' => 'nullable|array',
+        'instructions' => 'nullable|array',
+        'storageConditions' => 'nullable|array',
+        'categoryId' => 'required|exists:categories,id',
     ];
 
-    public function mount(): void
+    #[Computed]
+    public function ingredients()
     {
-        $this->loadProducts();
-        $this->categories = Category::all();
-        $this->ingredients = Ingredient::all();
+        return Ingredient::query()
+            ->when(
+                $this->search,
+                fn($query) =>
+                $query->where('name', 'like', '%' . $this->search . '%')
+            )
+            ->when(
+                $this->type,
+                fn($query) =>
+                $query->where('type', $this->type)
+            )
+            ->latest()
+            ->paginate(10);
     }
 
-    public function loadProducts(): void
+    #[Computed]
+    public function categories()
     {
-        $this->products = Product::active()->with('category', 'ingredients')->get(); // Use active scope
+        return Category::query()->get();
     }
 
-    public function addProduct(): void
+
+    #[Computed]
+    public function types()
+    {
+        return ['fruit', 'liquid', 'ice'];
+    }
+
+    #[Computed]
+    public function units()
+    {
+        return Unit::cases();
+    }
+
+    public function saveIngredient(): void
     {
         $this->validate();
-        // ... add product logic
-        $this->emit('productAdded'); // Emit event for real-time updates
-    }
 
-    public function editProduct($productId): void
-    {
-        $this->editingProduct = Product::with('ingredients')->find($productId);
-    }
+        $ingredientData = [
+            'name' => $this->name,
+            'unit' => $this->unit,
+            'conversion_rate' => $this->conversionRate,
+            'stock' => $this->stock,
+            'expiry_date' => $this->expiryDate,
+            'supplier_info' => $this->supplierInfo,
+            'instructions' => $this->instructions,
+            'category_id' => $this->categoryId,
+        ];
 
-    public function updateProduct(): void
-    {
-        $this->validate();
-        $this->editingProduct->save();
-        if (isset($this->editingProduct['ingredients'])) {
-            $this->editingProduct->ingredients()->sync($this->editingProduct['ingredients']);
+        if ($this->editingId) {
+            Ingredient::find($this->editingId)->update($ingredientData);
+        } else {
+            Ingredient::create($ingredientData);
         }
-        $this->editingProduct = null;
-        $this->loadProducts();
+
+        $this->reset();
+        $this->showForm = false;
+        session()->flash('message', __('Ingredient saved successfully.'));
     }
 
-    public function logIngredientUsage($ingredientId, $quantity)
+    public function editIngredient(Ingredient $ingredient): void
     {
-        // Logic to log ingredient usage
+        $this->editingId = $ingredient->id;
+        $this->name = $ingredient->name;
+        $this->unit = $ingredient->unit->value;
+        $this->conversionRate = $ingredient->conversion_rate;
+        $this->stock = $ingredient->stock;
+        $this->expiryDate = $ingredient->expiry_date?->format('Y-m-d');
+        $this->categoryId = $ingredient->category_id;
+        $this->supplierInfo = $ingredient->supplier_info;
+        $this->instructions = $ingredient->instructions;
+        $this->storageConditions = $ingredient->storage_conditions;
+
+        $this->showForm = true;
     }
 
-    public function checkReorderAlerts()
+    public function deleteIngredient(Ingredient $ingredient): void
     {
-        foreach ($this->ingredients as $ingredient) {
-            if ($ingredient->isLowStock()) { // Use the new method
-                // Notify admin
-            }
-        }
+        $ingredient->delete();
+        session()->flash('message', __('Ingredient deleted successfully.'));
+    }
+
+    public function updateStock(Ingredient $ingredient, float $quantity): void
+    {
+        $ingredient->updateStock($quantity);
+        session()->flash('message', __('Stock updated successfully.'));
     }
 
     public function render()

@@ -15,8 +15,10 @@
     </x-sidebar.link>
     
     <div class="px-4 py-2" x-show="open && (isSidebarOpen || isSidebarHovered)" x-collapse>
-        <ul class="text-sm font-medium">
-            {{ $slot }}
+        <ul class="text-sm font-medium ml-0">
+            <li class="p-0 m-0">
+                {{ $slot }}
+            </li>
         </ul>
     </div>
 </div>

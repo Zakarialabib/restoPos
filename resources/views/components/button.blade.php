@@ -44,7 +44,7 @@
     ];
 
     $classes =
-        'inline-flex items-center font-semibold uppercase tracking-widest transition ease-in-out duration-150 rounded-lg disabled:opacity-25 ' .
+        'inline-flex items-center font-semibold uppercase transition ease-in-out duration-150 rounded-lg disabled:opacity-25 ' .
         $colorClasses[$color];
     $classes .= ' ' . $class;
 

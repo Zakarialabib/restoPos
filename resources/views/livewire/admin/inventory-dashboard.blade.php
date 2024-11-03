@@ -1,87 +1,87 @@
 <div>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4">{{ __('Inventory Dashboard') }}</h2>
+    <div class="w-full py-12">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            @foreach ($this->inventoryStats as $key => $value)
+                <x-card-tooltip :title="__(Str::title(Str::snake($key, ' ')))" :color="$key === 'low_stock_count' ? 'red' : 'blue'"
+                    icon="{{ $key === 'total_products' ? 'box' : ($key === 'low_stock_count' ? 'exclamation' : 'clock') }}">
+                    <span class="text-2xl font-bold">{{ $value }}</span>
+                </x-card-tooltip>
+            @endforeach
+        </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Low Stock Products -->
-                    <div>
-                        <h3 class="text-xl font-semibold mb-2">{{ __('Low Stock Products') }}</h3>
-                        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <ul class="divide-y divide-gray-200">
-                                @forelse($lowStockProducts as $product)
-                                    <li class="px-4 py-3">
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">{{ $product->name }}</p>
-                                                <p class="text-sm text-gray-500">Stock: {{ $product->stock }}</p>
-                                            </div>
-                                            <span
-                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                Low Stock
-                                            </span>
-                                        </div>
-                                    </li>
-                                @empty
-                                    <li class="px-4 py-3 text-sm text-gray-500">No low stock products</li>
-                                @endforelse
-                            </ul>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Low Stock Ingredients -->
+            <x-card header="{{ __('Low Stock Ingredients') }}">
+                <div class="space-y-4">
+                    @forelse($this->lowStockIngredients as $ingredient)
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-semibold">{{ $ingredient->name }}</h4>
+                                <p class="text-sm text-gray-600">
+                                    {{ __('Type') }}: {{ ucfirst($ingredient->type) }}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Low Stock Ingredients -->
-                    <div>
-                        <h3 class="text-xl font-semibold mb-2">{{ __('Low Stock Ingredients') }}</h3>
-                        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <ul class="divide-y divide-gray-200">
-                                @forelse($lowStockIngredients as $ingredient)
-                                    <li class="px-4 py-3">
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">{{ $ingredient->name }}</p>
-                                                <p class="text-sm text-gray-500">Quantity: {{ $ingredient->quantity }}
-                                                    {{ $ingredient->unit }}</p>
-                                            </div>
-                                            <span
-                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                Reorder
-                                            </span>
-                                        </div>
-                                    </li>
-                                @empty
-                                    <li class="px-4 py-3 text-sm text-gray-500">No low stock ingredients</li>
-                                @endforelse
-                            </ul>
-                        </div>
-                    </div>
+                    @empty
+                        <x-alert type="info" show-icon>
+                            {{ __('No low stock ingredients found.') }}
+                        </x-alert>
+                    @endforelse
                 </div>
+            </x-card>
 
-                <!-- Recent Inventory Alerts -->
-                <div class="mt-8">
-                    <h3 class="text-xl font-semibold mb-2">{{ __('Recent Inventory Alerts') }}</h3>
-                    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-                        <ul class="divide-y divide-gray-200">
-                            @forelse($recentAlerts as $alert)
-                                <li class="px-4 py-3">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">{{ $alert->message }}</p>
-                                            <p class="text-sm text-gray-500">{{ $alert->created_at->diffForHumans() }}
-                                            </p>
-                                        </div>
-                                        <button wire:click="resolveAlert({{ $alert->id }})"
-                                            class="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700">
-                                            Resolve
-                                        </button>
+            <!-- Recent Alerts -->
+            <div class="lg:col-span-2">
+                <x-card header="{{ __('Recent Alerts') }}">
+                    <div class="space-y-4">
+                        @forelse($this->recentAlerts as $alert)
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex-shrink-0">
+                                        <x-badge :color="$alert->is_resolved ? 'success' : 'warning'"
+                                            icon="{{ $alert->is_resolved ? 'check' : 'bell' }}" />
                                     </div>
-                                </li>
-                            @empty
-                                <li class="px-4 py-3 text-sm text-gray-500">No recent alerts</li>
-                            @endforelse
-                        </ul>
+                                    <div>
+                                        <p class="font-medium">{{ $alert->message }}</p>
+                                        <p class="text-sm text-gray-600">
+                                            {{ $alert->created_at->diffForHumans() }}
+                                        </p>
+                                    </div>
+                                </div>
+                                @unless ($alert->is_resolved)
+                                    <x-button wire:click="resolveAlert({{ $alert->id }})" color="success" size="sm"
+                                        icon="check">
+                                        {{ __('Resolve') }}
+                                    </x-button>
+                                @endunless
+                            </div>
+                        @empty
+                            <x-alert type="info" show-icon>
+                                {{ __('No recent alerts.') }}
+                            </x-alert>
+                        @endforelse
                     </div>
-                </div>
+                </x-card>
+            </div>
+
+            <!-- Sales Chart -->
+            <div class="lg:col-span-2">
+                <x-card header="{{ __('Sales Overview') }}">
+                    <div class="flex items-center justify-end mb-4">
+                        <x-button.group>
+                            @foreach (['today', 'week', 'month', 'year'] as $range)
+                                <x-button wire:click="setDateRange('{{ $range }}')" :color="$dateRange === $range ? 'primary' : 'secondary'"
+                                    size="sm">
+                                    {{ __(Str::title($range)) }}
+                                </x-button>
+                            @endforeach
+                        </x-button.group>
+                    </div>
+                    <div class="h-80">
+                        <x-apex-charts :chart-id="'sales-chart'" :categories="$this->salesChartData['categories']" :series-name="__('Sales')" :series-data="$this->salesChartData['data']" />
+                    </div>
+                </x-card>
             </div>
         </div>
     </div>

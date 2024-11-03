@@ -7,25 +7,21 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('ingredient_product', function (Blueprint $table): void {
+        Schema::create('composable_ingredient', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('composable_id')->constrained()->onDelete('cascade');
             $table->foreignId('ingredient_id')->constrained()->onDelete('cascade');
-            $table->integer('stock');
+            $table->decimal('quantity', 8, 2);
             $table->timestamps();
+
+            $table->unique(['composable_id', 'ingredient_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('product_ingredients');
+        Schema::dropIfExists('composable_ingredient');
     }
 };

@@ -1,5 +1,5 @@
 <div>
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="w-full">
         <h2 class="text-3xl font-bold mb-6 text-center">Category Management</h2>
 
         <!-- Add/Edit Category Form -->

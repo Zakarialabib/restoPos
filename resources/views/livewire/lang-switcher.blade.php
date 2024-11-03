@@ -1,9 +1,6 @@
 <?php
 
-use Livewire\Volt\Component;
 use function Livewire\Volt\{state};
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
 
 state(['locale' => app()->getLocale()]);
 
@@ -19,20 +16,14 @@ $switch = function () {
 ?>
 
 <div>
-    <x-dropdown>
-        <x-slot name="trigger">
-            <p class="mr-1 text-white">{{ strtoupper(app()->getLocale()) }}</p>
-        </x-slot>
-        <x-slot name="content">
-            <x-dropdown-link as="button" wire:click="$set('locale', 'ar')" class="{{ app()->getLocale() == 'ar' ? 'font-bold' : '' }}">
-                العربية
-            </x-dropdown-link>
-            <x-dropdown-link as="button" wire:click="$set('locale', 'en')" class="{{ app()->getLocale() == 'en' ? 'font-bold' : '' }}">
-                English
-            </x-dropdown-link>
-            <x-dropdown-link as="button" wire:click="$set('locale', 'fr')" class="{{ app()->getLocale() == 'fr' ? 'font-bold' : '' }}">
-                Français
-            </x-dropdown-link>
-        </x-slot>
-    </x-dropdown>
+    <div class="relative" x-data="{ open: false }" @click.away="open = false">
+        <button @click="open = !open" class="flex items-center bg-transparent border-none text-white hover:text-orange-200 transition text-md font-bold leading-5 ">
+            {{ strtoupper(app()->getLocale()) }} <i class="fas fa-chevron-down mr-1 text-xs"></i>
+        </button>
+        <div x-show="open" class="absolute mt-2 w-40 bg-white rounded-md shadow-lg py-1 left-0">
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">العربية</a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">English</a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Français</a>
+        </div>
+    </div>
 </div>

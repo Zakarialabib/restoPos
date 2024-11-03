@@ -13,9 +13,10 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
-        'composable_juice_id',
+        'name',
         'quantity',
-        'subtotal'
+        'price',
+        'details',
     ];
 
     protected $casts = [
@@ -44,9 +45,22 @@ class OrderItem extends Model
         return json_decode($value, true);
     }
 
+    // Methods
+    public function getSubtotal(): float
+    {
+        return $this->price * $this->quantity;
+    }
+
     // Mutator for the details (JSON)
     public function setDetailsAttribute($value): void
     {
         $this->attributes['details'] = json_encode($value);
+    }
+
+    public function updateQuantity(int $quantity): void
+    {
+        $this->quantity = $quantity;
+        $this->save();
+        $this->order->calculateTotal();
     }
 }

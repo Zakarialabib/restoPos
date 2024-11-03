@@ -15,18 +15,16 @@ return new class () extends Migration {
         Schema::create('products', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->string('slug')->unique();
-            $table->decimal('price', 8, 2);
-            $table->foreignId('category_id')->constrained('categories');
-            $table->boolean('is_available')->default(true);
+            $table->decimal('price', 10, 2);
+            $table->foreignId('category_id')->constrained('categories')->nullable();
+            // $table->foreignId('recipe_id')->constrained('recipes')->nullable();
             $table->string('image')->nullable();
-            $table->boolean('is_composable')->default(false);
-            $table->integer('stock')->default(0);
-            $table->integer('low_stock_threshold')->default(10);
-            $table->date('expiry_date')->nullable();
-            $table->text('instructions')->nullable();
+            $table->boolean('is_available')->default(true);
+            $table->boolean('is_featured')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

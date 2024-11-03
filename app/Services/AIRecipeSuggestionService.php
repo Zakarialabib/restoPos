@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Ingredient;
-use App\Models\Product;
 use Illuminate\Support\Collection;
 
 class AIRecipeSuggestionService

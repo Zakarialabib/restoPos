@@ -18,15 +18,15 @@ class Index extends Component
 {
     use WithPagination;
 
-
     public $currentTheme = 'sunset';
+
     public $themes = [
         'earth' => [
             'bg' => 'bg-[#FFFBEB]',
             'text' => 'text-[#292524]',
             'accent' => 'text-[#059669]',
             'card' => [
-                'bg' => 'bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#E07A5F] hover:bg-[#C65D45] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#292524]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -42,7 +42,7 @@ class Index extends Component
             'text' => 'text-[#334155]',
             'accent' => 'text-[#38BDF8]',
             'card' => [
-                'bg' => 'bg-white',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#C4B5FD] hover:bg-[#A78BFA] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#334155]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -58,7 +58,7 @@ class Index extends Component
             'text' => 'text-[#581C87]',
             'accent' => 'text-[#EC4899]',
             'card' => [
-                'bg' => 'bg-white',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#EC4899] hover:bg-[#DB2777] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#581C87]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -74,7 +74,7 @@ class Index extends Component
             'text' => 'text-[#111827]',
             'accent' => 'text-[#4B5563]',
             'card' => [
-                'bg' => 'bg-white',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#1F2937] hover:bg-[#111827] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#111827]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -90,7 +90,7 @@ class Index extends Component
             'text' => 'text-[#F3F4F6]',
             'accent' => 'text-[#34D399]',
             'card' => [
-                'bg' => 'bg-[#1F2937]',
+                'bg' => 'bg-[#1F2937] max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#10B981] hover:bg-[#059669] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#34D399]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -106,7 +106,7 @@ class Index extends Component
             'text' => 'text-[#0C4A6E]',
             'accent' => 'text-[#0891B2]',
             'card' => [
-                'bg' => 'bg-white',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#0EA5E9] hover:bg-[#0284C7] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#0C4A6E]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -122,7 +122,7 @@ class Index extends Component
             'text' => 'text-[#064E3B]',
             'accent' => 'text-[#059669]',
             'card' => [
-                'bg' => 'bg-white',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#10B981] hover:bg-[#059669] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#064E3B]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -138,7 +138,7 @@ class Index extends Component
             'text' => 'text-[#7C2D12]',
             'accent' => 'text-[#EA580C]',
             'card' => [
-                'bg' => 'bg-white',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#EA580C] hover:bg-[#C2410C] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#7C2D12]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -154,7 +154,7 @@ class Index extends Component
             'text' => 'text-[#F472B6]',
             'accent' => 'text-[#3B82F6]',
             'card' => [
-                'bg' => 'bg-[#1E293B]',
+                'bg' => 'bg-[#1E293B] max-w-md mx-auto rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#3B82F6] hover:bg-[#2563EB] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#F472B6]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -170,7 +170,7 @@ class Index extends Component
             'text' => 'text-[#3D3D3D]',
             'accent' => 'text-[#8E7F7F]',
             'card' => [
-                'bg' => 'bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#8E7F7F] hover:bg-[#6D5D5D] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#3D3D3D]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -186,7 +186,7 @@ class Index extends Component
             'text' => 'text-[#4A3933]',
             'accent' => 'text-[#A67C52]',
             'card' => [
-                'bg' => 'bg-[#FFFFFF] bg-opacity-70',
+                'bg' => 'bg-[#FFFFFF] max-w-md mx-auto rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#A67C52] hover:bg-[#8C6642] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#4A3933]',
                 'product_price' => 'text-4xl font-semibold text-black',
@@ -202,7 +202,7 @@ class Index extends Component
             'text' => 'text-[#2C5F2D]',
             'accent' => 'text-[#97BC62]',
             'card' => [
-                'bg' => 'bg-white bg-opacity-80',
+                'bg' => 'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl',
                 'button' => 'bg-[#97BC62] hover:bg-[#7FA650] text-retro-orange',
                 'product_name' => 'text-lg lg:text-xl font-semibold text-[#2C5F2D]',
                 'product_price' => 'text-4xl font-semibold text-black',

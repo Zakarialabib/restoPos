@@ -4,118 +4,109 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\HasSlug;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Number;
 
 class Product extends Model
 {
     use HasFactory;
+    use HasSlug;
 
     protected $fillable = [
         'name',
         'description',
+        'slug',
         'price',
         'category_id',
-        'stock',
-        'is_available',
         'image',
-        'is_composable',
-        'volume', // Add volume attribute
-        'instructions', // Add instructions attribute
+        'is_available',
+        'is_featured',
+        'supplier_info',
+        'instructions',
+        'recipe_id',
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
         'is_available' => 'boolean',
-        'is_composable' => 'boolean',
-        'ingredients' => 'array',
+        'is_featured' => 'boolean',
     ];
 
-    public function isLowStock()
-    {
-        return $this->stock <= $this->low_stock_threshold;
-    }
-
+    // Relationships
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function orderItems()
+    // public function ingredients(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Ingredient::class)
+    //         ->using(::class)
+    //         ->withPivot('stock')
+    //         ->withTimestamps();
+    // }
+
+    public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function inventoryAlerts()
+    public function inventoryAlerts(): HasMany
     {
         return $this->hasMany(InventoryAlert::class);
     }
 
-    public function ingredients()
+    public function composables(): BelongsToMany
     {
-        return $this->belongsToMany(Ingredient::class)->withPivot('stock');
+        return $this->belongsToMany(Composable::class)
+            ->withPivot('quantity')
+            ->withTimestamps();
     }
 
-    public function composables()
+    public function recipe(): BelongsTo
     {
-        return $this->belongsToMany(Composable::class, 'composable_product');
+        return $this->belongsTo(Recipe::class);
     }
 
-    // slug boot method
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function ($model): void {
-            $model->slug = Str::slug($model->name);
-        });
-    }
-
-    public function scopeActive($query)
+    // Scopes
+    public function scopeAvailable(Builder $query): Builder
     {
         return $query->where('is_available', true);
     }
 
-    public function scopeLowStock($query)
+    public function scopeFeatured(Builder $query): Builder
     {
-        return $query->where('stock', '<=', 10);
+        return $query->where('is_featured', true);
     }
 
-    public function getFormattedPriceAttribute()
+    public function scopeInCategory(Builder $query, int|array $categoryIds): Builder
     {
-        return number_format($this->price, 2) . ' DH';
+        return $query->whereIn('category_id', (array) $categoryIds);
     }
 
-    public function setPriceAttribute($value)
+    // Attributes
+    protected function price(): Attribute
     {
-        $this->attributes['price'] = $value * 100; // Store price in cents
+        return Attribute::make(
+            get: fn(int $value) => Number::format($value,  locale: 'fr_MA'),
+        );
     }
 
-    public function orders()
+    protected function stockStatus(): Attribute
     {
-        return $this->hasMany(OrderItem::class);
+        return Attribute::make(
+            get: function () {
+                if ($this->stock <= 0) {
+                    return 'Out of Stock';
+                }
+                return 'In Stock';
+            }
+        );
     }
-
-    public function calculateTotalStock()
-    {
-        return $this->ingredients->sum('pivot.stock');
-    }
-
-    public function logProductCreation()
-    {
-        Log::info('Product created: ' . $this->name);
-    }
-
-    public static $rules = [
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric|min:0',
-        'category_id' => 'required|exists:categories,id',
-        'stock' => 'required|integer|min:0',
-        'is_available' => 'boolean',
-    ];
 }

@@ -1,14 +1,14 @@
-<div class="w-full z-40 sticky top-0 bg-retro-orange" x-data="{ isSidebar: false }">
-    <nav class="flex items-center justify-between px-3 py-4">
-        <a href="{{ route('index') }}" class="text-xl font-semibold dark:text-gray-100">
+<header class="border-2 border-solid border-orange-500 bg-black sticky top-0 z-50" x-data="{ isSidebar: false, isUserMenuOpen: false, isLangMenuOpen: false }">
+    <nav class="mx-auto flex items-center justify-between px-3 py-4">
+        <a href="{{ route('index') }}" class="text-xl font-semibold text-orange-500">
             <img class="w-24 h-auto" src="" alt="{{ config('app.name') }}"
                 onerror="this.onerror=null;this.src='{{ asset('images/logo/logo.png') }}';" loading="lazy">
             <span class="sr-only">
                 {{ config('app.name') }}
             </span>
         </a>
-        <div class="flex flex-wrap items-center justify-center gap-x-8">
-            <div class="hidden md:flex gap-4">
+        <div class="hidden md:flex items-center space-x-6 space-x-reverse ">
+            <div class="hidden md:flex gap-4 text-orange-500" >
                 <x-nav-link :href="route('compose.juices')" :active="request()->routeIs('compose.juices')">
                     {{ __('Composable Juices') }}
                 </x-nav-link>
@@ -73,96 +73,65 @@
                     </x-dropdown>
                 @endif
             </div>
-            <button type="button" class="md:hidden" @click="isSidebar = !isSidebar"
-                class="bg-transparent p-2 inline-flex items-center justify-center text-green-600 dark:text-blue-600 hover:text-green-500 dark:hover:text-blue-500">
-                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                    <path :class="{ 'hidden': isSidebar, 'inline-flex': !isSidebar }" class="inline-flex"
-                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    <path :class="{ 'hidden': !isSidebar, 'inline-flex': isSidebar }" class="hidden"
-                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+            <!-- Mobile Menu Button -->
+            <button @click="isSidebar = !isSidebar" class="md:hidden text-orange-500">
+                <i x-show="!isSidebar" class="fas fa-bars"></i>
+                <i x-show="isSidebar" class="fas fa-times"></i>
             </button>
         </div>
     </nav>
-
 
     <div class="fixed top-0 left-0 bottom-0 w-5/6 max-w-sm z-50 overflow-y-scroll" x-show="isSidebar"
         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full"
         x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300"
         x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
         @click.away="isSidebar = false" x-cloak>
-        <div class="fixed inset-0 bg-gray-800 opacity-25 transition-opacity"
-            x-transition:enter="transition ease-out duration-100" x-transition:leave="transition ease-in duration-100"
-            x-on:click="isSidebar = false"></div>
-        {{-- <div class="fixed inset-0 bg-gray-800 opacity-25"></div> --}}
-        <nav class="relative flex flex-col py-6 px-6 w-full h-full bg-white border-r overflow-y-scroll">
-            <div class="flex items-center">
-                <a class="mr-auto lg:text-3xl sm:text-xl font-bold font-heading" href="{{ route('index') }}">
-                    <img class="w-auto h-14" src="{{ asset('images/logo/logo.png') }}" alt="{{ config('app.name') }}"
-                        loading="lazy" />
+        <div class="absolute inset-0 bg-gray-800 bg-opacity-75" @click="isSidebar = false"
+            x-transition:enter="transition ease-out duration-100" x-transition:leave="transition ease-in duration-100">
+        </div>
+        <nav class="absolute top-0 right-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-white shadow-xl overflow-y-scroll transform transition-all"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full"
+            x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
+            <div class="flex items-center justify-between mb-8">
+                <a href="{{ route('index') }}" class="text-2xl font-bold">
+                    <img class="h-8 w-auto" src="{{ asset('images/logo/logo.png') }}" alt="{{ config('app.name') }}"
+                        loading="lazy">
                 </a>
-                <button @click="isSidebar = false" type="button">
-                    <svg class="h-5 w-5 text-gray-500 cursor-pointer" width="10" height="10" viewbox="0 0 10 10"
-                        fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9.00002 1L1 9.00002M1.00003 1L9.00005 9.00002" stroke="black" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round"></path>
+                <button @click="isSidebar = false" class="text-gray-500 hover:text-gray-700">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-            <div class="border-t border-gray-900 py-2"></div>
+            <div class="mt-auto">
+                <a href="{{ route('compose.juices') }}"
+                    class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Composable Juices') }}</a>
+                <a href="{{ route('compose.coffees') }}"
+                    class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Composable Coffee') }}</a>
+                <a href="{{ route('compose.dried-fruits') }}"
+                    class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Composable Dried Fruits') }}</a>
 
-            <a class="mb-2 text-base font-semibold text-gray-900  hover:text-blue-600 hover:underline "
-                href="{{ route('compose.juices') }}">
-                {{ __('Composable Juices') }}
-            </a>
-            <div class="border-t border-gray-900 py-2"></div>
-
-            <a class="mb-2 text-base font-semibold text-gray-900  hover:text-blue-600 hover:underline "
-                href="route('compose.coffees')">
-                {{ __('Composable Coffee') }}
-
-            </a>
-            <div class="border-t border-gray-900 py-2"></div>
-
-            <a class="mb-2 text-base font-semibold text-gray-900  hover:text-blue-600 hover:underline "
-                href="route('compose.dried-fruits')">
-                {{ __('Composable Dried Fruits') }}
-            </a>
-
-            <div class="border-t border-gray-900 py-2"></div>
-
-            <div class="flex justify-between">
                 @if (Auth::check())
-                    <div class="w-full lg:text-3xl sm:text-xl font-bold font-heading">
-                        <div class="py-3">
-                            <a href="#" class="hover:text-green-500">
-                                {{ Auth::user()->name }}
-                            </a>
-                        </div>
-                        {{-- check user if auth only  --}}
-                        <div class="py-3">
-                            <a class="hover:text-green-500" href="{{ route('admin.dashboard') }}">
-                                {{ __('Dashboard') }}
-                            </a>
-                        </div>
-                    </div>
+                    <div class="border-t border-gray-200 my-4"></div>
+                    <a href="{{ route('admin.dashboard') }}"
+                        class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Dashboard') }}</a>
+                    {{-- <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="w-full text-left py-2 text-base font-semibold text-gray-900 hover:text-orange-500">
+                            {{ __('Log Out') }}
+                        </button>
+                    </form> --}}
                 @else
-                    <div class="border-t border-gray-900 py-2"></div>
-                    <div class="w-full lg:text-3xl sm:text-xl font-bold font-heading">
-                        <div class="py-3">
-                            <a class="hover:text-green-500" href="{{ route('login') }}"
-                                x-on:click.prevent="isTab = 'login'">{{ __('Login') }}
-                            </a>
-                        </div>
-                        {{ __('or') }}
-                        <div class="py-3">
-                            <a class="hover:text-green-500" href="{{ route('register') }}"
-                                x-on:click.prevent="isTab = 'register'">
-                                {{ __('Register') }}</a>
-                        </div>
-                    </div>
+                    <div class="border-t border-gray-200 my-4"></div>
+                    <a href="{{ route('login') }}"
+                        class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Login') }}</a>
+                    <a href="{{ route('register') }}"
+                        class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Register') }}</a>
                 @endif
             </div>
         </nav>
     </div>
-</div>
+</header>

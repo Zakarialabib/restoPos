@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,14 +21,17 @@ class OrderManagement extends Component
     public $showOrderForm = false;
     public $showOrderDetails = false;
     public $selectedOrder;
-    public $orderStatuses = ['pending', 'processing', 'completed', 'cancelled'];
-    public $orderStatus;
-
-    // New order form fields
     public $customerName;
     public $customerPhone;
     public $orderItems = [];
     public $products;
+    public $search = '';
+    public $status = '';
+    public $dateRange = '';
+    public $startDate;
+    public $endDate;
+    public $showAnalytics = false;
+    public $selectedStatus = '';
 
     protected $rules = [
         'customerName' => 'required|string|max:255',
@@ -36,92 +43,116 @@ class OrderManagement extends Component
 
     public function mount(): void
     {
-        $this->products = Product::where('is_available', true)->get();
+        $this->products = Product::available()->get();
     }
 
-    public function render()
+    #[Computed()]
+    public function orders()
     {
-        $orders = Order::latest()->paginate(10);
-        return view('livewire.admin.order-management', compact('orders'));
+        return Order::query()
+            ->when(
+                $this->search,
+                fn ($query) =>
+                $query->where('customer_name', 'like', '%' . $this->search . '%')
+                    ->orWhere('customer_phone', 'like', '%' . $this->search . '%')
+            )
+            ->when(
+                $this->status,
+                fn ($query) =>
+                $query->where('status', $this->status)
+            )
+            ->when($this->dateRange, function ($query) {
+                [$start, $end] = explode(' - ', $this->dateRange);
+                return $query->whereBetween('created_at', [$start, $end]);
+            })
+            ->latest()
+            ->paginate(10);
     }
 
     public function viewOrderDetails(Order $order): void
     {
-        $this->selectedOrder = $order;
+        $this->selectedOrder = $order->load(['items.product']);
         $this->showOrderDetails = true;
     }
 
-    public function updateOrderStatus(Order $order, $status): void
+    public function updateOrderStatus(Order $order, OrderStatus $status): void
     {
-        $order->update(['status' => $status]);
-        $this->selectedOrder = $order->fresh();
+        if (OrderStatus::Completed === $status && ! $order->validate()) {
+            $this->addError('order', 'Cannot complete order - insufficient stock');
+            return;
+        }
+
+        $order->updateStatus($status);
+
+        if (OrderStatus::Completed === $status) {
+            $order->updateInventory();
+        }
     }
 
-    public function toggleOrderForm(): void
-    {
-        $this->showOrderForm = ! $this->showOrderForm;
-        $this->reset(['customerName', 'customerPhone', 'orderItems']);
-    }
-
-    public function addOrderItem(): void
-    {
-        $this->orderItems[] = ['product_id' => '', 'quantity' => 1];
-    }
-
-    public function removeOrderItem($index): void
-    {
-        unset($this->orderItems[$index]);
-        $this->orderItems = array_values($this->orderItems);
-    }
-
-    public function createOrder(): void
+    public function saveOrder(): void
     {
         $this->validate();
 
-        // Fetch all products needed for the order items in a single query
-        $productIds = array_column($this->orderItems, 'product_id');
-        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-
-        // Calculate the total amount using the fetched product data
-        $totalAmount = 0;
-        foreach ($this->orderItems as $item) {
-            $totalAmount += $products[$item['product_id']]->price * $item['quantity'];
-        }
-
-        // Create the order
-        $order = Order::create([
-            'customer_name' => $this->customerName,
-            'customer_phone' => $this->customerPhone,
-            'status' => 'pending',
-            'total_amount' => $totalAmount,
-        ]);
-
-        // Create the order items using the fetched product data
-        foreach ($this->orderItems as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item['product_id'],
-                'quantity' => $item['quantity'],
-                'price' => $products[$item['product_id']]->price,
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'customer_name' => $this->customerName,
+                'customer_phone' => $this->customerPhone,
+                'status' => OrderStatus::Pending,
             ]);
-        }
 
-        $this->toggleOrderForm();
-        session()->flash('message', 'Order created successfully.');
+            foreach ($this->orderItems as $item) {
+                $product = Product::find($item['product_id']);
+                $order->items()->create([
+                    'product_id' => $product->id,
+                    'name' => $product->name,
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price,
+                ]);
+            }
+
+            $order->calculateTotal();
+
+            DB::commit();
+            $this->reset(['customerName', 'customerPhone', 'orderItems']);
+            $this->showOrderForm = false;
+            session()->flash('message', __('Order created successfully.'));
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create order: ' . $e->getMessage());
+            session()->flash('error', __('Failed to create order.'));
+        }
     }
 
-    private function calculateTotal()
+    #[Computed()]
+    public function orderAnalytics()
     {
-        $total = 0;
-        foreach ($this->orderItems as $item) {
-            $product = Product::find($item['product_id']);
-            $total += $product->price * $item['quantity'];
-        }
-        return $total;
+        return [
+            'total_revenue' => $this->orders->sum('total_revenue'),
+            'total_profit' => $this->orders->sum('profit'),
+            'average_order_value' => $this->orders->avg('total_amount'),
+            'order_count' => $this->orders->count(),
+        ];
     }
 
-    public function getOrderHistory($customerId)
+    public function bulkUpdateStatus(OrderStatus $status): void
     {
-        return Order::where('user_id', $customerId)->get();
+        $selectedOrders = Order::whereIn('id', $this->selectedOrders)->get();
+
+        DB::transaction(function () use ($selectedOrders, $status): void {
+            foreach ($selectedOrders as $order) {
+                $this->updateOrderStatus($order, $status);
+            }
+        });
+    }
+
+    public function validateOrder(Order $order): bool
+    {
+        return $order->validate();
+    }
+
+    public function render()
+    {
+        return view('livewire.admin.order-management');
     }
 }

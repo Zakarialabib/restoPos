@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Category;
+use Livewire\Component;
 
 class CategoryManagement extends Component
 {
@@ -15,12 +17,12 @@ class CategoryManagement extends Component
         'name' => 'required|string|max:255',
     ];
 
-    public function mount()
+    public function mount(): void
     {
         $this->categories = Category::all();
     }
 
-    public function saveCategory()
+    public function saveCategory(): void
     {
         $this->validate();
 
@@ -35,20 +37,20 @@ class CategoryManagement extends Component
         $this->categories = Category::all();
     }
 
-    public function editCategory($id)
+    public function editCategory($id): void
     {
         $category = Category::find($id);
         $this->categoryId = $category->id;
         $this->name = $category->name;
     }
 
-    public function deleteCategory($id)
+    public function deleteCategory($id): void
     {
         Category::find($id)->delete();
         $this->categories = Category::all();
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
         $this->name = '';
         $this->categoryId = null;

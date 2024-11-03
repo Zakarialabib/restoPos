@@ -1,166 +1,253 @@
 <div>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4">{{ __('Order Management') }}</h2>
-
-                @if (session()->has('message'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
-                        role="alert">
-                        <span class="block sm:inline">{{ session('message') }}</span>
+            <div class="p-6 bg-white rounded-lg shadow-lg">
+                <!-- Header with Analytics -->
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">{{ __('Order Management') }}</h2>
+                            <p class="text-sm text-gray-600">{{ __('Manage and track orders') }}</p>
+                        </div>
+                        <button wire:click="$toggle('showAnalytics')"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            {{ $showAnalytics ? __('Hide Analytics') : __('Show Analytics') }}
+                        </button>
                     </div>
-                @endif
 
-                <div class="mb-4">
-                    <button wire:click="toggleOrderForm"
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        {{ $showOrderForm ? 'Cancel' : 'Create New Order' }}
+                    @if ($showAnalytics)
+                        <div class="grid grid-cols-4 gap-4 mb-6">
+                            @foreach ($this->orderAnalytics as $key => $value)
+                                <div class="bg-white p-4 rounded-lg shadow border">
+                                    <h3 class="text-sm font-medium text-gray-500">
+                                        {{ Str::title(str_replace('_', ' ', $key)) }}
+                                    </h3>
+                                    <p class="text-2xl font-bold text-gray-900">
+                                        @if (str_contains($key, 'revenue') || str_contains($key, 'profit'))
+                                            {{ number_format($value, 2) }} DH
+                                        @else
+                                            {{ $value }}
+                                        @endif
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Filters and Search -->
+                <div class="mb-6 grid grid-cols-4 gap-4">
+                    <div>
+                        <input type="text" wire:model.live="search" class="w-full rounded border-gray-300"
+                            placeholder="{{ __('Search orders...') }}">
+                    </div>
+                    <div>
+                        <select wire:model.live="selectedStatus" class="w-full rounded border-gray-300">
+                            <option value="">{{ __('All Statuses') }}</option>
+                            @foreach (App\Enums\OrderStatus::cases() as $status)
+                                <option value="{{ $status->value }}">{{ $status->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <input type="text" wire:model="dateRange" x-data x-init="flatpickr($el, { mode: 'range' })"
+                            class="w-full rounded border-gray-300" placeholder="{{ __('Date Range') }}">
+                    </div>
+                    <div>
+                        <button wire:click="$toggle('showOrderForm')"
+                            class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            {{ __('New Order') }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div class="mb-4 flex items-center gap-4">
+                    <select wire:model="bulkAction" class="rounded border-gray-300">
+                        <option value="">{{ __('Bulk Actions') }}</option>
+                        @foreach (App\Enums\OrderStatus::cases() as $status)
+                            <option value="{{ $status->value }}">{{ __('Mark as ') . $status->name }}</option>
+                        @endforeach
+                    </select>
+                    <button wire:click="executeBulkAction"
+                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" wire:loading.attr="disabled">
+                        {{ __('Apply') }}
                     </button>
                 </div>
 
-                @if ($showOrderForm)
-                    <div class="mb-8 bg-gray-100 p-4 rounded">
-                        <h3 class="text-lg font-semibold mb-2">Create New Order</h3>
-                        <form wire:submit="createOrder">
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label for="customerName" class="block text-sm font-medium text-gray-700">Customer
-                                        Name</label>
-                                    <input type="text" id="customerName" wire:model="customerName"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    @error('customerName')
-                                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label for="customerPhone" class="block text-sm font-medium text-gray-700">Customer
-                                        Phone</label>
-                                    <input type="text" id="customerPhone" wire:model="customerPhone"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    @error('customerPhone')
-                                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <h4 class="text-md font-semibold mb-2">Order Items</h4>
-                                @foreach ($orderItems as $index => $item)
-                                    <div class="flex items-center space-x-2 mb-2">
-                                        <select wire:model="orderItems.{{ $index }}.product_id"
-                                            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                            <option value="">Select a product</option>
-                                            @foreach ($products as $product)
-                                                <option value="{{ $product->id }}">{{ $product->name }} -
-                                                    ${{ $product->price }}</option>
-                                            @endforeach
-                                        </select>
-                                        <input type="number" wire:model="orderItems.{{ $index }}.quantity"
-                                            min="1"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                        <button type="button" wire:click="removeOrderItem({{ $index }})"
-                                            class="bg-red-500 text-white px-2 py-1 rounded">Remove</button>
-                                    </div>
-                                @endforeach
-                                <button type="button" wire:click="addOrderItem"
-                                    class="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Add
-                                    Item</button>
-                            </div>
-
-                            <div>
-                                <button type="button" wire:click="createOrder"
-                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create
-                                    Order</button>
-                            </div>
-                        </form>
-                    </div>
-                @endif
-
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Order ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Customer</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Total</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach ($orders as $order)
+                <!-- Orders Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $order->id }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $order->customer_name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">${{ $order->total_amount }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-{{ $order->status === 'completed' ? 'green' : ($order->status === 'cancelled' ? 'red' : 'yellow') }}-100 text-{{ $order->status === 'completed' ? 'green' : ($order->status === 'cancelled' ? 'red' : 'yellow') }}-800">
-                                        {{ ucfirst($order->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button wire:click="viewOrderDetails({{ $order->id }})"
-                                        class="text-indigo-600 hover:text-indigo-900">View Details</button>
-                                </td>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" wire:model="selectAll">
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ __('Order ID') }}
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ __('Customer') }}
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ __('Total') }}
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ __('Status') }}
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ __('Date') }}
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ __('Actions') }}
+                                </th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($orders as $order)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" wire:model="selectedOrders" value="{{ $order->id }}">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        #{{ $order->id }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ $order->customer_name }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ $order->customer_phone }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ number_format($order->total_amount, 2) }} DH
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ __('Profit') }}: {{ number_format($order->getProfit(), 2) }} DH
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span @class([
+                                            'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                                            'bg-yellow-100 text-yellow-800' => $order->status === OrderStatus::Pending,
+                                            'bg-blue-100 text-blue-800' => $order->status === OrderStatus::Processing,
+                                            'bg-green-100 text-green-800' => $order->status === OrderStatus::Completed,
+                                            'bg-red-100 text-red-800' => $order->status === OrderStatus::Cancelled,
+                                        ])>
+                                            {{ $order->status->name }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $order->created_at->format('M d, Y H:i') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button wire:click="viewOrderDetails({{ $order->id }})"
+                                            class="text-blue-600 hover:text-blue-900 mr-3">
+                                            {{ __('View') }}
+                                        </button>
+                                        <div class="relative" x-data="{ open: false }">
+                                            <button @click="open = !open" class="text-gray-600 hover:text-gray-900">
+                                                {{ __('Status') }} ▼
+                                            </button>
+                                            <div x-show="open" @click.away="open = false"
+                                                class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                                <div class="py-1">
+                                                    @foreach (App\Enums\OrderStatus::cases() as $status)
+                                                        <button
+                                                            wire:click="updateOrderStatus({{ $order->id }}, '{{ $status->value }}')"
+                                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                                                            {{ $status->name }}
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                        {{ __('No orders found.') }}
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
+                <!-- Pagination -->
                 <div class="mt-4">
                     {{ $orders->links() }}
                 </div>
 
-                @if ($showOrderDetails)
-                    <div class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
-                        aria-modal="true">
-                        <div
-                            class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true">
+                <!-- Order Details Modal -->
+                @if ($showOrderDetails && $selectedOrder)
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+                        <div class="bg-white rounded-lg p-6 max-w-2xl w-full">
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-lg font-medium">{{ __('Order Details') }} #{{ $selectedOrder->id }}
+                                </h3>
+                                <button wire:click="$set('showOrderDetails', false)"
+                                    class="text-gray-400 hover:text-gray-500">
+                                    <x-icon name="x" class="w-6 h-6" />
+                                </button>
                             </div>
-                            <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
-                                aria-hidden="true">&#8203;</span>
-                            <div
-                                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                    <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Order
-                                        Details</h3>
-                                    <div class="mt-2">
-                                        <p><strong>Order ID:</strong> {{ $selectedOrder->id }}</p>
-                                        <p><strong>Customer:</strong> {{ $selectedOrder->customer_name }}</p>
-                                        <p><strong>Phone:</strong> {{ $selectedOrder->customer_phone }}</p>
-                                        <p><strong>Total:</strong> ${{ $selectedOrder->total_amount }}</p>
-                                        <p><strong>Status:</strong> {{ ucfirst($selectedOrder->status) }}</p>
-                                        <h4 class="font-medium mt-4">Order Items:</h4>
-                                        <ul>
-                                            @foreach ($selectedOrder->items as $item)
-                                                <li>{{ $item->product->name }} - Quantity: {{ $item->quantity }} -
-                                                    ${{ $item->price * $item->quantity }}</li>
-                                            @endforeach
-                                        </ul>
+
+                            <div class="space-y-4">
+                                <!-- Customer Info -->
+                                <div class="border-b pb-4">
+                                    <h4 class="font-medium mb-2">{{ __('Customer Information') }}</h4>
+                                    <p>{{ $selectedOrder->customer_name }}</p>
+                                    <p>{{ $selectedOrder->customer_phone }}</p>
+                                </div>
+
+                                <!-- Order Items -->
+                                <div>
+                                    <h4 class="font-medium mb-2">{{ __('Order Items') }}</h4>
+                                    <div class="space-y-2">
+                                        @foreach ($selectedOrder->items as $item)
+                                            <div class="flex justify-between items-center">
+                                                <div>
+                                                    <p class="font-medium">{{ $item->name }}</p>
+                                                    <p class="text-sm text-gray-500">{{ $item->quantity }} x
+                                                        {{ number_format($item->price, 2) }} DH</p>
+                                                </div>
+                                                <p class="font-medium">
+                                                    {{ number_format($item->price * $item->quantity, 2) }} DH</p>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
-                                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                    <button wire:click="updateOrderStatus({{ $selectedOrder->id }}, 'completed')"
-                                        type="button"
-                                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
-                                        Mark as Completed
-                                    </button>
-                                    <button wire:click="updateOrderStatus({{ $selectedOrder->id }}, 'cancelled')"
-                                        type="button"
-                                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                                        Cancel Order
-                                    </button>
-                                    <button wire:click="$set('showOrderDetails', false)" type="button"
-                                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                                        Close
-                                    </button>
+
+                                <!-- Order Summary -->
+                                <div class="border-t pt-4">
+                                    <div class="flex justify-between items-center font-medium">
+                                        <p>{{ __('Total Amount') }}</p>
+                                        <p>{{ number_format($selectedOrder->total_amount, 2) }} DH</p>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm text-gray-500">
+                                        <p>{{ __('Profit') }}</p>
+                                        <p>{{ number_format($selectedOrder->getProfit(), 2) }} DH</p>
+                                    </div>
                                 </div>
+
+                                <!-- Stock Validation -->
+                                @if (!$this->validateOrder($selectedOrder))
+                                    <div class="bg-red-50 border border-red-200 rounded p-4 mt-4">
+                                        <p class="text-red-700">
+                                            {{ __('Warning: Insufficient stock for some items in this order.') }}
+                                        </p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>

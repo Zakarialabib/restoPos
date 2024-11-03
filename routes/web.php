@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Admin\IngredientManagement;
 use App\Livewire\Admin\InventoryDashboard;
 use App\Livewire\Admin\OrderManagement;
+use App\Livewire\Admin\ProductManagement;
+use App\Livewire\Admin\RecipeManagement;
 use App\Livewire\CartComponent;
 use App\Livewire\CategoryManagement;
 use App\Livewire\ComposableCoffeesIndex;
 use App\Livewire\ComposableDriedFruitsIndex;
 use App\Livewire\ComposableJuicesIndex;
-use App\Livewire\Admin\RecipeManagement;
-use App\Livewire\Admin\IngredientManagement;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -28,8 +29,8 @@ Route::get('/composable-dried-fruits', ComposableDriedFruitsIndex::class)->name(
 
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function (): void {
     Volt::route('dashboard', 'admin.dashboard')->name('admin.dashboard');
-    Volt::route('/orders', 'admin.orders')->name('admin.orders');
-    Volt::route('/products', 'admin.products')->name('admin.products');
+    Route::get('/orders', OrderManagement::class)->name('admin.orders');
+    Route::get('/products', ProductManagement::class)->name('admin.products');
     Route::get('/categories', CategoryManagement::class)->name('admin.categories');
     Route::get('/ingredients', IngredientManagement::class)->name('admin.ingredients');
     Route::get('/inventory', InventoryDashboard::class)->name('admin.inventory');
@@ -58,5 +59,3 @@ Route::get('/up', function () {
     Artisan::call('up');
     return 'Maintenance mode deactivated';
 });
-
-

@@ -77,8 +77,10 @@
                 style="transition-property: margin; transition-duration: 150ms;">
 
                 <!-- Page Content -->
-                <main class="flex-1 rtl:pr-24 rtl:pl-16 rtl:lg:pr-24 rtl:lg:pl-16 ltr:pl-24 ltr:pr-16 ltr:lg:pl-24 ltr:lg:pr-16 px-6 pb-10">
-                    {{ $slot }}
+                <main class="flex-1 flex-grow w-screen mx-auto">
+                    <div class="ltr:pl-28 ltr:pr-10 rtl:pl-10 rtl:pr-28">
+                        {{ $slot }}
+                    </div>
                 </main>
             </div>
         </div>

@@ -1,20 +1,17 @@
-<x-scrollbar as="nav" aria-label="main" class="flex flex-col flex-1 gap-3 px-3">
+<x-scrollbar as="nav" aria-label="main" class="flex flex-col flex-1 gap-4 px-4">
 
     <x-sidebar.link title="{{ __('Dashboard') }}" href="{{ route('admin.dashboard') }}" :isActive="request()->routeIs('admin.dashboard')">
         <x-slot name="icon">
-            <span class="inline-block ltr:mx-3 rtl:mr-3">
-                <x-icons.dashboard class="w-5 h-5" aria-hidden="true" />
+            <span class="inline-block">
+                <span class="material-icons text-2xl">dashboard</span>
             </span>
         </x-slot>
     </x-sidebar.link>
 
     <x-sidebar.dropdown title="{{ __('Products') }}" :active="request()->routeIs(['admin.products'])">
-
         <x-slot name="icon">
-            <span class="inline-block ltr:mx-3 rtl:mr-3">
-                <span class="material-icons">
-                    inventory
-                </span>
+            <span class="inline-block">
+                <span class="material-icons text-2xl">inventory</span>
             </span>
         </x-slot>
         <x-sidebar.sublink title="{{ __('Products') }}" href="{{ route('admin.products') }}" :active="request()->routeIs('admin.products')" />
@@ -25,8 +22,8 @@
 
     <x-sidebar.dropdown title="{{ __('Transactions') }}" :active="request()->routeIs(['admin.orders'])">
         <x-slot name="icon">
-            <span class="inline-block ltr:mx-3 rtl:mr-3">
-                <i class="fas fa-shopping-cart w-5 h-5"></i>
+            <span class="inline-block">
+                <span class="material-icons text-2xl">shopping_cart</span>
             </span>
         </x-slot>
         <x-sidebar.sublink title="{{ __('Orders list') }}" href="{{ route('admin.orders') }}" :active="request()->routeIs('admin.orders')" />
@@ -41,8 +38,8 @@
         'admin.profit-loss-report.index',
     ])">
         <x-slot name="icon">
-            <span class="inline-block ltr:mx-3 rtl:mr-3">
-                <i class="fas fa-chart-line w-5 h-5"></i>
+            <span class="inline-block">
+                <span class="material-icons text-2xl">analytics</span>
             </span>
         </x-slot>
 
@@ -73,8 +70,8 @@
         'setting.backup',
     ])">
         <x-slot name="icon">
-            <span class="inline-block ltr:mx-3 rtl:mr-3">
-                <i class="fas fa-cog w-5 h-5"></i>
+            <span class="inline-block">
+                <span class="material-icons text-2xl">settings</span>
             </span>
         </x-slot>
         <x-sidebar.sublink title="{{ __('Settings') }}" href="{{ route('admin.settings.index') }}"
@@ -102,8 +99,8 @@
                         document.getElementById('logoutform').submit();"
         href="#">
         <x-slot name="icon">
-            <span class="inline-block ltr:mx-3 rtl:mr-3">
-                <i class="fas fa-sign-out-alt w-5 h-5" aria-hidden="true"></i>
+            <span class="inline-block">
+                <span class="material-icons text-2xl">logout</span>
             </span>
         </x-slot>
     </x-sidebar.link> --}}

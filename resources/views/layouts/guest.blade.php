@@ -89,7 +89,7 @@
         </footer>
 
         <!-- Theme Switcher -->
-        <x-theme-switcher />
+        {{-- <x-theme-switcher /> --}}
     </div>
 </body>
 

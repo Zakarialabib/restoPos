@@ -4,6 +4,7 @@ use function Livewire\Volt\{state, layout, title, computed, usesPagination};
 use Carbon\Carbon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 
 title('Dashboard');
 layout('layouts.app');
@@ -12,9 +13,7 @@ usesPagination();
 
 state([
     'totalProducts' => Product::count(),
-    'lowStockProducts' => Product::where('stock', '<=', 10)->count(),
     'recentOrders' => Order::latest()->take(5)->get(),
-    'lowStockProductsList' => Product::where('stock', '<=', 10)->get(),
     'startDate' => fn() => Carbon::now()->startOfMonth(),
     'endDate' => fn() => Carbon::now(),
     'dateRange' => 'this_month',
@@ -86,7 +85,7 @@ $topSellingProducts = computed(function () {
 ?>
 
 <div>
-    <div class="py-12">
+    <div class="w-full py-12">
         <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
 
         <!-- Date Range Selector -->
@@ -130,24 +129,11 @@ $topSellingProducts = computed(function () {
             <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-yellow-400">
                 <div class="flex items-center">
                     <div class="p-3 bg-yellow-400 text-white rounded-full">
-                        <i class="fas fa-box"></i>
+                        <span class="material-icons text-yellow-500">inventory</span>
                     </div>
                     <div class="ml-4">
                         <h2 class="text-xl font-bold text-gray-800">Total Products</h2>
                         <p class="text-3xl font-bold text-gray-700">{{ $totalProducts }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Low Stock Products Card -->
-            <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-red-500">
-                <div class="flex items-center">
-                    <div class="p-3 bg-red-500 text-white rounded-full">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="ml-4">
-                        <h2 class="text-xl font-bold text-gray-800">Low Stock Products</h2>
-                        <p class="text-3xl font-bold text-gray-700">{{ $lowStockProducts }}</p>
                     </div>
                 </div>
             </div>
@@ -171,20 +157,24 @@ $topSellingProducts = computed(function () {
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach ($recentOrders as $order)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $order->id }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $order->customer_name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ number_format($order->total_amount, 2) }}DH
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                        {{ ucfirst($order->status) }}
-                                    </span>
-                                </td>
-                            </tr>
-                        @endforeach
+                        @forelse ($recentOrders as $order)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $order?->id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $order?->customer_name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $order?->total_amount }}DH
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $order?->status->color() }}">
+                                    {{ $order?->status->label() }}
+                                </span>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center">No orders found</td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -205,20 +195,24 @@ $topSellingProducts = computed(function () {
                                 Stock</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach ($lowStockProductsList as $product)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $product->id }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        {{ $product->stock }}
-                                    </span>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
+                    {{--  <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse ($lowStockProductsList as $product)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $product->id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    {{ $product->stock }}
+                                </span>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 whitespace-nowrap text-center">No products found</td>
+                        </tr>
+                        @endforelse
+                    </tbody> --}}
                 </table>
             </div>
         </div>
@@ -239,14 +233,18 @@ $topSellingProducts = computed(function () {
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach ($this->topSellingProducts as $product)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $product['name'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $product['quantity'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ number_format($product['revenue'], 2) }} DH
-                                </td>
-                            </tr>
-                        @endforeach
+                        @forelse ($this->topSellingProducts as $product)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $product['name'] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $product['quantity'] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ number_format($product['revenue'], 2) }} DH
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 whitespace-nowrap text-center">No products found</td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

@@ -29,6 +29,7 @@ class ComposableCoffeesIndex extends Component
     public $cart = [];
     public $totalPrice = 0;
 
+    public $cartTotal;
     public $customerName;
     public $customerPhone;
     public $showSuccess = false;
@@ -112,7 +113,7 @@ class ComposableCoffeesIndex extends Component
     {
         $coffee = Product::find($coffeeId);
 
-        if (!$coffee) {
+        if ( ! $coffee) {
             $this->addError('invalidCoffee', "The selected coffee is not available.");
             return;
         }
@@ -134,7 +135,7 @@ class ComposableCoffeesIndex extends Component
             }
         }
         $this->totalPrice += 5; // Base price
-        if ($this->selectedSugar && $this->selectedSugar !== 'No Sugar') {
+        if ($this->selectedSugar && 'No Sugar' !== $this->selectedSugar) {
             $this->totalPrice += 2; // Sugar price
         }
         $this->totalPrice += count($this->selectedAddons) * 3; // Addons price
@@ -152,7 +153,7 @@ class ComposableCoffeesIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
+        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function toggleCheckout(): void
@@ -166,7 +167,7 @@ class ComposableCoffeesIndex extends Component
 
         foreach ($this->selectedCoffees as $coffeeId) {
             $coffee = Product::find($coffeeId);
-            if (!$coffee || $coffee->stock <= 0) {
+            if ( ! $coffee || $coffee->stock <= 0) {
                 $this->addError('outOfStock', "{$coffee->name} is out of stock.");
                 return;
             }
@@ -222,13 +223,13 @@ class ComposableCoffeesIndex extends Component
 
     public function placeOrder(): void
     {
-        $this->validate([
-            'customerName' => 'required|string|max:255',
-            'customerPhone' => 'required|string|max:255',
-        ], [
-            'customerName.required' => __('Please enter your name.'),
-            'customerPhone.required' => __('Please enter your phone number.'),
-        ]);
+        // $this->validate([
+        //     'customerName' => 'required|string|max:255',
+        //     'customerPhone' => 'required|string|max:255',
+        // ], [
+        //     'customerName.required' => __('Please enter your name.'),
+        //     'customerPhone.required' => __('Please enter your phone number.'),
+        // ]);
 
         $order = Order::create([
             'customer_name' => $this->customerName,

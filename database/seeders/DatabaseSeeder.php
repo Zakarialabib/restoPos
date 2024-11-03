@@ -19,12 +19,14 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Test User',
-            'email' => 'admin@mail.com',
+            'email' => 'admin@gmail.com',
         ]);
 
         $this->call([
+            CategorySeeder::class,
             ProductSeeder::class,
             IngredientSeeder::class,
+            RecipeSeeder::class,
         ]);
     }
 }
