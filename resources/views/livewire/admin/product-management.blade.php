@@ -8,21 +8,20 @@
                     <p class="text-sm text-gray-600">{{ __('Manage your product catalog') }}</p>
                 </div>
                 <div class="flex gap-4">
-                    <button wire:click="$toggle('showForm')"
-                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                        {{ $showForm ? __('Hide Form') : __('Add Product') }}
-                    </button>
-                    <button wire:click="$toggle('showAnalytics')"
-                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    <x-button wire:click="$toggle('showForm')" color="primary">
+                        <span class="material-icons">{{ $showForm ? 'close' : 'add' }}</span>
+                        {{ $showForm ? __('Close Form') : __('Add Product') }}
+                    </x-button>
+                    <x-button wire:click="$toggle('showAnalytics')" color="success">
+                        <span class="material-icons">{{ $showAnalytics ? 'visibility_off' : 'visibility' }}</span>
                         {{ $showAnalytics ? __('Hide Analytics') : __('Show Analytics') }}
-                    </button>
+                    </x-button>
                 </div>
             </div>
 
             @if ($showAnalytics)
                 <div class="grid grid-cols-4 gap-4 mb-6">
                     <x-stat-card title="{{ __('Total Products') }}" :value="$this->totalProducts" icon="box" />
-                    {{-- <x-stat-card title="{{ __('Low Stock') }}" :value="$this->lowStockCount" icon="alert-triangle" color="red" /> --}}
                     <x-stat-card title="{{ __('Total Value') }}" :value="number_format($this->inventoryValue, 2) . ' DH'" icon="currency-dollar" />
                     <x-stat-card title="{{ __('Active Categories') }}" :value="$this->activeCategories" icon="folder" />
                 </div>
@@ -31,103 +30,177 @@
 
         <!-- Product Form -->
         @if ($showForm)
-            <form wire:submit="saveProduct" class="mb-8 bg-gray-50 p-6 rounded-lg">
-                <div class="grid grid-cols-2 gap-6">
-                    <!-- Basic Information -->
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-semibold">{{ __('Basic Information') }}</h3>
+            <div class="bg-white rounded-lg shadow-lg mb-6 p-6">
+                <h3 class="text-xl font-semibold text-indigo-700 mb-6">
+                    {{ $editingProductId ? __('Edit Product') : __('Create New Product') }}
+                </h3>
 
-                        <div>
-                            <x-input-label for="name" :value="__('Name')" />
-                            <x-input type="text" id="name" name="name" wire:model="name" class="w-full" />
-                            @error('name')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
+                <form wire:submit="saveProduct">
+                    <div class="grid grid-cols-3 gap-8">
+                        <!-- Basic Info Section -->
+                        <div class="col-span-1 bg-indigo-50 p-6 rounded-lg">
+                            <h4 class="font-semibold text-indigo-800 mb-4">{{ __('Basic Information') }}</h4>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <x-input-label for="name" :value="__('Product Name')" />
+                                    <x-input type="text" id="name" wire:model="name" class="w-full mt-1" />
+                                    @error('name')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <x-input-label for="category_id" :value="__('Category')" />
+                                    <select id="category_id" wire:model="category_id"
+                                        class="w-full mt-1 rounded-md border-gray-300">
+                                        <option value="">{{ __('Select Category') }}</option>
+                                        @foreach ($this->categories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('category_id')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <x-input-label for="price" :value="__('Price (DH)')" />
+                                    <x-input type="number" id="price" wire:model="price" class="w-full mt-1"
+                                        step="0.01" />
+                                    @error('price')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
+
+                            <div class="space-y-4 mt-4">
+                                <div class="border-2 border-dashed border-emerald-200 rounded-lg p-4">
+                                    <div class="text-center">
+                                        @if ($image && !$editingProductId)
+                                            <img src="{{ $image->temporaryUrl() }}"
+                                                class="mx-auto h-48 w-48 object-cover rounded-lg mb-4">
+                                        @elseif ($editingProductId && $image)
+                                            <img src="{{ Storage::url($image) }}"
+                                                class="mx-auto h-48 w-48 object-cover rounded-lg mb-4">
+                                        @else
+                                            <span class="material-icons text-emerald-400 text-5xl">image</span>
+                                            <p class="mt-2 text-sm text-emerald-600">{{ __('Upload product image') }}
+                                            </p>
+                                        @endif
+
+                                        <input type="file" wire:model="image" class="hidden" id="image-upload"
+                                            accept="image/*">
+                                        <label for="image-upload"
+                                            class="mt-2 inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-700 rounded-md font-semibold text-xs uppercase tracking-widest hover:bg-emerald-200 cursor-pointer">
+                                            {{ __('Choose Image') }}
+                                        </label>
+                                        @error('image')
+                                            <span class="block mt-2 text-red-500 text-sm">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <x-input-label for="category_id" :value="__('Category')" />
-                            <select id="category_id" name="category_id" wire:model="category_id"
-                                class="w-full rounded-md border-gray-300">
-                                <option value="">{{ __('Select Category') }}</option>
-                                @foreach ($this->categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('category_id')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
+
+                        <!-- Description -->
+                        <div class="col-span-1 bg-emerald-50 p-6 rounded-lg">
+                            <h4 class="font-semibold text-emerald-800 mb-4">{{ __('Details & Media') }}</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <x-input-label for="description" :value="__('Description')" />
+                                    <x-textarea id="description" wire:model="description" class="w-full mt-1"
+                                        rows="4" />
+                                    @error('description')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 bg-white rounded-lg">
+                                    <div>
+                                        <h4 class="font-medium">{{ __('Available for Sale') }}</h4>
+                                        <p class="text-sm text-gray-500">
+                                            {{ __('Make this product available in store') }}</p>
+                                    </div>
+                                    <x-checkbox wire:model="is_available" />
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 bg-white rounded-lg">
+                                    <div>
+                                        <h4 class="font-medium">{{ __('Featured Product') }}</h4>
+                                        <p class="text-sm text-gray-500">{{ __('Show in featured section') }}</p>
+                                    </div>
+                                    <x-checkbox wire:model="is_featured" />
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <x-input-label for="description" :value="__('Description')" />
-                            <x-textarea id="description" name="description" wire:model="description" class="w-full"
-                                rows="3" />
-                            @error('description')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
+                        <!-- Settings & Recipe Section -->
+                        <div class="col-span-1 bg-amber-50 p-6 rounded-lg">
+                            <h4 class="font-semibold text-amber-800 mb-4">{{ __('Recipe') }}</h4>
+
+                            <!-- Recipe Section -->
+                            @if ($editingProductId && \App\Models\Product::find($editingProductId)->recipe)
+                                <div class="mt-4">
+                                    <h4 class="font-semibold">{{ __('Recipe Instructions') }}</h4>
+                                    <ul class="list-disc pl-5">
+                                        @foreach (\App\Models\Product::find($editingProductId)->recipe->instructions as $instruction)
+                                            <li>{{ $instruction }}</li>
+                                        @endforeach
+                                    </ul>
+                                    <div class="mt-4 w-full flex justify-end">
+                                        <x-button wire:click="toggleRecipeForm({{ $editingProductId }})"
+                                            color="secondary">
+                                            {{ __('Edit Recipe') }}
+                                        </x-button>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="mt-4">
+                                    <x-button wire:click="toggleRecipeForm({{ $editingProductId }})" color="secondary">
+                                        {{ __('Add Recipe') }}
+                                    </x-button>
+                                </div>
+                            @endif
+
+                            @if ($showRecipeForm)
+                                <div class="border p-4 rounded-lg mt-4">
+                                    <h4 class="font-medium">{{ __('Recipe Instructions') }}</h4>
+                                    <div class="space-y-2">
+                                        @foreach ($recipeInstructions as $index => $instruction)
+                                            <div class="flex gap-2">
+                                                <input type="text"
+                                                    wire:model="recipeInstructions.{{ $index }}"
+                                                    class="w-full rounded border-gray-300">
+                                                <x-button type="button"
+                                                    wire:click="removeInstruction({{ $index }})"
+                                                    color="danger">
+                                                    <span class="material-icons text-red-500">delete</span>
+                                                </x-button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Form Actions -->
+                            <div class="mt-8 flex justify-end gap-4">
+                                <x-button type="button" color="secondary" wire:click="$set('showForm', false)">
+                                    {{ __('Cancel') }}
+                                </x-button>
+                                <x-button type="submit" color="primary">
+                                    <span
+                                        class="material-icons mr-2">{{ $editingProductId ? 'update' : 'save' }}</span>
+                                    {{ $editingProductId ? __('Update Product') : __('Create Product') }}
+                                </x-button>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Pricing & Stock -->
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-semibold">{{ __('Pricing & Stock') }}</h3>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <x-input-label for="price" :value="__('Price')" />
-                                <x-input type="number" id="price" name="price" wire:model="price" class="w-full"
-                                    step="0.01" />
-                                @error('price')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Options -->
-                        <div class="space-y-2 pt-4">
-                            <div class="flex items-center">
-                                <x-checkbox wire:model="is_available" />
-                                <span class="ml-2">{{ __('Available for Sale') }}</span>
-                            </div>
-                            <div class="flex items-center">
-                                <x-checkbox wire:model="is_featured" />
-                                <span class="ml-2">{{ __('Featured Product') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Image Upload -->
-                <div class="mt-6">
-                    <x-input-label for="image" :value="__('Product Image')" />
-                    <div class="mt-2 flex items-center">
-                        <input type="file" wire:model="image" accept="image/*" class="hidden" id="image-upload">
-                        <label for="image-upload"
-                            class="cursor-pointer bg-white px-4 py-2 border border-gray-300 rounded-md">
-                            {{ __('Choose Image') }}
-                        </label>
-                        @if ($image)
-                            <div class="ml-4">
-                                <img src="{{ $image->temporaryUrl() }}" class="h-20 w-20 object-cover rounded">
-                            </div>
-                        @endif
-                    </div>
-                    @error('image')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Actions -->
-                <div class="mt-6 flex justify-end gap-4">
-                    <x-button type="button" color="secondary" wire:click="$set('showForm', false)">
-                        {{ __('Cancel') }}
-                    </x-button>
-                    <x-button type="submit" color="success">
-                        {{ $editingProductId ? __('Update Product') : __('Create Product') }}
-                    </x-button>
-                </div>
-            </form>
+                </form>
+            </div>
         @endif
 
         <!-- Filters -->
@@ -153,7 +226,8 @@
         <!-- Products Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($this->products as $product)
-                <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div
+                    class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                     @if ($product->image)
                         <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}"
                             class="w-full h-48 object-cover">
@@ -161,20 +235,15 @@
                     <div class="p-4">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h3 class="text-lg font-semibold">{{ $product->name }}</h3>
+                                <h3 class="text-lg font-semibold text-gray-800">{{ $product->name }}</h3>
                                 <p class="text-sm text-gray-600">{{ $product->category->name }}</p>
                             </div>
                             <div class="flex flex-col items-end">
-                                <span class="text-lg font-bold">{{ $product->price }}</span>
-                                {{-- <x-badge :color="$product->stock_status_color">
-                                    {{ $product->stock_status }}
-                                </x-badge> --}}
+                                <span class="text-lg font-bold text-indigo-600">{{ $product->price }} DH</span>
                             </div>
                         </div>
 
-                        <p class="mt-2 text-sm text-gray-600">
-                            {{ Str::limit($product->description, 100) }}
-                        </p>
+                        <p class="mt-2 text-sm text-gray-600">{{ Str::limit($product->description, 100) }}</p>
 
                         <div class="mt-4 flex justify-between items-center">
                             <div class="flex gap-2">
@@ -185,14 +254,26 @@
                             <div class="flex gap-2">
                                 <x-button type="button" wire:click="editProduct({{ $product->id }})"
                                     color="info">
-                                    <span class="material-icons text-blue-500">edit</span>
+                                    <span class="material-icons">edit</span>
                                 </x-button>
                                 <x-button type="button" wire:click="deleteProduct({{ $product->id }})"
                                     color="danger">
-                                    <span class="material-icons text-red-500">delete</span>
+                                    <span class="material-icons">delete</span>
                                 </x-button>
                             </div>
                         </div>
+
+                        <!-- Recipe Display -->
+                        @if ($product->recipe)
+                            <div class="mt-4">
+                                <h4 class="font-semibold">{{ __('Recipe Instructions') }}</h4>
+                                <ul class="list-disc pl-5">
+                                    @foreach ($product->recipe->instructions as $instruction)
+                                        <li>{{ $instruction }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @empty

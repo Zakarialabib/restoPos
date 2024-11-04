@@ -28,8 +28,6 @@ class Product extends Model
         'image',
         'is_available',
         'is_featured',
-        'supplier_info',
-        'instructions',
         'recipe_id',
     ];
 
@@ -44,13 +42,12 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    // public function ingredients(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Ingredient::class)
-    //         ->using(::class)
-    //         ->withPivot('stock')
-    //         ->withTimestamps();
-    // }
+    public function ingredients(): BelongsToMany
+    {
+        return $this->belongsToMany(Ingredient::class)
+            ->withPivot(['stock'])
+            ->withTimestamps();
+    }
 
     public function orderItems(): HasMany
     {
@@ -94,7 +91,7 @@ class Product extends Model
     protected function price(): Attribute
     {
         return Attribute::make(
-            get: fn(int $value) => Number::format($value,  locale: 'fr_MA'),
+            get: fn (int $value) => Number::format($value, locale: 'fr_MA'),
         );
     }
 

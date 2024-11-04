@@ -52,14 +52,14 @@ class ProductFactory extends Factory
 
     public function available(): self
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'is_available' => true,
         ]);
     }
 
     public function featured(): self
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'is_featured' => true,
         ]);
     }

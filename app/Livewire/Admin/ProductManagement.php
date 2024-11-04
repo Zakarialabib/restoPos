@@ -7,6 +7,7 @@ namespace App\Livewire\Admin;
 use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\Product;
+use App\Models\Recipe;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -39,6 +40,11 @@ class ProductManagement extends Component
     public $totalProducts = 0;
     public $inventoryValue = 0;
     public $activeCategories = 0;
+    public $showRecipeForm = false; // New property for recipe form
+    public $recipeId = null; // To hold the recipe ID for editing
+    public $recipeInstructions = []; // To hold recipe instructions
+    public $recipeNutritionalInfo = []; // To hold nutritional info for the recipe
+
 
     protected $rules = [
         'name' => 'required|string|max:255',
@@ -50,6 +56,7 @@ class ProductManagement extends Component
         'selectedIngredients' => 'array',
         'selectedIngredients.*.id' => 'exists:ingredients,id',
         'selectedIngredients.*.stock' => 'required|numeric|min:0',
+        'recipeInstructions' => 'required|array|min:1', // Recipe instructions validation
     ];
 
     #[Computed]
@@ -112,7 +119,56 @@ class ProductManagement extends Component
         $product->ingredients()->sync(collect($this->selectedIngredients)->mapWithKeys(fn ($ingredient) => [$ingredient['id'] => ['stock' => $ingredient['stock']]]));
 
         $this->reset();
+
         session()->flash('message', __('Product saved successfully.'));
+    }
+
+    public function toggleRecipeForm($productId): void
+    {
+        $this->showRecipeForm = ! $this->showRecipeForm;
+        $this->recipeId = null; // Reset recipe ID
+        $this->recipeInstructions = []; // Reset instructions
+
+        if ($this->showRecipeForm) {
+            $product = Product::with('recipe')->find($productId);
+            if ($product->recipe) {
+                $this->recipeId = $product->recipe->id;
+                $this->recipeInstructions = $product->recipe->instructions;
+                // Load other recipe data if needed
+            }
+        }
+    }
+
+    public function saveRecipe(): void
+    {
+        $this->validate([
+            'recipeInstructions' => 'required|array|min:1',
+        ]);
+
+        $recipeData = [
+            'name' => $this->name,
+            'description' => $this->description,
+            'instructions' => $this->recipeInstructions,
+            'preparation_time' => 10, // Set a default or make it dynamic
+            'type' => 'juice', // Set a default or make it dynamic
+            'is_featured' => false, // Set a default or make it dynamic
+            'nutritional_info' => [], // Calculate or set default
+        ];
+
+        if ($this->recipeId) {
+            $recipe = Recipe::find($this->recipeId);
+            $recipe->update($recipeData);
+        } else {
+            $recipe = Recipe::create($recipeData);
+            // Link the recipe to the product
+            $product = Product::find($this->editingProductId);
+            $product->recipe()->associate($recipe);
+            $product->save();
+        }
+
+        $this->reset();
+        $this->showRecipeForm = false;
+        session()->flash('message', __('Recipe saved successfully.'));
     }
 
     public function editProduct(Product $product): void
@@ -132,6 +188,13 @@ class ProductManagement extends Component
                 'stock' => $ingredient->pivot->stock,
             ];
         })->toArray();
+    }
+
+    public function updatedShowForm($value): void
+    {
+        if ( ! $value) {
+            $this->reset();
+        }
     }
 
     public function deleteProduct(Product $product): void

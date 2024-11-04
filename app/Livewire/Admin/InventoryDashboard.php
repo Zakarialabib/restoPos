@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\InventoryAlert;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -117,8 +115,8 @@ class InventoryDashboard extends Component
     public function getExpiryTracking()
     {
         return $this->expiringIngredients
-            ->groupBy(fn($ingredient) => $ingredient->expiry_date->format('Y-m-d'))
-            ->map(fn($group) => [
+            ->groupBy(fn ($ingredient) => $ingredient->expiry_date->format('Y-m-d'))
+            ->map(fn ($group) => [
                 'count' => $group->count(),
                 'value' => $group->sum('stock')
             ]);

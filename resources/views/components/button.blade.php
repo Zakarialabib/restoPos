@@ -2,7 +2,7 @@
     'type' => 'button', // button or submit
     'href' => '#', // if type is null
     'color' => 'primary', // primary color by default
-    'size' => 'md', // default size is medium
+    'size' => 'xs', // default size is medium
     'radius' => 'medium', // default border radius
     'name' => null, // button name attribute
     'disabled' => false, // button disabled state

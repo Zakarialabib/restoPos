@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use App\Models\Recipe;
 use App\Models\Ingredient;
+use App\Models\Recipe;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Rule;
@@ -19,7 +19,7 @@ class RecipeManagement extends Component
     #[Rule('required|string|max:255')]
     public $name;
 
-    #[Rule('required|text')]
+    #[Rule('required|string')]
     public $description;
 
     #[Rule('required|integer|min:0')]
@@ -47,10 +47,8 @@ class RecipeManagement extends Component
     public function filteredIngredients()
     {
         return Ingredient::query()
-            ->when($this->searchIngredient, fn($q) => 
+            ->when($this->searchIngredient, fn ($q) =>
                 $q->where('name', 'like', "%{$this->searchIngredient}%"))
-            ->when($this->selectedCategory, fn($q) => 
-                $q->where('category_id', $this->selectedCategory))
             ->get();
     }
 
@@ -70,7 +68,7 @@ class RecipeManagement extends Component
         return collect($this->selectedIngredients)->reduce(function ($carry, $ingredient) {
             $ingredientModel = Ingredient::find($ingredient['id']);
             $quantity = $ingredient['quantity'];
-            
+
             return [
                 'calories' => $carry['calories'] + ($ingredientModel->nutritional_info['calories'] * $quantity / 100),
                 'protein' => $carry['protein'] + ($ingredientModel->nutritional_info['protein'] * $quantity / 100),
@@ -110,7 +108,7 @@ class RecipeManagement extends Component
             $recipe->ingredients()->sync($ingredientData);
 
             // Create corresponding product
-            $product = $recipe->product()->updateOrCreate(
+            $recipe->product()->updateOrCreate(
                 [],
                 [
                     'name' => $recipe->name,
@@ -155,7 +153,7 @@ class RecipeManagement extends Component
         $this->type = $recipe->type;
         $this->is_featured = $recipe->is_featured;
         $this->instructions = $recipe->instructions;
-        
+
         $this->selectedIngredients = $recipe->ingredients->mapWithKeys(function ($ingredient) {
             return [$ingredient->id => [
                 'id' => $ingredient->id,

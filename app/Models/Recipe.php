@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +26,7 @@ class Recipe extends Model
 
     public function ingredients(): BelongsToMany
     {
-        return $this->belongsToMany(Ingredient::class)
+        return $this->belongsToMany(Ingredient::class, 'ingredient_recipe')
             ->withPivot(['quantity', 'unit', 'preparation_notes'])
             ->withTimestamps();
     }

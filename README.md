@@ -2,63 +2,118 @@
 
 ## Overview
 
-This project is management system designed for a fruit bar business. It utilizes the **Laravel** framework with **Livewire** for dynamic, reactive user interfaces. The system efficiently manages various aspects of the fruit bar business, including product management, order processing, inventory control, and customer interactions.
+This project is management system designed for a fruit bar business. It utilizes the **Laravel** framework with **Livewire** for dynamic, reactive user interfaces. The system efficiently manages various aspects of the fruit bar business, including product management, order processing, inventory control, and customer interactions, with a special emphasis on customizable products and recipes.
 
 ## Core Features
+- Categorized products (Juices, Coffee, Dried Fruits)
+- Multi-language product names and descriptions
+- Dynamic pricing and availability status
+- Recipe-based product creation
+
+### 2. Advanced Ingredient System
+- Detailed ingredient tracking with:
+  - Stock management
+  - Expiry date monitoring
+  - Nutritional information
+  - Storage conditions
+  - Supplier information
+- Unit conversion support
+- Category-based organization
+
+### 3. Recipe Management
+- Detailed recipe creation with:
+  - Step-by-step instructions
+  - Preparation time tracking
+  - Nutritional calculations
+  - Ingredient quantities and units
+  - Preparation notes
+- Featured recipes highlighting
+
+### 4. Composable Products
+- Custom product creation system
+- Type-based ingredient compatibility
+- Dynamic pricing calculation
+- Nutritional information aggregation
+- Supported types:
+  - Custom juice blends
+  - Coffee variations
+  - Dried fruit mixes
+
+### 5. Inventory Management
+- Real-time stock tracking
+- Automatic alerts for:
+  - Low stock levels
+  - Approaching expiry dates
+- Stock movement history
+- Supplier management
 
 ### Customer-Facing Features
 
 1. Product Composition
-- Custom juice creation
-- Custom coffee creation
+- Custom juice creation with real-time pricing
+- Custom coffee blend creation
 - Custom dried fruits box creation
 - Step-by-step composition wizard
 - Real-time price calculation
+- Nutritional information display
+- Stock validation during composition
 
 2. Shopping Cart
-- Add/remove items
-- Update quantities
-- View order summary
-- Checkout process
+- Add/remove items (both standard and custom products)
+- Update quantities with stock validation
+- View order summary with nutritional information
+- Seamless checkout process
 
 3. Product Catalog
-- Browse available products
-- Search functionality
-- Category filtering
+- Browse available products and recipes
+- Advanced search functionality
+- Category-based filtering
 - Theme customization
+- Nutritional information display
 
 ### Admin Features
 
 1. Inventory Management
-- Track ingredient stock levels
-- Low stock alerts
-- Expiry date tracking
+- Track ingredient stock levels with unit conversion
+- Low stock alerts with resolution tracking
+- Expiry date monitoring and notifications
 - Batch management
-- Supplier information
+- Supplier information tracking
+- Storage condition management
+- Cost and price tracking
 
-2. Product Management
-- Create/edit products
-- Manage categories
-- Set prices
-- Upload images
-- Configure ingredients
+2. Product & Recipe Management
+- Create/edit standard products
+- Manage product categories
+- Set dynamic pricing
+- Upload product images
+- Configure ingredients with quantities
+- Create and manage detailed recipes
+- Track preparation times and instructions
+- Monitor nutritional information
 
 3. Order Management
-- View/process orders
+- Process both standard and custom orders
+- Real-time stock validation
 - Update order status
 - Track order history
-- Generate reports
+- Generate revenue reports
+- Calculate profits
 
 4. Recipe Management
-- Create product recipes
+- Create detailed product recipes
 - Manage ingredient quantities
 - Set preparation instructions
+- Track nutritional information
+- Categorize recipes (desserts, drinks, etc.)
+- Associate recipes with products
 
 5. Dashboard
-- Sales overview
+- Sales overview and analytics
 - Low stock alerts
+- Expiry notifications
 - Recent orders
-- Key metrics
+- Key performance metrics
 
 ## Technical Stack
 
@@ -86,25 +141,27 @@ This project is management system designed for a fruit bar business. It utilizes
 
 ✅ Implemented:
 - Dynamic product composition system
-  - Custom coffee blends
-  - Custom juice mixes
-  - Dried fruit combinations
 - Real-time inventory tracking
 - Multi-language support (with RTL capabilities)
 - Theme customization system
 - Responsive dashboard layouts
+- Recipe management system
+- Nutritional information tracking
+- Stock validation system
 
 🔄 In Progress:
 - Predictive analytics for inventory
 - Supplier order automation
 - Voice-controlled interface
 - Advanced reporting system
+- Customer preference tracking
 
 🚀 Planned Improvements:
 - Enhanced caching implementation
 - Background job processing optimization
 - Real-time notifications system
 - API versioning implementation
+- Mobile application integration
 
 ## Architecture & Best Practices
 

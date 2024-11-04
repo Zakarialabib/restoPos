@@ -49,12 +49,12 @@ class IngredientManagement extends Component
         return Ingredient::query()
             ->when(
                 $this->search,
-                fn($query) =>
+                fn ($query) =>
                 $query->where('name', 'like', '%' . $this->search . '%')
             )
             ->when(
                 $this->type,
-                fn($query) =>
+                fn ($query) =>
                 $query->where('type', $this->type)
             )
             ->latest()

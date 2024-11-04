@@ -18,8 +18,8 @@ return new class () extends Migration {
             $table->text('description')->nullable();
             $table->string('slug')->unique();
             $table->decimal('price', 10, 2);
-            $table->foreignId('category_id')->constrained('categories')->nullable();
-            // $table->foreignId('recipe_id')->constrained('recipes')->nullable();
+            $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
+            $table->foreignId('recipe_id')->nullable()->constrained('recipes')->cascadeOnDelete();
             $table->string('image')->nullable();
             $table->boolean('is_available')->default(true);
             $table->boolean('is_featured')->default(false);

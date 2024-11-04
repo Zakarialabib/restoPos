@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Recipe;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -26,6 +27,7 @@ class ProductSeeder extends Seeder
                 'price' => 0.99,
                 'image' => 'https://example.com/images/apple.jpg',
                 'is_available' => true,
+                'recipe_id' => Recipe::where('name', 'Jus de pomme - عصير التفاح')->first()->id
             ],
             [
                 'name' => 'Panache - باناش',
@@ -33,6 +35,7 @@ class ProductSeeder extends Seeder
                 'price' => 4.99,
                 'image' => 'https://example.com/images/panache.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Jus de banane - عصير الموز',
@@ -40,6 +43,7 @@ class ProductSeeder extends Seeder
                 'price' => 0.59,
                 'image' => 'https://example.com/images/banana.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => "Jus d'orange - عصير البرتقال",
@@ -47,6 +51,7 @@ class ProductSeeder extends Seeder
                 'price' => 0.79,
                 'image' => 'https://example.com/images/orange.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Jus d\'ananas - عصير الاناناس',
@@ -54,6 +59,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.99,
                 'image' => 'https://example.com/images/pineapple.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Jus de pêche - عصير الخوخ',
@@ -61,6 +67,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.29,
                 'image' => 'https://example.com/images/peach.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Jus d\'avocat - عصير الافوكادو',
@@ -68,6 +75,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.49,
                 'image' => 'https://example.com/images/avocado.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Jus de poire - عصير الاجاص',
@@ -75,6 +83,7 @@ class ProductSeeder extends Seeder
                 'price' => 0.89,
                 'image' => 'https://example.com/images/pear.jpg',
                 'is_available' => true,
+                'recipe_id' => Recipe::where('name', 'Jus de poire - عصير الاجاص')->first()->id
             ],
             [
                 'name' => 'Jus de dragon fruit - عصير فاكهة التنين',
@@ -82,6 +91,7 @@ class ProductSeeder extends Seeder
                 'price' => 2.49,
                 'image' => 'https://example.com/images/dragon_fruit.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Jus de papaye - عصير البابايا',
@@ -89,6 +99,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.79,
                 'image' => 'https://example.com/images/papaya.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Jus de mangue - عصير المانجو',
@@ -96,6 +107,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.99,
                 'image' => 'https://example.com/images/mango.jpg',
                 'is_available' => true,
+                'recipe_id' => Recipe::where('name', 'Jus de mangue - عصير المانجو')->first()->id
             ],
             // Mixed Fruit Smoothies
             [
@@ -104,6 +116,7 @@ class ProductSeeder extends Seeder
                 'price' => 5.99,
                 'image' => 'https://example.com/images/tropical_smoothie.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Smoothie Banane-Orange - سموذي موز وبرتقال',
@@ -111,6 +124,7 @@ class ProductSeeder extends Seeder
                 'price' => 5.49,
                 'image' => 'https://example.com/images/banana_orange_smoothie.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             // Layered Juices
             [
@@ -119,6 +133,7 @@ class ProductSeeder extends Seeder
                 'price' => 6.99,
                 'image' => 'https://example.com/images/sunrise_layered.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             // Energy Smoothies
             [
@@ -127,6 +142,7 @@ class ProductSeeder extends Seeder
                 'price' => 6.49,
                 'image' => 'https://example.com/images/green_energy.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ]
         ];
 
@@ -147,6 +163,7 @@ class ProductSeeder extends Seeder
                 'price' => 2.99,
                 'image' => 'https://example.com/images/espresso.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Cappuccino',
@@ -154,6 +171,7 @@ class ProductSeeder extends Seeder
                 'price' => 3.99,
                 'image' => 'https://example.com/images/cappuccino.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Latte',
@@ -161,6 +179,7 @@ class ProductSeeder extends Seeder
                 'price' => 3.49,
                 'image' => 'https://example.com/images/latte.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Mocha',
@@ -168,6 +187,7 @@ class ProductSeeder extends Seeder
                 'price' => 3.99,
                 'image' => 'https://example.com/images/mocha.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Caramel Macchiato',
@@ -175,6 +195,7 @@ class ProductSeeder extends Seeder
                 'price' => 4.49,
                 'image' => 'https://example.com/images/caramel_macchiato.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Iced Coffee',
@@ -182,6 +203,7 @@ class ProductSeeder extends Seeder
                 'price' => 3.99,
                 'image' => 'https://example.com/images/iced_coffee.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             // Specialty Iced Drinks
             [
@@ -190,6 +212,7 @@ class ProductSeeder extends Seeder
                 'price' => 4.99,
                 'image' => 'https://example.com/images/tropical_iced_coffee.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             // Fruit-Infused Coffee
             [
@@ -198,6 +221,7 @@ class ProductSeeder extends Seeder
                 'price' => 4.49,
                 'image' => 'https://example.com/images/peach_espresso.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ]
         ];
 
@@ -218,6 +242,7 @@ class ProductSeeder extends Seeder
                 'price' => 2.99,
                 'image' => 'https://example.com/images/dried_candied_orange.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Dried Apple',
@@ -225,6 +250,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.99,
                 'image' => 'https://example.com/images/dried_apple.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Dried Pineapple',
@@ -232,6 +258,7 @@ class ProductSeeder extends Seeder
                 'price' => 2.49,
                 'image' => 'https://example.com/images/dried_pineapple.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Dried Dragon Fruit',
@@ -239,6 +266,7 @@ class ProductSeeder extends Seeder
                 'price' => 3.49,
                 'image' => 'https://example.com/images/dried_dragon_fruit.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Dried Papaya',
@@ -246,6 +274,7 @@ class ProductSeeder extends Seeder
                 'price' => 2.29,
                 'image' => 'https://example.com/images/dried_papaya.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Dried Kiwi',
@@ -253,6 +282,7 @@ class ProductSeeder extends Seeder
                 'price' => 2.79,
                 'image' => 'https://example.com/images/dried_kiwi.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Dried Lemon',
@@ -260,6 +290,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.79,
                 'image' => 'https://example.com/images/dried_lemon.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             // Mixed Dried Fruit Packs
             [
@@ -268,6 +299,7 @@ class ProductSeeder extends Seeder
                 'price' => 4.99,
                 'image' => 'https://example.com/images/tropical_mix.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Mix Fruits Séchés Premium - مزيج الفواكه المجففة الممتازة',
@@ -275,6 +307,7 @@ class ProductSeeder extends Seeder
                 'price' => 5.49,
                 'image' => 'https://example.com/images/premium_mix.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ]
         ];
 
@@ -290,11 +323,12 @@ class ProductSeeder extends Seeder
 
         $baseJuices = [
             [
-                'name' => 'Lait - ماء الغنم',
+                'name' => 'Lait - حليب',
                 'description' => 'Fresh milk from local farms.',
                 'price' => 1.99,
                 'image' => 'https://example.com/images/milk.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Jus d\'orange - عصير البرتقال',
@@ -302,6 +336,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.99,
                 'image' => 'https://example.com/images/orange.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             [
                 'name' => 'Eau Glacée - ماء بارد',
@@ -309,14 +344,16 @@ class ProductSeeder extends Seeder
                 'price' => 1.99,
                 'image' => 'https://example.com/images/water.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ],
             // Fruit Bowl Category
             [
-                'name' => 'Bol de Fruits Croquant - وعاء الفواكه المقرمشة',
+                'name' => 'Fruits sechés - وعاء الفواكه المجففة',
                 'description' => 'Fresh fruit bowl with apple, peach, and dried fruit toppings.',
                 'price' => 7.99,
                 'image' => 'https://example.com/images/fruit_bowl.jpg',
                 'is_available' => true,
+                'recipe_id' => null
             ]
         ];
 

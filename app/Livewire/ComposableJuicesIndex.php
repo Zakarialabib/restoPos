@@ -54,7 +54,7 @@ class ComposableJuicesIndex extends Component
             __('Choose Base'),
             __('Sugar Preference'),
             __('Add-ons'),
-            // size 
+            // size
         ];
     }
 
@@ -132,7 +132,7 @@ class ComposableJuicesIndex extends Component
 
     public function nextStep(): void
     {
-        // if selected fruit is orange should skip base step  
+        // if selected fruit is orange should skip base step
         $this->step++;
     }
 
@@ -150,7 +150,7 @@ class ComposableJuicesIndex extends Component
 
         $fruit = Product::find($fruitId);
 
-        if (! $fruit) {
+        if ( ! $fruit) {
             $this->addError('invalidFruit', "The selected fruit is not available.");
             return;
         }
@@ -171,7 +171,7 @@ class ComposableJuicesIndex extends Component
                 $this->totalPrice += (int) ($fruit->price);
             }
         }
-        // addons and size should be calculated as well  
+        // addons and size should be calculated as well
     }
 
     public function toggleAddon($addon): void
@@ -186,7 +186,7 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
+        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function addToCart(): void
@@ -208,7 +208,7 @@ class ComposableJuicesIndex extends Component
 
         foreach ($this->selectedFruits as $fruitId) {
             $fruit = Product::find($fruitId);
-            if (! $fruit || $fruit->stock <= 0) {
+            if ( ! $fruit || $fruit->stock <= 0) {
                 $this->addError('outOfStock', "{$fruit->name} is out of stock.");
                 return;
             }

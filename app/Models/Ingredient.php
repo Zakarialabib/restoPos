@@ -13,13 +13,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 
 class Ingredient extends Model
 {
-    use HasFactory;
     use HasExpiry;
+    use HasFactory;
     use Notifiable;
 
     protected $fillable = [
@@ -55,8 +54,15 @@ class Ingredient extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'ingredient_product')
-            ->withPivot('stock')
+        return $this->belongsToMany(Product::class, 'ingredient_recipe')
+            ->withPivot(['quantity', 'unit'])
+            ->withTimestamps();
+    }
+
+    public function recipes(): BelongsToMany
+    {
+        return $this->belongsToMany(Recipe::class, 'ingredient_recipe')
+            ->withPivot(['quantity', 'unit'])
             ->withTimestamps();
     }
 
@@ -90,21 +96,7 @@ class Ingredient extends Model
         return $this->stock . ' units';
     }
 
-    protected function cost(): Attribute
-    {
-        return Attribute::make(
-            get: fn(int $value) => Number::currency($value, in: 'MAD', locale: 'fr_MA'),
-        );
-    }
 
-    protected function price(): Attribute
-    {
-        return Attribute::make(
-            get: fn(int $value) => Number::currency($value, in: 'MAD', locale: 'fr_MA'),
-        );
-    }
-
-    // 
     public function setStockAttribute($value): void
     {
         $this->attributes['stock'] = max(0, $value); // Ensure stock is not negative
@@ -125,5 +117,19 @@ class Ingredient extends Model
             'carbs' => ($nutritionalInfo['carbs'] ?? 0) * $quantity / 100,
             'fat' => ($nutritionalInfo['fat'] ?? 0) * $quantity / 100,
         ];
+    }
+
+    protected function cost(): Attribute
+    {
+        return Attribute::make(
+            get: fn (int $value) => Number::currency($value, in: 'MAD', locale: 'fr_MA'),
+        );
+    }
+
+    protected function price(): Attribute
+    {
+        return Attribute::make(
+            get: fn (int $value) => Number::currency($value, in: 'MAD', locale: 'fr_MA'),
+        );
     }
 }
