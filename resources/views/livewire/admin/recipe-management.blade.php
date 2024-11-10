@@ -14,7 +14,7 @@
                     <option value="">{{ __('All Types') }}</option>
                     <option value="fruit">{{ __('Fruits') }}</option>
                     <option value="liquid">{{ __('Liquids') }}</option>
-                    <option value="coffee">{{ __('Coffee') }}</option>
+                    <option value="salade">{{ __('Salade') }}</option>
                 </select>
             </div>
         </div>

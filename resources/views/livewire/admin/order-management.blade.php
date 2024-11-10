@@ -111,7 +111,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($orders as $order)
+                            @forelse($this->orders as $order)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <input type="checkbox" wire:model="selectedOrders" value="{{ $order->id }}">
@@ -138,10 +138,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span @class([
                                             'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                            'bg-yellow-100 text-yellow-800' => $order->status === OrderStatus::Pending,
-                                            'bg-blue-100 text-blue-800' => $order->status === OrderStatus::Processing,
-                                            'bg-green-100 text-green-800' => $order->status === OrderStatus::Completed,
-                                            'bg-red-100 text-red-800' => $order->status === OrderStatus::Cancelled,
+                                            'bg-yellow-100 text-yellow-800' =>
+                                                $order->status === \App\Enums\OrderStatus::Pending,
+                                            'bg-blue-100 text-blue-800' =>
+                                                $order->status === \App\Enums\OrderStatus::Processing,
+                                            'bg-green-100 text-green-800' =>
+                                                $order->status === \App\Enums\OrderStatus::Completed,
+                                            'bg-red-100 text-red-800' =>
+                                                $order->status === \App\Enums\OrderStatus::Cancelled,
                                         ])>
                                             {{ $order->status->name }}
                                         </span>
@@ -186,7 +190,7 @@
 
                 <!-- Pagination -->
                 <div class="mt-4">
-                    {{ $orders->links() }}
+                    {{ $this->orders->links() }}
                 </div>
 
                 <!-- Order Details Modal -->

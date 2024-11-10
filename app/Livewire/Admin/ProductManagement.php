@@ -65,13 +65,13 @@ class ProductManagement extends Component
         return Product::query()
             ->when(
                 $this->search,
-                fn ($query) =>
+                fn($query) =>
                 $query->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('description', 'like', '%' . $this->search . '%')
             )
             ->when(
                 $this->category_id,
-                fn ($query) =>
+                fn($query) =>
                 $query->where('category_id', $this->category_id)
             )
             ->with(['category', 'ingredients'])
@@ -116,7 +116,7 @@ class ProductManagement extends Component
         }
 
         // Update ingredients
-        $product->ingredients()->sync(collect($this->selectedIngredients)->mapWithKeys(fn ($ingredient) => [$ingredient['id'] => ['stock' => $ingredient['stock']]]));
+        $product->ingredients()->sync(collect($this->selectedIngredients)->mapWithKeys(fn($ingredient) => [$ingredient['id'] => ['stock' => $ingredient['stock']]]));
 
         $this->reset();
 
@@ -192,7 +192,7 @@ class ProductManagement extends Component
 
     public function updatedShowForm($value): void
     {
-        if ( ! $value) {
+        if (! $value) {
             $this->reset();
         }
     }
@@ -222,10 +222,65 @@ class ProductManagement extends Component
     private function checkProductAvailability(Product $product): bool
     {
         foreach ($product->ingredients as $ingredient) {
-            if ( ! $ingredient->hasEnoughStock($ingredient->pivot->stock)) {
+            if (! $ingredient->hasEnoughStock($ingredient->pivot->stock)) {
                 return false;
             }
         }
         return true;
+    }
+
+    public function updateProductStock(Product $product, float $quantity, string $reason = 'Manual Update'): void
+    {
+        try {
+            $product->updateStock($quantity, $reason);
+            $this->dispatch('stock-updated');
+            session()->flash('success', __('Stock updated successfully'));
+        } catch (\Exception $e) {
+            session()->flash('error', __('Error updating stock'));
+        }
+    }
+
+    public function checkIngredientAvailability(Product $product): bool
+    {
+        foreach ($product->ingredients as $ingredient) {
+            if (!$ingredient->hasEnoughStock($ingredient->pivot->quantity)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function addIngredientField(): void
+    {
+        $this->selectedIngredients[] = ['id' => null, 'quantity' => null, 'unit' => null];
+    }
+
+    public function calculateProductCost(Product $product): float
+    {
+        return $product->calculateCost();
+    }
+
+    public function updateProductNutritionalInfo(Product $product): void
+    {
+        $product->update([
+            'nutritional_info' => $product->calculateNutritionalInfo()
+        ]);
+    }
+
+    #[Computed]
+    public function lowStockProducts()
+    {
+        return Product::lowStock()->get();
+    }
+
+    #[Computed]
+    public function productAnalytics()
+    {
+        return [
+            'total_products' => Product::count(),
+            'low_stock_products' => Product::lowStock()->count(),
+            'out_of_stock_products' => Product::where('stock', 0)->count(),
+            'average_profit_margin' => Product::avg('profit_margin'),
+        ];
     }
 }

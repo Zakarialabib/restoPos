@@ -121,4 +121,9 @@ class InventoryDashboard extends Component
                 'value' => $group->sum('stock')
             ]);
     }
+
+    public function calculateForecast()
+    {
+        // Logic to calculate inventory needs based on historical data
+    }
 }

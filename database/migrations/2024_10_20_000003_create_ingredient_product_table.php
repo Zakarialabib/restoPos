@@ -13,7 +13,8 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('ingredient_id')->constrained()->cascadeOnDelete();
-            $table->decimal('stock', 10, 2)->default(0);
+            $table->decimal('quantity', 10, 2)->default(0);
+            $table->string('unit')->nullable();
             $table->timestamps();
         });
     }

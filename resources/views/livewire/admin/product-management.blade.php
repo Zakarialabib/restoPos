@@ -198,6 +198,64 @@
                                 </x-button>
                             </div>
                         </div>
+
+                        <!-- Stock Management -->
+                        <div class="col-span-1 bg-blue-50 p-6 rounded-lg">
+                            <h4 class="font-semibold text-blue-800 mb-4">{{ __('Stock Management') }}</h4>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <x-input-label for="stock" :value="__('Current Stock')" />
+                                    <x-input type="number" wire:model="stock" id="stock" 
+                                        class="w-full" step="1" min="0" />
+                                    @error('stock')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <x-input-label for="reorder_point" :value="__('Reorder Point')" />
+                                    <x-input type="number" wire:model="reorder_point" id="reorder_point" 
+                                        class="w-full" step="1" min="0" />
+                                    @error('reorder_point')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <x-input-label for="cost" :value="__('Cost')" />
+                                    <x-input type="number" wire:model="cost" id="cost" 
+                                        class="w-full" step="0.01" min="0" />
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        {{ __('Calculated from ingredients: ') }} 
+                                        {{ $editingProductId ? number_format($this->calculateProductCost(\App\Models\Product::find($editingProductId)), 2) : '0.00' }} DH
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Ingredient Requirements -->
+                            <div class="mt-6">
+                                <h5 class="font-medium mb-2">{{ __('Required Ingredients') }}</h5>
+                                @foreach($selectedIngredients as $index => $ingredient)
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <select wire:model="selectedIngredients.{{ $index }}.id" 
+                                            class="w-2/3 rounded border-gray-300">
+                                            <option value="">{{ __('Select Ingredient') }}</option>
+                                            @foreach($this->ingredients as $ing)
+                                                <option value="{{ $ing->id }}">{{ $ing->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <x-input type="number" 
+                                            wire:model="selectedIngredients.{{ $index }}.quantity"
+                                            class="w-1/3" step="0.01" min="0"
+                                            placeholder="{{ __('Qty') }}" />
+                                    </div>
+                                @endforeach
+                                <x-button type="button" wire:click="addIngredientField" color="secondary">
+                                    {{ __('Add Ingredient') }}
+                                </x-button>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -274,6 +332,23 @@
                                 </ul>
                             </div>
                         @endif
+
+                        <!-- Stock Information -->
+                        <div class="mt-2 flex justify-between items-center">
+                            <div class="text-sm">
+                                <span @class([
+                                    'px-2 py-1 rounded-full text-xs font-medium',
+                                    'bg-green-100 text-green-800' => $product->stock > $product->reorder_point,
+                                    'bg-yellow-100 text-yellow-800' => $product->stock <= $product->reorder_point && $product->stock > 0,
+                                    'bg-red-100 text-red-800' => $product->stock <= 0,
+                                ])>
+                                    {{ $product->stock > 0 ? __('In Stock: ') . $product->stock : __('Out of Stock') }}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                {{ __('Cost: ') }} {{ number_format($product->calculateCost(), 2) }} DH
+                            </div>
+                        </div>
                     </div>
                 </div>
             @empty

@@ -18,6 +18,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 #[Layout('layouts.guest')]
 #[Title('Composable Juices')]
@@ -36,14 +38,17 @@ class ComposableJuicesIndex extends Component
     // public $customerPhone;
     public $showSuccess = false;
     public $order;
-    public $recipes;
+    public $customJuiceName;
 
-    public $cartTotal;
+    // public $cartTotal;
     public $search = '';
 
-    public function mount(): void
+    public function mount(): void {}
+
+    #[Computed]
+    public function cart()
     {
-        $this->cart = session()->get('cart', []);
+        return session()->get('cart', []);
     }
 
     #[Computed]
@@ -124,11 +129,11 @@ class ComposableJuicesIndex extends Component
         return Composable::with('products', 'ingredients')->get();
     }
 
-    public function getJuiceIngredients($recipeId)
-    {
-        $recipe = Product::find($recipeId);
-        return $recipe->ingredients()->get();
-    }
+    // public function getJuiceIngredients($recipeId)
+    // {
+    //     $recipe = Product::find($recipeId);
+    //     return $recipe->ingredients()->get();
+    // }
 
     public function nextStep(): void
     {
@@ -143,15 +148,15 @@ class ComposableJuicesIndex extends Component
 
     public function toggleFruit($fruitId): void
     {
-        if (count($this->selectedFruits) >= 5 && ! in_array($fruitId, $this->selectedFruits)) {
-            $this->addError('fruitLimit', "You can only select up to 5 fruits.");
+        if (count($this->selectedFruits) >= 5 && !in_array($fruitId, $this->selectedFruits)) {
+            $this->addError('fruitLimit', __("You can only select up to 5 fruits."));
             return;
         }
 
-        $fruit = Product::find($fruitId);
+        $fruit = Ingredient::find($fruitId);
 
-        if ( ! $fruit) {
-            $this->addError('invalidFruit', "The selected fruit is not available.");
+        if (!$fruit) {
+            $this->addError('invalidFruit', __("The selected fruit is not available."));
             return;
         }
 
@@ -160,18 +165,107 @@ class ComposableJuicesIndex extends Component
         } else {
             $this->selectedFruits[] = $fruitId;
         }
+
+        $this->calculatePrice();
     }
 
     public function calculatePrice(): void
     {
         $this->totalPrice = 0;
+        $fruitCount = count($this->selectedFruits);
+
+        // Base portion calculation remains the same...
+        $basePortionSize = match ($fruitCount) {
+            1 => 0.6,
+            2 => 0.5,
+            3 => 0.4,
+            4 => 0.3,
+            5 => 0.2,
+            default => 0.6
+        };
+
+        $fruitPortionSize = (1 - $basePortionSize) / ($fruitCount ?: 1);
+
+        // Calculate fruits price using current prices
         foreach ($this->selectedFruits as $fruitId) {
             $fruit = Ingredient::find($fruitId);
             if ($fruit) {
-                $this->totalPrice += (int) ($fruit->price);
+                $currentPrice = $fruit->getCurrentPrice()?->price ?? $fruit->price;
+                $portionPrice = $currentPrice * $fruitPortionSize;
+                $this->totalPrice += $portionPrice;
             }
         }
-        // addons and size should be calculated as well
+
+        // Calculate base price
+        if ($this->selectedBase) {
+            $baseIngredient = Ingredient::where('name', $this->selectedBase)->first();
+            if ($baseIngredient) {
+                $currentPrice = $baseIngredient->getCurrentPrice()?->price ?? $baseIngredient->price;
+                $basePrice = $currentPrice * $basePortionSize;
+                $this->totalPrice += $basePrice;
+            }
+        }
+
+        // Add-ons calculation
+        foreach ($this->selectedAddons as $addon) {
+            $addonIngredient = Ingredient::where('name', $addon)->first();
+            if ($addonIngredient) {
+                $currentPrice = $addonIngredient->getCurrentPrice()?->price ?? $addonIngredient->price;
+                $addonPortionSize = 0.1;
+                $addonPrice = $currentPrice * $addonPortionSize;
+                $this->totalPrice += $addonPrice;
+            }
+        }
+
+        $this->totalPrice = round($this->totalPrice, 2);
+    }
+
+    // Update the helper method to use dynamic portions
+    private function calculateIngredientPortion(string $type): float
+    {
+        $fruitCount = count($this->selectedFruits);
+
+        // Calculate base portion
+        $basePortionSize = match ($fruitCount) {
+            1 => 0.6,
+            2 => 0.5,
+            3 => 0.4,
+            4 => 0.3,
+            5 => 0.2,
+            default => 0.6
+        };
+
+        // Calculate fruit portion
+        $fruitPortionSize = (1 - $basePortionSize) / ($fruitCount ?: 1);
+
+        return match ($type) {
+            'fruit' => $fruitPortionSize,
+            'base' => $basePortionSize,
+            'addon' => 0.1, // Addons remain fixed at 10%
+            default => 0.0
+        };
+    }
+
+    public function validateIngredients(): bool
+    {
+        foreach ($this->selectedFruits as $fruitId) {
+            $fruit = Ingredient::find($fruitId);
+            if (!$fruit || !$fruit->hasEnoughStock(1)) {
+                $this->addError('stock', __('Some ingredients are out of stock.'));
+                return false;
+            }
+        }
+
+        if ($this->selectedBase) {
+            $base = Ingredient::where('name', $this->selectedBase)->first();
+            if (!$base || !$base->hasEnoughStock(1)) {
+                $this->addError('stock', __('Base ingredient is out of stock.'));
+                return false;
+            }
+        }
+
+        // Similar checks for sugar and addons
+        return true;
     }
 
     public function toggleAddon($addon): void
@@ -186,58 +280,95 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
+        return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function addToCart(): void
     {
-        // Check if the current item is already in the cart
         if (empty($this->selectedFruits)) {
             $this->addError('emptySelection', __("Please select at least one fruit for your juice."));
             return;
         }
 
-        $this->calculatePrice();
-
         $this->validate([
             'selectedFruits' => 'required|array|min:1',
             'selectedBase' => 'required|string',
             'selectedSugar' => 'required|string',
-            'selectedAddons' => 'array',
         ]);
 
-        foreach ($this->selectedFruits as $fruitId) {
-            $fruit = Product::find($fruitId);
-            if ( ! $fruit || $fruit->stock <= 0) {
-                $this->addError('outOfStock', "{$fruit->name} is out of stock.");
-                return;
-            }
-        }
+        try {
+            // Create unique name for the custom juice
+            $fruitNames = Ingredient::whereIn('id', $this->selectedFruits)
+                ->pluck('name')
+                ->join(', ');
 
-        $this->cart[] = [
-            'name' => 'Custom Juice',
-            'price' => $this->totalPrice,
-            'quantity' => 1,
-            'ingredients' => [
-                'fruits' => Product::whereIn('id', $this->selectedFruits)->pluck('name')->toArray(),
-                'base' => $this->selectedBase,
-                'sugar' => $this->selectedSugar,
-                'addons' => $this->selectedAddons,
-            ],
-        ];
-        session()->put('cart', $this->cart);
+            $this->customJuiceName = __("Custom Juice") . " ({$fruitNames})";
 
-        foreach ($this->selectedFruits as $fruitId) {
-            $fruit = Ingredient::find($fruitId);
-            $fruit->decrement('stock');
-            if ($fruit->isLowStock()) {
-                InventoryAlert::create([
-                    'ingredient_id' => $fruit->id,
-                    'message' => "Low stock alert for {$fruit->name}",
-                ]);
-            }
+            // Calculate final price if not already calculated
+            $this->calculatePrice();
+
+            // Prepare ingredients list with portions
+            $ingredients = [
+                'fruits' => Ingredient::whereIn('id', $this->selectedFruits)
+                    ->get()
+                    ->map(fn($fruit) => [
+                        'name' => $fruit->name,
+                        'portion' => $this->calculateIngredientPortion('fruit'),
+                        'price' => $fruit->price * $this->calculateIngredientPortion('fruit')
+                    ])
+                    ->toArray(),
+                'base' => [
+                    'name' => $this->selectedBase,
+                    'portion' => $this->calculateIngredientPortion('base'),
+                    'price' => optional(Ingredient::where('name', $this->selectedBase)->first())
+                        ?->price * $this->calculateIngredientPortion('base') ?? 0
+                ],
+                'sugar' => [
+                    'name' => $this->selectedSugar,
+                    'portion' => $this->calculateIngredientPortion('sugar'),
+                    'price' => optional(Ingredient::where('name', $this->selectedSugar)->first())
+                        ?->price * $this->calculateIngredientPortion('sugar') ?? 0
+                ],
+                'addons' => collect($this->selectedAddons)
+                    ->map(fn($addon) => [
+                        'name' => $addon,
+                        'portion' => $this->calculateIngredientPortion('addon'),
+                        'price' => optional(Ingredient::where('name', $addon)->first())
+                            ?->price * $this->calculateIngredientPortion('addon') ?? 0
+                    ])
+                    ->toArray(),
+            ];
+
+            // Add to cart with detailed information
+            $this->cart[] = [
+                'name' => $this->customJuiceName,
+                'price' => $this->totalPrice,
+                'quantity' => 1,
+                'ingredients' => $ingredients,
+                'type' => 'custom_juice',
+                'created_at' => now()->toDateTimeString(),
+            ];
+
+            // Update session
+            session()->put('cart', $this->cart);
+
+            // Reset selections
+            $this->reset([
+                'selectedFruits',
+                'selectedBase',
+                'selectedSugar',
+                'selectedAddons',
+                'totalPrice'
+            ]);
+
+            // Return to first step
+            $this->step = 1;
+
+            session()->flash('success', __('Custom juice added to cart successfully!'));
+        } catch (\Exception $e) {
+            $this->addError('cart', __('Error adding juice to cart. Please try again.'));
+            Log::error('Error adding juice to cart: ' . $e->getMessage());
         }
-        $this->step = 1;
     }
 
     public function removeFromCart($index): void
@@ -255,41 +386,56 @@ class ComposableJuicesIndex extends Component
 
     public function placeOrder(): void
     {
-        // $this->validate([
-        //     'customerName' => 'required|string|max:255',
-        //     'customerPhone' => 'required|string|max:255',
-        // ], [
-        //     'customerName.required' => __('Please enter your name.'),
-        //     'customerPhone.required' => __('Please enter your phone number.'),
-        // ]);
-
-        $order = Order::create([
-            'customer_name' => 'Shop',
-            'customer_phone' => '0000000000',
-            'total_amount' => $this->cartTotal,
-            'status' => OrderStatus::Pending,
-        ]);
-
-        $orderItems = [];
-        foreach ($this->cart as $item) {
-            $orderItem = OrderItem::create([
-                'name' => $item['name'],
-                'order_id' => $order->id,
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'details' => $item['ingredients'],
-            ]);
-            $orderItems[] = $orderItem;
+        if (empty($this->cart)) {
+            $this->addError('cart', __('Your cart is empty.'));
+            return;
         }
 
-        $this->reset([
-            'cart',
-            //  'customerName', 'customerPhone',
-        ]);
-        session()->forget('cart');
+        try {
+            DB::transaction(function () {
+                // Create order
+                $order = Order::create([
+                    'customer_name' => 'Shop',
+                    'customer_phone' => '0000000000',
+                    'total_amount' => $this->cartTotal,
+                    'status' => OrderStatus::Pending,
+                ]);
 
-        $this->showSuccess = true;
-        $this->order = $order;
+                // Create order items
+                foreach ($this->cart as $item) {
+                    $orderItem = OrderItem::create([
+                        'order_id' => $order->id,
+                        'name' => $item['name'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'details' => $item['ingredients'],
+                    ]);
+
+                    // Reduce ingredient stock
+                    if (isset($item['ingredients']['fruits'])) {
+                        foreach ($item['ingredients']['fruits'] as $fruitName) {
+                            $ingredient = Ingredient::where('name', $fruitName)->first();
+                            if ($ingredient) {
+                                $ingredient->decrementStock($item['quantity']);
+                            }
+                        }
+                    }
+                }
+
+                // Clear cart
+                $this->cart = [];
+                session()->forget('cart');
+
+                // Set success state
+                $this->showSuccess = true;
+                $this->order = $order;
+            });
+        } catch (\Exception $e) {
+            // return exception message
+            dd($e->getMessage());
+            // $this->addError('order', __('Error processing order. Please try again.'));
+            // Log::error('Error processing order: ' . $e->getMessage());
+        }
     }
 
     public function close(): void

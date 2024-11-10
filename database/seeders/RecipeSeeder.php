@@ -580,50 +580,6 @@ class RecipeSeeder extends Seeder
             ],
             // Additional Special Drinks
             [
-                'name' => 'Café Glacé Tropical - قهوة مثلجة استوائية',
-                'description' => 'Iced coffee with a splash of mango juice.',
-                'instructions' => [
-                    'Brew coffee and let it cool',
-                    'Blend with mango juice and ice',
-                    'Serve in a tall glass'
-                ],
-                'preparation_time' => 15,
-                'type' => 'special',
-                'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 120,
-                    'protein' => 1,
-                    'carbs' => 20,
-                    'fat' => 0.5
-                ],
-                'ingredients' => [
-                    [
-                        'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
-                        'quantity' => 100,
-                        'unit' => 'ml',
-                        'preparation_notes' => null
-                    ],
-                    [
-                        'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
-                        'quantity' => 100,
-                        'unit' => 'g',
-                        'preparation_notes' => 'peeled and chopped'
-                    ],
-                    [
-                        'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
-                        'quantity' => 150,
-                        'unit' => 'ml',
-                        'preparation_notes' => null
-                    ],
-                    [
-                        'id' => Ingredient::where('name', 'Sucre - سكر')->first()->id,
-                        'quantity' => 10,
-                        'unit' => 'g',
-                        'preparation_notes' => 'optional'
-                    ]
-                ]
-            ],
-            [
                 'name' => 'Smoothie de Fruits Secs - سموذي بالفواكه المجففة',
                 'description' => 'Nutritious smoothie with dried fruits.',
                 'instructions' => [

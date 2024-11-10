@@ -7,7 +7,7 @@
         selectedSugar: @entangle('selectedSugar'),
         selectedBase: @entangle('selectedBase'),
         selectedAddons: @entangle('selectedAddons'),
-        selectedCoffees: @entangle('selectedCoffees'),
+        selectedSalade: @entangle('selectedSalade'),
         cart: @entangle('cart'),
         customerName: @entangle('customerName'),
         customerPhone: @entangle('customerPhone'),
@@ -17,25 +17,25 @@
         loading: false
     }">
         <p class="text-2xl md:text-3xl font-semibold mb-6 text-center">
-            {{ __('Follow the steps to create your perfect coffee blend.') }}
+            {{ __('Follow the steps to create your perfect salade blend.') }}
         </p>
 
         <!-- Onboarding Section -->
-        @if (empty($composableCoffees))
+        @if (empty($composableSalade))
             <div class="mb-12">
                 <h3 class="text-2xl font-semibold mb-4 text-retro-orange">
                     {{ __('Popular Composed Coffees') }}
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    @foreach ($composableCoffees->take(4) as $coffee)
+                    @foreach ($composableSalade->take(4) as $salade)
                         <div
                             class="bg-retro-yellow rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
-                            <img src="{{ $coffee->image }}" alt="{{ $coffee->name }}" class="w-full h-48 object-cover"
+                            <img src="{{ $salade->image }}" alt="{{ $salade->name }}" class="w-full h-48 object-cover"
                                 onerror="this.onerror=null">
                             <div class="p-4">
-                                <h4 class="text-xl font-semibold text-retro-blue mb-2">{{ $coffee->name }}</h4>
-                                <p class="text-retro-green mb-3">{{ $coffee->description }}</p>
-                                <p class="text-retro-orange font-bold text-lg">{{ $coffee->price }}DH</p>
+                                <h4 class="text-xl font-semibold text-retro-blue mb-2">{{ $salade->name }}</h4>
+                                <p class="text-retro-green mb-3">{{ $salade->description }}</p>
+                                <p class="text-retro-orange font-bold text-lg">{{ $salade->price }}DH</p>
                             </div>
                         </div>
                     @endforeach
@@ -52,13 +52,13 @@
                         {{ __('Your Coffee') }}
                     </h3>
                     <div class="flex flex-col gap-y-6 rounded-lg mb-6 text-retro-blue">
-                        @if (count($selectedCoffees) > 0)
+                        @if (count($selectedSalade) > 0)
                             <div>
                                 <span class="font-medium">
                                     {{ __('Coffee') }}:
                                 </span>
                                 <p class="text-sm mb-1">
-                                    {{ implode(', ', $this->coffees->whereIn('id', $selectedCoffees)->pluck('name')->toArray()) }}
+                                    {{ implode(', ', $this->coffees->whereIn('id', $selectedSalade)->pluck('name')->toArray()) }}
                                 </p>
                             </div>
                         @endif
@@ -89,7 +89,7 @@
                                     {{ implode(', ', $selectedAddons) }}</p>
                             </div>
                         @endif
-                        @if (count($selectedCoffees) === 0 && !$selectedBase && !$selectedSugar && count($selectedAddons) === 0)
+                        @if (count($selectedSalade) === 0 && !$selectedBase && !$selectedSugar && count($selectedAddons) === 0)
                             <p class="text-sm text-retro-orange">
                                 {{ __('Start composing your juice!') }}
                             </p>
@@ -313,22 +313,22 @@
                                     placeholder="{{ __('Search for coffees') }}...">
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                                @foreach ($this->coffees as $coffee)
-                                    <div wire:key="{{ $coffee->id }}">
+                                @foreach ($this->coffees as $salade)
+                                    <div wire:key="{{ $salade->id }}">
                                         <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden  cursor-pointer"
-                                            wire:click="toggleCoffee({{ $coffee->id }})"
+                                            wire:click="toggleCoffee({{ $salade->id }})"
                                             x-bind:class="{
-                                                'ring-4 ring-retro-orange': @js(in_array($coffee->id, $selectedCoffees))
+                                                'ring-4 ring-retro-orange': @js(in_array($salade->id, $selectedSalade))
                                             }">
-                                            @if ($coffee->image)
-                                                <img src="{{ $coffee->image }}" alt="{{ $coffee->name }}"
+                                            @if ($salade->image)
+                                                <img src="{{ $salade->image }}" alt="{{ $salade->name }}"
                                                     class="w-full h-32 object-cover">
                                             @endif
                                             <h4 class="text-lg text-center font-semibold text-retro-blue">
-                                                {{ $coffee->name }}
+                                                {{ $salade->name }}
                                             </h4>
 
-                                            @if (in_array($coffee->id, $selectedCoffees))
+                                            @if (in_array($salade->id, $selectedSalade))
                                                 <div class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
                                                     <svg class="w-4 h-4 text-white" fill="none"
                                                         stroke="currentColor" viewBox="0 0 24 24"

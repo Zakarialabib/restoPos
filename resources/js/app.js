@@ -37,8 +37,12 @@ Alpine.data("mainTheme", () => {
         },
     };
 
+    const isRtl = () => {
+        return document.documentElement.getAttribute('dir') === 'rtl' || isRtl();
+    };
 
     return {
+        isRtl,
         loadingMask,
         isSidebarOpen: sessionStorage.getItem("sidebarOpen") === "true",
         handleSidebarToggle() {

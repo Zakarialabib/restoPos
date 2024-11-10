@@ -165,4 +165,13 @@ class RecipeManagement extends Component
 
         $this->showForm = true;
     }
+
+    public function calculateCost()
+    {
+        $totalCost = 0;
+        foreach ($this->selectedIngredients as $ingredient) {
+            $totalCost += $ingredient['quantity'] * $ingredient['price'];
+        }
+        return $totalCost;
+    }
 }

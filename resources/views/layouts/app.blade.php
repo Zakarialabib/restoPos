@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html class="scroll-smooth" lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="mainTheme"
     dir="{{ isRtl() ? 'rtl' : 'ltr' }}">
 
@@ -68,11 +69,11 @@
             <!-- Page Wrapper -->
             <div class="flex flex-col min-h-screen"
                 :class="{
-                        // Start of Selection
-                        'lg:ml-64': isSidebarOpen && !isRtl,
-                        'lg:mr-64': isSidebarOpen && isRtl,
-                        'lg:ml-16': !isSidebarOpen && !isRtl,
-                        'lg:mr-16': !isSidebarOpen && isRtl,
+                    // Start of Selection
+                    'lg:ml-64': isSidebarOpen && !isRtl,
+                    'lg:mr-64': isSidebarOpen && isRtl,
+                    'lg:ml-16': !isSidebarOpen && !isRtl,
+                    'lg:mr-16': !isSidebarOpen && isRtl,
                 }"
                 style="transition-property: margin; transition-duration: 150ms;">
 

@@ -35,28 +35,21 @@ class Order extends Model
     // Add order analytics methods
     public function getTotalRevenueAttribute(): float
     {
-        return $this->items->sum(fn ($item) => $item->price * $item->quantity);
+        return $this->items->sum(fn($item) => $item->price * $item->quantity);
     }
 
     public function getProfit(): float
     {
-        return $this->items->sum(fn ($item) => ($item->price - $item->cost) * $item->quantity);
+        return $this->items->sum(fn($item) => ($item->price - $item->cost) * $item->quantity);
     }
 
     // Add order validation
     public function validate(): bool
     {
-        // Check stock availability
-        foreach ($this->items as $item) {
-            if ( ! $item->product->hasAvailableStock($item->quantity)) {
-                return false;
-            }
-        }
-
         // Check if all required ingredients are available
         foreach ($this->items as $item) {
             foreach ($item->product->ingredients as $ingredient) {
-                if ( ! $ingredient->hasEnoughStock($ingredient->pivot->quantity * $item->quantity)) {
+                if (! $ingredient->hasEnoughStock($ingredient->pivot->quantity * $item->quantity)) {
                     return false;
                 }
             }
@@ -97,10 +90,9 @@ class Order extends Model
 
     public function updateStatus(OrderStatus $status): void
     {
-        DB::transaction(function () use ($status): void {
-            $this->status = $status;
-            $this->save();
-        });
+        $this->status = $status;
+        $this->save();
+        // Additional logic for updating inventory or notifying users can be added here
     }
 
     public function updateInventory(): bool
@@ -109,14 +101,14 @@ class Order extends Model
             DB::transaction(function (): void {
                 foreach ($this->items as $item) {
                     $product = $item->product;
-                    if ( ! $product) {
+                    if (! $product) {
                         continue;
                     }
 
                     foreach ($product->ingredients as $ingredient) {
                         $requiredQuantity = $ingredient->pivot->stock * $item->quantity;
 
-                        if ( ! $ingredient->hasEnoughStock($requiredQuantity)) {
+                        if (! $ingredient->hasEnoughStock($requiredQuantity)) {
                             throw new Exception("Insufficient stock for ingredient: {$ingredient->name}");
                         }
 
@@ -135,7 +127,7 @@ class Order extends Model
 
     public function calculateTotal(): void
     {
-        $this->total_amount = $this->items->sum(fn ($item) => $item->price * $item->quantity);
+        $this->total_amount = $this->items->sum(fn($item) => $item->price * $item->quantity);
         $this->save();
     }
 
@@ -144,5 +136,51 @@ class Order extends Model
         $item = $this->items()->create($itemData);
         $this->calculateTotal();
         return $item;
+    }
+
+    public function processOrderIngredients(): bool
+    {
+        DB::beginTransaction();
+        try {
+            foreach ($this->items as $orderItem) {
+                $product = $orderItem->product;
+
+                // Check ingredient availability
+                $isAvailable = $this->checkIngredientAvailability($product, $orderItem->quantity);
+
+                if (!$isAvailable) {
+                    DB::rollBack();
+                    return false;
+                }
+
+                // Reduce ingredient stocks
+                $this->reduceIngredientStocks($product, $orderItem->quantity);
+            }
+
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Log the error
+            Log::error('Order Processing Failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function checkIngredientAvailability(Product $product, int $quantity): bool
+    {
+        foreach ($product->ingredients as $ingredient) {
+            if (!$ingredient->isStockSufficientForProduct($product, $quantity)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private function reduceIngredientStocks(Product $product, int $quantity): void
+    {
+        foreach ($product->ingredients as $ingredient) {
+            $ingredient->reduceStockForProduct($product, $quantity);
+        }
     }
 }

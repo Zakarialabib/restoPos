@@ -40,96 +40,177 @@
         <!-- Main Content Area -->
         <div class="flex flex-col lg:flex-row gap-8 my-4 p-6">
             <!-- Sidebar: Cart -->
-            <div class="lg:w-1/4 order-2 lg:order-1">
-                <div class="border-retro-orange border-solid border-4 bg-white rounded-lg shadow-lg px-6">
-                    <h3 class="text-2xl text-retro-orange font-bold mb-4">
-                        {{ __('Your Juice') }}
-                    </h3>
-                    <div class="flex flex-col gap-y-6 rounded-lg mb-6 text-retro-blue">
-                        @if (count($selectedFruits) > 0)
-                            <div>
-                                <span class="font-medium">
-                                    {{ __('Fruit') }}:
-                                </span>
-                                <p class="text-sm mb-1">
-                                    {{ implode(', ', $this->fruits->whereIn('id', $selectedFruits)->pluck('name')->toArray()) }}
+            @if ($showSuccess)
+                <div class="w-full bg-white border-retro-orange border-solid border-4  rounded-lg shadow-lg p-6">
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-xl font-bold mt-4 text-black">
+                            {{ __('Order Summary') }}
+                        </h3>
+                        @if (!empty($order))
+                            <div class="mt-2">
+                                <p class="text-gray-700">
+                                    {{ __('Thank you for your order,') }}
+                                    {{ $order?->customer_name }}!
+                                    {{ __('Here are the details of your order:') }}
                                 </p>
-                            </div>
-                        @endif
-                        @if ($selectedBase)
-                            <div>
-                                <span class="font-medium">
-                                    {{ __('Base') }}:
-                                </span>
-                                <p class="text-sm mb-1">
-                                    {{ $selectedBase }}
+                                {{-- customJuiceName --}}
+                                <p class="text-gray-700">
+                                    {{ $customJuiceName }}
                                 </p>
+                                <div class="space-y-4">
+                                    @foreach ($order->items as $item)
+                                        <div class="w-full">
+                                            <p class="text-gray-600">
+                                                {{ __('Ingredients:') }}
+                                            </p>
+                                            <div class="flex flex-col text-retro-blue">
+                                                @php
+                                                    $ingredients = $item->details;
+                                                @endphp
+                                                <div><strong>{{ __('Fruits:') }}</strong>
+                                                    <div>
+                                                        @foreach ($ingredients['fruits'] as $fruit)
+                                                            <p>
+                                                                {{ $fruit['name'] }}
+                                                            </p>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                <div><strong>{{ __('Base:') }}</strong>
+                                                    <p>
+                                                        {{ $ingredients['base']['name'] }}
+                                                    </p>
+                                                </div>
+                                                <div><strong>{{ __('Sugar:') }}</strong>
+                                                    <p>
+                                                        {{ $ingredients['sugar']['name'] }}
+                                                    </p>
+                                                </div>
+                                                <div><strong>{{ __('Add-ons:') }}</strong>
+                                                    @if (!empty($ingredients['addons']))
+                                                        <ul>
+                                                            @foreach ($ingredients['addons'] as $addon)
+                                                                <li>
+                                                                    {{ $addon['name'] }}
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    @else
+                                                        <p>{{ __('No add-ons selected') }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <h3 class="text-xl font-bold mt-4 text-black">Total:
+                                    {{ $order?->total_amount }}DH
+                                </h3>
                             </div>
-                        @endif
-                        @if ($selectedSugar)
-                            <div>
-                                <span class="font-medium">
-                                    {{ __('Sugar') }}:
-                                </span>
-                                <p class="text-sm mb-1"> {{ $selectedSugar }}</p>
-                            </div>
-                        @endif
-                        @if (count($selectedAddons) > 0)
-                            <div>
-                                <span class="font-medium">
-                                    {{ __('Add-ons') }}:
-                                </span>
-                                <p class="text-sm">
-                                    {{ implode(', ', $selectedAddons) }}</p>
-                            </div>
-                        @endif
-                        @if (count($selectedFruits) === 0 && !$selectedBase && !$selectedSugar && count($selectedAddons) === 0)
-                            <p class="text-retro-blue text-sm underline">
-                                {{ __('Start composing your juice!') }}
-                            </p>
                         @endif
                     </div>
-                    <h4 class="text-xl text-retro-orange font-bold mb-3">
-                        {{ __('Cart') }}
-                    </h4>
-                    <div class="space-y-3 mb-6">
-                        @forelse ($cart as $index => $item)
-                            <div class="flex justify-between items-center py-2 border-b border-retro-cream">
+                    <div class="w-full flex justify-center">
+                        <x-button color="primaryOutline" wire:click="close" type="button">
+                            {{ __('Close') }}
+                        </x-button>
+                    </div>
+                </div>
+            @else
+                <div class="lg:w-1/4 order-2 lg:order-1">
+                    <div class="border-retro-orange border-solid border-4 bg-white rounded-lg shadow-lg px-6">
+                        <h3 class="text-2xl text-retro-orange font-bold mb-4">
+                            {{ __('Your Juice') }}
+                        </h3>
+                        <div class="flex flex-col gap-y-6 rounded-lg mb-6 text-retro-blue">
+                            @if (count($selectedFruits) > 0)
                                 <div>
-                                    <h5 class="font-medium text-retro-blue">{{ $item['name'] }}</h5>
-                                    <p class="text-sm text-retro-blue">
-                                        {{ __('Qty') }}: {{ $item['quantity'] }}
+                                    <span class="font-medium">
+                                        {{ __('Fruit') }}:
+                                    </span>
+                                    <ul class="text-sm mb-1">
+                                        @foreach ($this->fruits->whereIn('id', $selectedFruits)->pluck('name') as $fruit)
+                                            <li>{{ $fruit }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                            @if ($selectedBase)
+                                <div>
+                                    <span class="font-medium">
+                                        {{ __('Base') }}:
+                                    </span>
+                                    <p class="text-sm mb-1">
+                                        {{ $selectedBase }}
                                     </p>
                                 </div>
-                                <div class="text-right">
-                                    <p class="font-medium text-retro-blue">
-                                        {{ number_format($item['price'] * $item['quantity'], 2) }}DH
-                                    </p>
-                                    <button class="bg-red-600 text-white p-2 rounded-full text-xs"
-                                        wire:loading.attr="disabled" wire:loading.class="opacity-50"
-                                        wire:click="removeFromCart({{ $index }})" type="button">
-                                        <span class="material-icons">delete</span>
-                                    </button>
+                            @endif
+                            @if ($selectedSugar)
+                                <div>
+                                    <span class="font-medium">
+                                        {{ __('Sugar') }}:
+                                    </span>
+                                    <p class="text-sm mb-1"> {{ $selectedSugar }}</p>
                                 </div>
-                            </div>
-                        @empty
-                            <p class="text-retro-blue text-sm underline mb-6">
-                                {{ __('Your cart is empty.') }}
-                            </p>
-                        @endforelse
-                    </div>
-                    <div
-                        class="flex justify-between items-center text-retro-blue font-bold text-lg mb-6 border-t border-2 border-retro-orange pt-6">
-                        <span>
-                            {{ __('Total:') }}
-                        </span>
-                        <span>
-                            {{ number_format($this->cartTotal, 2) }}DH
-                        </span>
-                    </div>
+                            @endif
+                            @if (count($selectedAddons) > 0)
+                                <div>
+                                    <span class="font-medium">
+                                        {{ __('Add-ons') }}:
+                                    </span>
+                                    <div class="text-sm mb-1">
+                                        @foreach ($selectedAddons as $addon)
+                                            <p>{{ $addon }}</p>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                            @if (count($selectedFruits) === 0 && !$selectedBase && !$selectedSugar && count($selectedAddons) === 0)
+                                <p class="text-retro-blue text-sm underline">
+                                    {{ __('Start composing your juice!') }}
+                                </p>
+                            @endif
+                        </div>
+                        <h4 class="text-xl text-retro-orange font-bold mb-3">
+                            {{ __('Cart') }}
+                        </h4>
+                        <div class="space-y-3 mb-6">
+                            @forelse ($cart as $index => $item)
+                                <div class="flex justify-between items-center py-2 border-b border-retro-cream">
+                                    <div>
+                                        <h5 class="font-medium text-retro-blue">{{ $item['name'] }}</h5>
+                                        <p class="text-sm text-retro-blue">
+                                            {{ __('Qty') }}: {{ $item['quantity'] }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium text-retro-blue">
+                                            {{ $item['price'] * $item['quantity'], 2 }}DH
+                                        </p>
+                                        <button class="bg-red-600 text-white p-2 rounded-full text-xs"
+                                            wire:loading.attr="disabled" wire:loading.class="opacity-50"
+                                            wire:click="removeFromCart({{ $index }})" type="button">
+                                            <span class="material-icons">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-retro-blue text-sm underline mb-6">
+                                    {{ __('Your cart is empty.') }}
+                                </p>
+                            @endforelse
+                        </div>
+                        <div
+                            class="flex justify-between items-center text-retro-blue font-bold text-lg mb-6 border-t border-2 border-retro-orange pt-6">
+                            <span>
+                                {{ __('Total:') }}
+                            </span>
+                            <span>
+                                {{ $this->cartTotal, 2 }}DH
+                            </span>
+                        </div>
 
-                    @if (count($cart) > 0)
-                        {{-- <div class="hidden md:flex">
+                        @if (count($cart) > 0)
+                            {{-- <div class="hidden md:flex">
                                 <div
                                     class="gap-4 mt-6 w-full grid grid-cols-1 gap-y-6 justify-center items-center mb-4">
                                     <div>
@@ -153,94 +234,13 @@
                                     </div>
                                 </div>
                             </div> --}}
-                        <button type="button" wire:click="placeOrder"
-                            class="w-full mb-4 bg-retro-orange text-white py-2 px-4 rounded-full hover:bg-retro-orange hover:text-retro-orange transition duration-300">
-                            {{ __('Confirm Order') }}
-                        </button>
-                    @endif
-                </div>
-            </div>
-
-            @if ($showSuccess)
-                <div class="w-3/4 bg-white border-retro-orange border-solid border-4  rounded-lg shadow-lg p-6">
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                        <h3 class="text-xl font-bold mt-4 text-black">
-                            {{ __('Order Summary') }}
-                        </h3>
-
-                        @if (!empty($order))
-                            <div class="mt-2">
-                                <p class="text-gray-700">
-                                    {{ __('Thank you for your order,') }}
-                                    {{ $order?->customer_name }}!
-                                    {{ __('Here are the details of your order:') }}
-                                </p>
-                                <div class="space-y-4">
-                                    @foreach ($order->items as $item)
-                                        <div class="flex items-center justify-between border px-4">
-                                            <div class="w-1/2">
-                                                <h4 class="text-lg font-semibold text-black">
-                                                    {{ $item->name }}
-                                                </h4>
-                                                <p class="text-gray-600">
-                                                    {{ __('Quantity:') }}
-                                                    {{ $item->quantity }}
-                                                </p>
-                                                <p class="text-gray-600">
-                                                    {{ __('Price:') }}
-                                                    {{ $item->price }}DH
-                                                </p>
-                                            </div>
-                                            <div class="w-1/2">
-                                                <p class="text-gray-600">
-                                                    {{ __('Ingredients:') }}
-                                                </p>
-                                                <div class="flex flex-col text-retro-blue">
-                                                    @php
-                                                        $ingredients = $item->details;
-                                                    @endphp
-                                                    <o><strong>
-                                                            {{ __('Fruits:') }}
-                                                        </strong>
-                                                        {{ implode(', ', $ingredients['fruits']) }}
-                                                    </o>
-                                                    <o><strong>
-                                                            {{ __('Base:') }}
-                                                        </strong>
-                                                        {{ $ingredients['base'] }}
-                                                    </o>
-                                                    <o><strong>
-                                                            {{ __('Sugar:') }}
-                                                        </strong>
-                                                        {{ $ingredients['sugar'] }}
-                                                    </o>
-                                                    <o><strong>
-                                                            {{ __('Add-ons:') }}
-                                                        </strong>
-                                                        @if (isset($ingredients['addons']))
-                                                            {{ implode(', ', $ingredients['addons']) }}
-                                                        @else
-                                                            {{ __('No add-ons selected') }}
-                                                        @endif
-                                                    </o>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <h3 class="text-xl font-bold mt-4 text-black">Total:
-                                    {{ $order?->total_amount }}DH
-                                </h3>
-                            </div>
+                            <button type="button" wire:click="placeOrder"
+                                class="w-full mb-4 bg-retro-orange text-white py-2 px-4 rounded-full hover:bg-retro-orange hover:text-retro-orange transition duration-300">
+                                {{ __('Confirm Order') }}
+                            </button>
                         @endif
                     </div>
-                    <div class="w-full flex justify-center">
-                        <x-button color="primaryOutline" wire:click="close" type="button">
-                            {{ __('Close') }}
-                        </x-button>
-                    </div>
                 </div>
-            @else
                 <!-- Main Content: Stepper -->
                 <div
                     class="lg:w-3/4 bg-white order-1 lg:order-2 border-retro-orange border-solid border-4 rounded-lg p-4">
@@ -425,9 +425,12 @@
                             {{ __('Previous') }}
                         </button>
                         {{-- if cart[] is empty dont show the button --}}
-                        <button wire:click="addToCart"
+                        <button wire:click="addToCart" wire:loading.attr="disabled" wire:loading.class="opacity-50"
                             class="bg-retro-green text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-green border-2 border-retro-green transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-green"
-                            x-show="step === 4">{{ __('Add to Cart') }}</button>
+                            x-show="step === 4">
+                            <span wire:loading.remove>{{ __('Add to Cart') }}</span>
+                            <span wire:loading>{{ __('Adding...') }}</span>
+                        </button>
                     </div>
                     {{--             $this->addError('cartEmpty', "Your cart is empty. Please add at least one item to your cart."); --}}
                     @error('cartEmpty')
@@ -435,6 +438,7 @@
                             <span class="text-red-500 text-sm">{{ $message }}</span>
                         </div>
                     @enderror
+                    {{-- emptySelection --}}
                 </div>
             @endif
         </div>

@@ -6,7 +6,7 @@
                 <div class="cart-item flex items-center justify-between border p-4 rounded-lg shadow">
                     <div>
                         <h3 class="text-lg font-semibold">{{ $item['name'] }}</h3>
-                        <p class="text-gray-600">{{ number_format($item['price'], 2) }} DH</p>
+                        <p class="text-gray-600">{{ $item['price'], 2 }} DH</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <input type="number" wire:model="cart.{{ $productId }}.quantity"
@@ -19,7 +19,7 @@
                 </div>
             @endforeach
         </div>
-        <h3 class="text-xl font-bold mt-4">{{ __('Total') }}: {{ number_format($totalAmount, 2) }} DH</h3>
+        <h3 class="text-xl font-bold mt-4">{{ __('Total') }}: {{ $totalAmount, 2 }} DH</h3>
         <a href="{{ route('checkout') }}"
             class="bg-green-500 text-white px-4 py-2 rounded mt-4 hover:bg-green-600 inline-block"
             wire:loading.attr="disabled" wire:loading.class="opacity-50">

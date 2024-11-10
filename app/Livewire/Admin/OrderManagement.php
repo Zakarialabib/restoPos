@@ -33,6 +33,12 @@ class OrderManagement extends Component
     public $showAnalytics = false;
     public $selectedStatus = '';
 
+    public $selectAll = [];
+
+    public $selectedOrders = [];
+
+    public $bulkAction = '';
+
     protected $rules = [
         'customerName' => 'required|string|max:255',
         'customerPhone' => 'required|string|max:20',
@@ -45,6 +51,7 @@ class OrderManagement extends Component
     {
         $this->products = Product::available()->get();
     }
+
 
     #[Computed()]
     public function orders()
@@ -103,6 +110,14 @@ class OrderManagement extends Component
 
             foreach ($this->orderItems as $item) {
                 $product = Product::find($item['product_id']);
+                
+                // Check product availability before creating order
+                if (!$product->isProductAvailable($item['quantity'])) {
+                    $this->addError('order', "Insufficient stock for {$product->name}");
+                    DB::rollBack();
+                    return;
+                }
+
                 $order->items()->create([
                     'product_id' => $product->id,
                     'name' => $product->name,
@@ -112,15 +127,20 @@ class OrderManagement extends Component
             }
 
             $order->calculateTotal();
-
-            DB::commit();
-            $this->reset(['customerName', 'customerPhone', 'orderItems']);
-            $this->showOrderForm = false;
-            session()->flash('message', __('Order created successfully.'));
-        } catch (Exception $e) {
+            
+            // Process order and update ingredient stocks
+            if ($order->processOrderIngredients()) {
+                $order->update(['status' => OrderStatus::Completed]);
+                DB::commit();
+                session()->flash('success', 'Order processed successfully');
+            } else {
+                DB::rollBack();
+                $this->addError('order', 'Unable to process order due to stock limitations');
+            }
+        } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to create order: ' . $e->getMessage());
-            session()->flash('error', __('Failed to create order.'));
+            Log::error('Order Processing Error: ' . $e->getMessage());
+            $this->addError('order', 'An error occurred while processing the order');
         }
     }
 
@@ -154,5 +174,23 @@ class OrderManagement extends Component
     public function render()
     {
         return view('livewire.admin.order-management');
+    }
+
+    public function processBatchOrders($orders)
+    {
+        foreach ($orders as $order) {
+            $this->validateStock($order);
+            // Additional processing logic...
+        }
+    }
+
+    public function validateStock($order)
+    {
+        foreach ($order->items as $item) {
+            $product = Product::find($item->product_id);
+            if ($product->stock < $item->quantity) {
+                $this->addError('stock', "{$product->name} is out of stock.");
+            }
+        }
     }
 }

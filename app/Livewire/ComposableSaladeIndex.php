@@ -17,12 +17,12 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 #[Layout('layouts.guest')]
-#[Title('Composable Coffees')]
-class ComposableCoffeesIndex extends Component
+#[Title('Composable Salade')]
+class ComposableSaladeIndex extends Component
 {
     #[Url('step', 'keep')]
     public $step = 1;
-    public $selectedCoffees = [];
+    public $selectedSalade = [];
     public $selectedBase;
     public $selectedSugar;
     public $selectedAddons = [];
@@ -47,7 +47,7 @@ class ComposableCoffeesIndex extends Component
     #[Computed]
     public function steps()
     {
-        return [__('Select Coffees'), __('Choose Base'), __('Sugar Preference'), __('Add-ons')];
+        return [__('Select Salade'), __('Choose Base'), __('Sugar Preference'), __('Add-ons')];
     }
 
     #[Computed]
@@ -85,9 +85,9 @@ class ComposableCoffeesIndex extends Component
     }
 
     #[Computed]
-    public function coffees()
+    public function salades()
     {
-        return Product::where('category_id', Category::where('name', 'Coffee')->first()->id)
+        return Product::where('category_id', Category::where('name', 'Salade')->first()->id)
             ->where('stock', '>', 0)
             ->where('name', 'like', '%' . $this->search . '%')
             ->get();
@@ -109,29 +109,29 @@ class ComposableCoffeesIndex extends Component
         $this->step--;
     }
 
-    public function toggleCoffee($coffeeId): void
+    public function toggleSalade($saladeId): void
     {
-        $coffee = Product::find($coffeeId);
+        $salade = Product::find($saladeId);
 
-        if ( ! $coffee) {
-            $this->addError('invalidCoffee', "The selected coffee is not available.");
+        if ( ! $salade) {
+            $this->addError('invalidSalade', "The selected salade is not available.");
             return;
         }
 
-        if (in_array($coffeeId, $this->selectedCoffees)) {
-            $this->selectedCoffees = array_diff($this->selectedCoffees, [$coffeeId]);
+        if (in_array($saladeId, $this->selectedSalade)) {
+            $this->selectedSalade = array_diff($this->selectedSalade, [$saladeId]);
         } else {
-            $this->selectedCoffees[] = $coffeeId;
+            $this->selectedSalade[] = $saladeId;
         }
     }
 
     public function calculatePrice(): void
     {
         $this->totalPrice = 0;
-        foreach ($this->selectedCoffees as $coffeeId) {
-            $coffee = Product::find($coffeeId);
-            if ($coffee) {
-                $this->totalPrice += $coffee->price;
+        foreach ($this->selectedSalade as $saladeId) {
+            $salade = Product::find($saladeId);
+            if ($salade) {
+                $this->totalPrice += $salade->price;
             }
         }
         $this->totalPrice += 5; // Base price
@@ -165,20 +165,20 @@ class ComposableCoffeesIndex extends Component
     {
         $this->calculatePrice();
 
-        foreach ($this->selectedCoffees as $coffeeId) {
-            $coffee = Product::find($coffeeId);
-            if ( ! $coffee || $coffee->stock <= 0) {
-                $this->addError('outOfStock', "{$coffee->name} is out of stock.");
+        foreach ($this->selectedSalade as $saladeId) {
+            $salade = Product::find($saladeId);
+            if ( ! $salade || $salade->stock <= 0) {
+                $this->addError('outOfStock', "{$salade->name} is out of stock.");
                 return;
             }
         }
 
         $this->cart[] = [
-            'name' => 'Custom Coffee',
+            'name' => 'Custom Salade',
             'price' => $this->totalPrice,
             'quantity' => 1,
             'ingredients' => [
-                'coffees' => Product::whereIn('id', $this->selectedCoffees)->pluck('name')->toArray(),
+                'salades' => Product::whereIn('id', $this->selectedSalade)->pluck('name')->toArray(),
                 'base' => $this->selectedBase,
                 'sugar' => $this->selectedSugar,
                 'addons' => $this->selectedAddons,
@@ -186,13 +186,13 @@ class ComposableCoffeesIndex extends Component
         ];
         session()->put('cart', $this->cart);
 
-        foreach ($this->selectedCoffees as $coffeeId) {
-            $coffee = Product::find($coffeeId);
-            $coffee->decrement('stock');
-            if ($coffee->isLowStock()) {
+        foreach ($this->selectedSalade as $saladeId) {
+            $salade = Product::find($saladeId);
+            $salade->decrement('stock');
+            if ($salade->isLowStock()) {
                 InventoryAlert::create([
-                    'product_id' => $coffee->id,
-                    'message' => "Low stock alert for {$coffee->name}",
+                    'product_id' => $salade->id,
+                    'message' => "Low stock alert for {$salade->name}",
                 ]);
             }
         }
@@ -201,7 +201,7 @@ class ComposableCoffeesIndex extends Component
 
     public function resetSelections(): void
     {
-        $this->selectedCoffees = [];
+        $this->selectedSalade = [];
         $this->selectedBase = null;
         $this->selectedSugar = null;
         $this->selectedAddons = [];
@@ -217,8 +217,8 @@ class ComposableCoffeesIndex extends Component
 
     public function render()
     {
-        $composableCoffees = Composable::all();
-        return view('livewire.composable-coffees-index', ['composableCoffees' => $composableCoffees]);
+        $composableSalades = Composable::all();
+        return view('livewire.composable-salade-index', ['composableSalades' => $composableSalades]);
     }
 
     public function placeOrder(): void

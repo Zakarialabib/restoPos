@@ -9,7 +9,7 @@ use App\Livewire\Admin\ProductManagement;
 use App\Livewire\Admin\RecipeManagement;
 use App\Livewire\CartComponent;
 use App\Livewire\CategoryManagement;
-use App\Livewire\ComposableCoffeesIndex;
+use App\Livewire\ComposableSaladeIndex;
 use App\Livewire\ComposableDriedFruitsIndex;
 use App\Livewire\ComposableJuicesIndex;
 use Illuminate\Support\Facades\Artisan;
@@ -24,7 +24,7 @@ Volt::route('/compose', 'compose')
 
 Route::get('/cart', CartComponent::class)->name('cart');
 Route::get('/composable-juices', ComposableJuicesIndex::class)->name('compose.juices');
-Route::get('/composable-coffees', ComposableCoffeesIndex::class)->name('compose.coffees');
+Route::get('/composable-salade', ComposableSaladeIndex::class)->name('compose.salade');
 Route::get('/composable-dried-fruits', ComposableDriedFruitsIndex::class)->name('compose.dried-fruits');
 
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function (): void {

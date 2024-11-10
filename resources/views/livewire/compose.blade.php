@@ -8,7 +8,7 @@ layout('layouts.guest');
 ?>
 
 <div>
-    {{-- we could compose juices/coctails or coffees we will have to cards redirecting to different pages --}}
+    {{-- we could compose juices/coctails or salade we will have to cards redirecting to different pages --}}
     <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
             <h1 class="text-2xl font-semibold">{{ __('Compose') }}</h1>
@@ -20,8 +20,8 @@ layout('layouts.guest');
         <a href="{{ route('compose.juices') }}" class="bg-blue-500 text-white p-6 rounded-lg shadow-lg">
             <h2 class="text-xl font-bold mb-2">{{ __('Juices') }}</h2>
         </a>
-        <a href="{{ route('compose.coffees') }}" class="bg-green-500 text-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold mb-2">{{ __('Coffee') }}</h2>
+        <a href="{{ route('compose.salade') }}" class="bg-green-500 text-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold mb-2">{{ __('Salade') }}</h2>
         </a>
         <a href="{{ route('compose.dried-fruits') }}" class="bg-yellow-500 text-white p-6 rounded-lg shadow-lg">
             <h2 class="text-xl font-bold mb-2">{{ __('Dried Fruits') }}</h2>

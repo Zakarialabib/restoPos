@@ -12,9 +12,9 @@
                 <x-nav-link :href="route('compose.juices')" :active="request()->routeIs('compose.juices')">
                     {{ __('Composable Juices') }}
                 </x-nav-link>
-                {{-- composable coffees --}}
-                <x-nav-link :href="route('compose.coffees')" :active="request()->routeIs('compose.coffees')">
-                    {{ __('Composable Coffee') }}
+                {{-- composable salade --}}
+                <x-nav-link :href="route('compose.salade')" :active="request()->routeIs('compose.salade')">
+                    {{ __('Composable Salade') }}
                 </x-nav-link>
                 {{-- composable dried fruits --}}
                 <x-nav-link :href="route('compose.dried-fruits')" :active="request()->routeIs('compose.dried-fruits')">
@@ -108,8 +108,8 @@
             <div class="mt-auto">
                 <a href="{{ route('compose.juices') }}"
                     class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Composable Juices') }}</a>
-                <a href="{{ route('compose.coffees') }}"
-                    class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Composable Coffee') }}</a>
+                <a href="{{ route('compose.salade') }}"
+                    class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Composable Salade') }}</a>
                 <a href="{{ route('compose.dried-fruits') }}"
                     class="block py-2 text-base font-semibold text-gray-900 hover:text-orange-500">{{ __('Composable Dried Fruits') }}</a>
 

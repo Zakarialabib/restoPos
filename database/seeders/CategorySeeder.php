@@ -13,7 +13,7 @@ class CategorySeeder extends Seeder
     {
         $categories = [
             ['name' => 'Fruits', 'description' => 'Fresh fruits for juices and smoothies'],
-            ['name' => 'Coffee', 'description' => 'Various coffee drinks and preparations'],
+            ['name' => 'Salade', 'description' => 'Various salade and preparations'],
             ['name' => 'Dried Fruits', 'description' => 'Selection of dried and preserved fruits'],
             ['name' => 'Base', 'description' => 'Base ingredients'],
             ['name' => 'Topping', 'description' => 'Topping ingredients'],
