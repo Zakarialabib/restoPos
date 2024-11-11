@@ -39,20 +39,8 @@ jobs:
         npm install
         npm run build
     
-    - name: Bring down the application
-      run: php artisan down
-
-    - name: Migrate database
-      run: php artisan migrate
-
-    - name: Clear cache
-      run: php artisan optimize:clear --force
-
-    - name: Bring up the application
-      run: php artisan up
-
     - name: FTP-Deploy-Action
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
