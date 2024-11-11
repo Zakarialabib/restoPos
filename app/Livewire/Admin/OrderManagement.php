@@ -18,28 +18,26 @@ class OrderManagement extends Component
 {
     use WithPagination;
 
-    public $showOrderForm = false;
-    public $showOrderDetails = false;
-    public $selectedOrder;
-    public $customerName;
-    public $customerPhone;
-    public $orderItems = [];
+    public bool $showOrderForm = false;
+    public bool $showOrderDetails = false;
+    public ?Order $selectedOrder = null;
+    public string $customerName = '';
+    public string $customerPhone = '';
+    public array $orderItems = [];
     public $products;
-    public $search = '';
-    public $status = '';
-    public $dateRange = '';
-    public $startDate;
-    public $endDate;
-    public $showAnalytics = false;
-    public $selectedStatus = '';
+    public string $search = '';
+    public string $status = '';
+    public string $dateRange = '';
+    public ?string $startDate = null;
+    public ?string $endDate = null;
+    public bool $showAnalytics = false;
+    public string $selectedStatus = '';
 
-    public $selectAll = [];
+    public array $selectAll = [];
+    public array $selectedOrders = [];
+    public string $bulkAction = '';
 
-    public $selectedOrders = [];
-
-    public $bulkAction = '';
-
-    protected $rules = [
+    protected array $rules = [
         'customerName' => 'required|string|max:255',
         'customerPhone' => 'required|string|max:20',
         'orderItems' => 'required|array|min:1',
@@ -52,9 +50,8 @@ class OrderManagement extends Component
         $this->products = Product::available()->get();
     }
 
-
-    #[Computed()]
-    public function orders()
+    #[Computed]
+    public function getOrdersProperty()
     {
         return Order::query()
             ->when(
@@ -109,10 +106,9 @@ class OrderManagement extends Component
             ]);
 
             foreach ($this->orderItems as $item) {
-                $product = Product::find($item['product_id']);
-                
-                // Check product availability before creating order
-                if (!$product->isProductAvailable($item['quantity'])) {
+                $product = Product::findOrFail($item['product_id']);
+
+                if ( ! $product->isProductAvailable($item['quantity'])) {
                     $this->addError('order', "Insufficient stock for {$product->name}");
                     DB::rollBack();
                     return;
@@ -127,25 +123,24 @@ class OrderManagement extends Component
             }
 
             $order->calculateTotal();
-            
-            // Process order and update ingredient stocks
+
             if ($order->processOrderIngredients()) {
                 $order->update(['status' => OrderStatus::Completed]);
                 DB::commit();
                 session()->flash('success', 'Order processed successfully');
             } else {
                 DB::rollBack();
-                $this->addError('order', 'Unable to process order due to stock limitations');
+                session()->flash('error', 'Unable to process order due to stock limitations');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Order Processing Error: ' . $e->getMessage());
-            $this->addError('order', 'An error occurred while processing the order');
+            session()->flash('error', 'An error occurred while processing the order');
         }
     }
 
-    #[Computed()]
-    public function orderAnalytics()
+    #[Computed]
+    public function getOrderAnalyticsProperty()
     {
         return [
             'total_revenue' => $this->orders->sum('total_revenue'),
@@ -176,20 +171,19 @@ class OrderManagement extends Component
         return view('livewire.admin.order-management');
     }
 
-    public function processBatchOrders($orders)
+    public function processBatchOrders(array $orders): void
     {
         foreach ($orders as $order) {
             $this->validateStock($order);
-            // Additional processing logic...
         }
     }
 
-    public function validateStock($order)
+    public function validateStock(Order $order): void
     {
         foreach ($order->items as $item) {
-            $product = Product::find($item->product_id);
-            if ($product->stock < $item->quantity) {
-                $this->addError('stock', "{$product->name} is out of stock.");
+            $product = Product::findOrFail($item->product_id);
+            if ( ! $product->isProductAvailable($item->quantity)) {
+                session()->flash('error', "{$product->name} is out of stock.");
             }
         }
     }

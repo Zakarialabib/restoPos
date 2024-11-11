@@ -1,25 +1,41 @@
 <div>
-    <div class="w-full py-16">
+    <div class="w-full">
+        @if (session()->has('success'))
+            <x-alert type="success" :dismissal="false" :showIcon="true">
+                {{ session('success') }}
+            </x-alert>
+        @endif
 
-        <!-- Header with Filters -->
+        @if (session()->has('error'))
+            <x-alert type="error" :dismissal="false" :showIcon="true">
+                {{ session('error') }}
+            </x-alert>
+        @endif
+        <!-- Enhanced Header with Filters -->
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">{{ __('Recipe Management') }}</h2>
                 <p class="text-sm text-gray-600">{{ __('Create and manage product recipes') }}</p>
             </div>
             <div class="flex gap-4">
-                <x-input type="text" wire:model.live="searchIngredient"
-                    placeholder="{{ __('Search ingredients...') }}" />
-                <select wire:model.live="selectedType" class="rounded border-gray-300">
+                <x-input type="text" wire:model.live.debounce.300ms="searchRecipe"
+                    placeholder="{{ __('Search recipes...') }}" class="w-64" />
+                <x-input type="text" wire:model.live.debounce.300ms="searchIngredient"
+                    placeholder="{{ __('Search ingredients...') }}" class="w-64" />
+                <select wire:model.live="selectedType" class="rounded-md border-gray-300">
                     <option value="">{{ __('All Types') }}</option>
-                    <option value="fruit">{{ __('Fruits') }}</option>
-                    <option value="liquid">{{ __('Liquids') }}</option>
-                    <option value="salade">{{ __('Salade') }}</option>
+                    @foreach ($this->recipeTypes as $type)
+                        <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                    @endforeach
                 </select>
             </div>
+            <x-button type="button" wire:click="createRecipe" color="primary">
+                <span class="material-icons mr-2">add</span>
+                {{ __('Create New Recipe') }}
+            </x-button>
         </div>
 
-        <!-- Recipe Form -->
+        <!-- Enhanced Recipe Form -->
         @if ($showForm)
             <form wire:submit="saveRecipe" class="bg-white rounded-lg shadow-lg mb-6 p-6">
                 <h3 class="text-xl font-semibold text-indigo-700 mb-6">
@@ -48,23 +64,6 @@
                                 </div>
                             </div>
                         </div>
-                        <h3 class="text-lg font-semibold mb-4">{{ __('Nutritional Information') }}</h3>
-
-                        <!-- Nutritional Info -->
-                        <div class="space-y-4">
-
-                            <div class="border p-4 rounded-lg">
-                                @php $nutritionalInfo = $this->calculateNutritionalInfo(); @endphp
-                                <div class="space-y-2">
-                                    <p>{{ __('Calories') }}: {{ number_format($nutritionalInfo['calories'], 2) }} kcal
-                                    </p>
-                                    <p>{{ __('Protein') }}: {{ number_format($nutritionalInfo['protein'], 2) }} g</p>
-                                    <p>{{ __('Carbs') }}: {{ number_format($nutritionalInfo['carbs'], 2) }} g</p>
-                                    <p>{{ __('Fat') }}: {{ number_format($nutritionalInfo['fat'], 2) }} g</p>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                     <div class="col-span-1 bg-indigo-50 p-4 rounded-lg">
                         <!-- Ingredients Selection -->
@@ -100,25 +99,24 @@
                     </div>
                     <div class="col-span-1 bg-indigo-50 p-4 rounded-lg">
                         <h3 class="text-lg font-semibold mb-4">{{ __('Instructions') }}</h3>
-                        <!-- Instructions -->
-                        <div>
-                            <x-input-label for="instructions" :value="__('Preparation Instructions')" />
-                            <div class="space-y-2">
-                                @foreach ($instructions as $index => $instruction)
-                                    <div class="flex gap-2">
-                                        <x-input type="text" wire:model="instructions.{{ $index }}"
-                                            class="w-full" />
-                                        <x-button type="button" wire:click="removeInstruction({{ $index }})"
-                                            color="danger">
-                                            <span class="material-icons text-red-500">delete</span>
-                                        </x-button>
+                        <div class="space-y-2">
+                            @foreach ($instructions as $index => $instruction)
+                                <div class="flex gap-2 items-start">
+                                    <span class="mt-2 text-sm font-semibold">{{ $index + 1 }}.</span>
+                                    <div class="flex-1">
+                                        <x-textarea wire:model="instructions.{{ $index }}" class="w-full"
+                                            rows="2" />
                                     </div>
-                                @endforeach
-                                <x-button type="button" wire:click="addInstruction" color="secondary">
-                                    <span class="material-icons text-blue-500">add</span>
-                                    {{ __('Add Step') }}
-                                </x-button>
-                            </div>
+                                    <x-button type="button" wire:click="removeInstruction({{ $index }})"
+                                        color="danger" class="mt-1">
+                                        <span class="material-icons">delete</span>
+                                    </x-button>
+                                </div>
+                            @endforeach
+                            <x-button type="button" wire:click="addInstruction" color="secondary" class="mt-4">
+                                <span class="material-icons mr-2">add</span>
+                                {{ __('Add Step') }}
+                            </x-button>
                         </div>
                     </div>
                 </div>
@@ -134,34 +132,53 @@
             </form>
         @endif
 
-        <!-- Recipe List -->
+        <!-- Enhanced Recipe List -->
         <div class="mt-8">
             <h3 class="text-xl font-semibold mb-4">{{ __('Existing Recipes') }}</h3>
-            <div class="grid grid-cols-3 gap-6">
-                @foreach ($this->recipes as $recipe)
-                    <div class="border rounded-lg overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @forelse ($this->recipes as $recipe)
+                    <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
                         @if ($recipe->image)
                             <img src="{{ Storage::url($recipe->image) }}" alt="{{ $recipe->name }}"
                                 class="w-full h-48 object-cover">
                         @endif
                         <div class="p-4">
-                            <h4 class="font-semibold text-lg">{{ $recipe->name }}</h4>
-                            <p class="text-sm text-gray-600 mb-4">{{ $recipe->description }}</p>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-lg">{{ $recipe->name }}</h4>
+                                <span
+                                    class="px-2 py-1 text-xs rounded-full {{ $recipe->is_featured ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100' }}">
+                                    {{ $recipe->is_featured ? __('Featured') : '' }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">{{ Str::limit($recipe->description, 100) }}</p>
                             <div class="flex justify-between items-center">
+                                <div class="text-sm text-gray-500">
+                                    <span class="material-icons text-sm">schedule</span>
+                                    {{ $recipe->preparation_time }} {{ __('min') }}
+                                </div>
                                 <div class="flex gap-2">
                                     <x-button type="button" wire:click="duplicateRecipe({{ $recipe->id }})"
-                                        color="info">
-                                        {{ __('Duplicate') }}
+                                        color="info" size="sm">
+                                        <span class="material-icons">content_copy</span>
                                     </x-button>
                                     <x-button type="button" wire:click="editRecipe({{ $recipe->id }})"
-                                        color="warning">
-                                        {{ __('Edit') }}
+                                        color="warning" size="sm">
+                                        <span class="material-icons">edit</span>
+                                    </x-button>
+                                    <x-button type="button" wire:click="deleteRecipe({{ $recipe->id }})"
+                                        wire:confirm="{{ __('Are you sure you want to delete this recipe?') }}"
+                                        color="danger" size="sm">
+                                        <span class="material-icons">delete</span>
                                     </x-button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        {{ __('No recipes found.') }}
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>

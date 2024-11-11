@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Admin\CategoryManagement;
 use App\Livewire\Admin\IngredientManagement;
-use App\Livewire\Admin\InventoryDashboard;
 use App\Livewire\Admin\OrderManagement;
 use App\Livewire\Admin\ProductManagement;
 use App\Livewire\Admin\RecipeManagement;
-use App\Livewire\CartComponent;
-use App\Livewire\CategoryManagement;
-use App\Livewire\ComposableSaladeIndex;
 use App\Livewire\ComposableDriedFruitsIndex;
 use App\Livewire\ComposableJuicesIndex;
+use App\Livewire\ComposableSaladeIndex;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -22,7 +20,6 @@ Volt::route('/', 'index')
 Volt::route('/compose', 'compose')
     ->name('compose');
 
-Route::get('/cart', CartComponent::class)->name('cart');
 Route::get('/composable-juices', ComposableJuicesIndex::class)->name('compose.juices');
 Route::get('/composable-salade', ComposableSaladeIndex::class)->name('compose.salade');
 Route::get('/composable-dried-fruits', ComposableDriedFruitsIndex::class)->name('compose.dried-fruits');
@@ -33,7 +30,6 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function (): voi
     Route::get('/products', ProductManagement::class)->name('admin.products');
     Route::get('/categories', CategoryManagement::class)->name('admin.categories');
     Route::get('/ingredients', IngredientManagement::class)->name('admin.ingredients');
-    Route::get('/inventory', InventoryDashboard::class)->name('admin.inventory');
     Route::get('/order-management', OrderManagement::class)->name('admin.order-management');
     Route::get('/recipes', RecipeManagement::class)->name('admin.recipes');
 });

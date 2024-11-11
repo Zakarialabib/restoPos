@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum Unit: int
+enum UnitType: int
 {
     case Gram = 1;
     case Litre = 2;
     case Mililitre = 3;
     case Kilo = 4;
     case Piece = 5;
+    case Units = 6;
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum Unit: int
             self::Mililitre => __('Mililitre'),
             self::Kilo => __('Kilo'),
             self::Piece => __('Piece'),
+            self::Units => __('Units'),
         };
     }
 
@@ -31,6 +33,7 @@ enum Unit: int
             self::Mililitre => __('ml'),
             self::Kilo => __('kg'),
             self::Piece => __('pcs'),
+            self::Units => __('units'),
         };
     }
 }

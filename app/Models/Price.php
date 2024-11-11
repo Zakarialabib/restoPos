@@ -26,4 +26,4 @@ class Price extends Model
     {
         return $this->morphTo();
     }
-} 
+}

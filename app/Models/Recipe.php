@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Recipe extends Model
 {
@@ -20,8 +21,8 @@ class Recipe extends Model
     ];
 
     protected $casts = [
-        'instructions' => 'array',
-        'nutritional_info' => 'array'
+        'instructions' => 'json',
+        'nutritional_info' => 'json'
     ];
 
     public function ingredients(): BelongsToMany
@@ -31,22 +32,12 @@ class Recipe extends Model
             ->withTimestamps();
     }
 
-    public function calculateNutritionalInfo(): array
+    public function product(): HasOne
     {
-        return $this->ingredients->reduce(function ($carry, $ingredient) {
-            $quantity = $ingredient->pivot->quantity;
-            $nutritionalInfo = $ingredient->nutritional_info;
-
-            return [
-                'calories' => $carry['calories'] + ($nutritionalInfo['calories'] * $quantity / 100),
-                'protein' => $carry['protein'] + ($nutritionalInfo['protein'] * $quantity / 100),
-                'carbs' => $carry['carbs'] + ($nutritionalInfo['carbs'] * $quantity / 100),
-                'fat' => $carry['fat'] + ($nutritionalInfo['fat'] * $quantity / 100),
-            ];
-        }, ['calories' => 0, 'protein' => 0, 'carbs' => 0, 'fat' => 0]);
+        return $this->hasOne(Product::class);
     }
 
-    public function calculateTotalNutritionalInfo(): array
+    public function calculateNutritionalInfo(): array
     {
         return $this->ingredients->reduce(function ($carry, $ingredient) {
             $quantity = $ingredient->pivot->quantity;
@@ -61,8 +52,8 @@ class Recipe extends Model
         }, ['calories' => 0, 'protein' => 0, 'carbs' => 0, 'fat' => 0]);
     }
 
-    public function product()
+    public function calculateTotalNutritionalInfo(): array
     {
-        return $this->hasOne(Product::class);
+        return $this->calculateNutritionalInfo();
     }
 }

@@ -2,20 +2,27 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire;
+namespace App\Livewire\Admin;
 
 use App\Models\Category;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
+#[Layout('layouts.app')]
+#[Title('Category Management')]
 class CategoryManagement extends Component
 {
-    public $categories;
-    public $name;
-    public $categoryId;
+    use WithPagination;
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-    ];
+    public $categories;
+
+    #[Validate('required|string|max:255')]
+    public $name;
+
+    public $categoryId;
 
     public function mount(): void
     {
@@ -58,6 +65,6 @@ class CategoryManagement extends Component
 
     public function render()
     {
-        return view('livewire.category-management');
+        return view('livewire.admin.category-management');
     }
 }

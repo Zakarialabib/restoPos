@@ -27,7 +27,7 @@ class ProductSeeder extends Seeder
                 'price' => 0.99,
                 'image' => 'https://example.com/images/apple.jpg',
                 'is_available' => true,
-                'recipe_id' => Recipe::where('name', 'Jus de pomme - عصير التفاح')->first()->id
+                'recipe_id' => Recipe::where('name', 'Jus de pomme - عصير التفاح')->first()->id ?? null
             ],
             [
                 'name' => 'Panache - باناش',
@@ -83,7 +83,7 @@ class ProductSeeder extends Seeder
                 'price' => 0.89,
                 'image' => 'https://example.com/images/pear.jpg',
                 'is_available' => true,
-                'recipe_id' => Recipe::where('name', 'Jus de poire - عصير الاجاص')->first()->id
+                'recipe_id' => Recipe::where('name', 'Jus de poire - عصير الاجاص')->first()->id ?? null
             ],
             [
                 'name' => 'Jus de dragon fruit - عصير فاكهة التنين',
@@ -107,7 +107,7 @@ class ProductSeeder extends Seeder
                 'price' => 1.99,
                 'image' => 'https://example.com/images/mango.jpg',
                 'is_available' => true,
-                'recipe_id' => Recipe::where('name', 'Jus de mangue - عصير المانجو')->first()->id
+                'recipe_id' => Recipe::where('name', 'Jus de mangue - عصير المانجو')->first()->id ?? null
             ],
             // Mixed Fruit Smoothies
             [
@@ -153,6 +153,7 @@ class ProductSeeder extends Seeder
         // Dried Fruits Category
         $driedFruitsCategory = Category::firstOrCreate([
             'id' => 3,
+            'slug' => 'dried-fruits',
             'name' => 'Dried Fruits'
         ]);
 
@@ -239,6 +240,7 @@ class ProductSeeder extends Seeder
         // Base Category
         $baseCategory = Category::firstOrCreate([
             'id' => 4,
+            'slug' => 'base',
             'name' => 'Base'
         ]);
 

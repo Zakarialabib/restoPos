@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Enums\RecipeType;
+use App\Enums\UnitType;
 use App\Models\Ingredient;
 use App\Models\Recipe;
+use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Rule;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -16,39 +21,40 @@ class RecipeManagement extends Component
 {
     use WithFileUploads;
 
-    #[Rule('required|string|max:255')]
-    public $name;
+    #[Validate('required|string|max:255')]
+    public string $name;
 
-    #[Rule('required|string')]
-    public $description;
+    #[Validate('required|string')]
+    public string $description;
 
-    #[Rule('required|integer|min:0')]
-    public $preparation_time;
+    #[Validate('required|integer|min:0')]
+    public int $preparation_time;
 
-    #[Rule('required|string')]
-    public $type;
+    #[Validate('required|string')]
+    public string $type;
 
-    #[Rule('boolean')]
     public $is_featured = false;
 
-    #[Rule('array')]
-    public $instructions = [];
+    #[Validate('array')]
+    public array $instructions = [];
 
-    #[Rule('array|min:1')]
-    public $selectedIngredients = [];
+    #[Validate('array|min:1')]
+    public array $selectedIngredients = [];
 
-    public $editingRecipeId;
-    public $searchIngredient = '';
-    public $selectedCategory = '';
-    public $showForm = false;
+    public ?int $editingRecipeId = null;
+    public string $searchIngredient = '';
+    public string $selectedCategory = '';
+    public bool $showForm = false;
 
-    // Add computed property for filtered ingredients
+    public string $searchRecipe = '';
+    public ?string $selectedType = '';
+
     #[Computed]
     public function filteredIngredients()
     {
         return Ingredient::query()
             ->when($this->searchIngredient, fn ($q) =>
-                $q->where('name', 'like', "%{$this->searchIngredient}%"))
+            $q->where('name', 'like', "%{$this->searchIngredient}%"))
             ->get();
     }
 
@@ -57,7 +63,7 @@ class RecipeManagement extends Component
         $this->instructions[] = '';
     }
 
-    public function removeInstruction($index): void
+    public function removeInstruction(int $index): void
     {
         unset($this->instructions[$index]);
         $this->instructions = array_values($this->instructions);
@@ -69,11 +75,13 @@ class RecipeManagement extends Component
             $ingredientModel = Ingredient::find($ingredient['id']);
             $quantity = $ingredient['quantity'];
 
+            $nutrition = $ingredientModel->calculateNutritionalInfo($quantity);
+
             return [
-                'calories' => $carry['calories'] + ($ingredientModel->nutritional_info['calories'] * $quantity / 100),
-                'protein' => $carry['protein'] + ($ingredientModel->nutritional_info['protein'] * $quantity / 100),
-                'carbs' => $carry['carbs'] + ($ingredientModel->nutritional_info['carbs'] * $quantity / 100),
-                'fat' => $carry['fat'] + ($ingredientModel->nutritional_info['fat'] * $quantity / 100),
+                'calories' => $carry['calories'] + $nutrition['calories'],
+                'protein' => $carry['protein'] + $nutrition['protein'],
+                'carbs' => $carry['carbs'] + $nutrition['carbs'],
+                'fat' => $carry['fat'] + $nutrition['fat'],
             ];
         }, ['calories' => 0, 'protein' => 0, 'carbs' => 0, 'fat' => 0]);
     }
@@ -82,54 +90,74 @@ class RecipeManagement extends Component
     {
         $this->validate();
 
-        DB::transaction(function (): void {
-            $recipe = Recipe::updateOrCreate(
-                ['id' => $this->editingRecipeId],
-                [
-                    'name' => $this->name,
-                    'description' => $this->description,
-                    'preparation_time' => $this->preparation_time,
-                    'type' => $this->type,
-                    'is_featured' => $this->is_featured,
-                    'instructions' => $this->instructions,
-                    'nutritional_info' => $this->calculateNutritionalInfo(),
-                ]
-            );
+        try {
+            DB::transaction(function (): void {
+                $recipe = Recipe::updateOrCreate(
+                    ['id' => $this->editingRecipeId],
+                    [
+                        'name' => $this->name,
+                        'description' => $this->description,
+                        'preparation_time' => $this->preparation_time,
+                        'type' => $this->type,
+                        'is_featured' => $this->is_featured,
+                        'instructions' => $this->instructions,
+                        'nutritional_info' => $this->calculateNutritionalInfo(),
+                    ]
+                );
 
-            // Sync ingredients with quantities and units
-            $ingredientData = collect($this->selectedIngredients)->mapWithKeys(function ($ingredient) {
-                return [$ingredient['id'] => [
-                    'quantity' => $ingredient['quantity'],
-                    'unit' => $ingredient['unit'],
-                    'preparation_notes' => $ingredient['preparation_notes'] ?? null,
-                ]];
+                $ingredientData = collect($this->selectedIngredients)->mapWithKeys(function ($ingredient) {
+                    return [$ingredient['id'] => [
+                        'quantity' => $ingredient['quantity'],
+                        'unit' => $ingredient['unit'],
+                        'preparation_notes' => $ingredient['preparation_notes'] ?? null,
+                    ]];
+                });
+
+                $recipe->ingredients()->sync($ingredientData);
+
+                $recipe->product()->updateOrCreate(
+                    [],
+                    [
+                        'name' => $recipe->name,
+                        'description' => $recipe->description,
+                        'is_available' => true,
+                        'category_id' => 1,
+                    ]
+                );
+
+                $this->reset();
+                session()->flash('success', __('Recipe saved successfully.'));
             });
 
-            $recipe->ingredients()->sync($ingredientData);
-
-            // Create corresponding product
-            $recipe->product()->updateOrCreate(
-                [],
-                [
-                    'name' => $recipe->name,
-                    'description' => $recipe->description,
-                    'is_available' => true,
-                    'category_id' => 1, // Set appropriate category
-                ]
-            );
-
-            $this->reset();
+            $this->showForm = false;
             $this->dispatch('recipe-saved');
-        });
+            session()->flash('success', __('Recipe saved successfully.'));
+        } catch (Exception $e) {
+            logger()->error('Error saving recipe:', ['error' => $e->getMessage()]);
+            session()->flash('error', __('Failed to save recipe. Please try again.'));
+        }
     }
 
     #[Computed]
-    public function recipes()
+    public function recipes(): Collection
     {
-        return Recipe::with(['ingredients', 'product'])->get();
+        return Recipe::query()
+            ->with(['ingredients', 'product'])
+            ->when(
+                $this->searchRecipe,
+                fn ($query) =>
+                $query->where('name', 'like', "%{$this->searchRecipe}%")
+            )
+            ->when(
+                $this->selectedType,
+                fn ($query) =>
+                $query->where('type', $this->selectedType)
+            )
+            ->latest()
+            ->get();
     }
 
-    public function duplicateRecipe($recipeId): void
+    public function duplicateRecipe(int $recipeId): void
     {
         $original = Recipe::with('ingredients')->findOrFail($recipeId);
         $copy = $original->replicate();
@@ -137,13 +165,19 @@ class RecipeManagement extends Component
         $copy->save();
 
         $copy->ingredients()->sync(
-            $original->ingredients()->withPivot('quantity', 'unit', 'preparation_notes')->get()
+            $original->ingredients->mapWithKeys(fn ($ingredient) => [
+                $ingredient->id => [
+                    'quantity' => $ingredient->pivot->quantity,
+                    'unit' => $ingredient->pivot->unit,
+                    'preparation_notes' => $ingredient->pivot->preparation_notes,
+                ]
+            ])->toArray()
         );
 
-        $this->dispatch('recipe-duplicated');
+        session()->flash('success', __('Recipe duplicated successfully.'));
     }
 
-    public function editRecipe($recipeId): void
+    public function editRecipe(int $recipeId): void
     {
         $recipe = Recipe::with('ingredients')->findOrFail($recipeId);
         $this->editingRecipeId = $recipeId;
@@ -166,12 +200,51 @@ class RecipeManagement extends Component
         $this->showForm = true;
     }
 
-    public function calculateCost()
+    public function calculateCost(): float
     {
-        $totalCost = 0;
-        foreach ($this->selectedIngredients as $ingredient) {
-            $totalCost += $ingredient['quantity'] * $ingredient['price'];
+        return collect($this->selectedIngredients)->reduce(function ($totalCost, $ingredient) {
+            $ingredientModel = Ingredient::find($ingredient['id']);
+            return $totalCost + ($ingredient['quantity'] * $ingredientModel->cost);
+        }, 0.0);
+    }
+
+    #[Computed]
+    public function recipeTypes(): array
+    {
+        return RecipeType::cases();
+    }
+
+    #[Computed]
+    public function unitTypes(): array
+    {
+        return UnitType::cases();
+    }
+
+    public function createRecipe(): void
+    {
+        $this->reset([
+            'editingRecipeId',
+            'name',
+            'description',
+            'preparation_time',
+            'type',
+            'is_featured',
+            'instructions',
+            'selectedIngredients'
+        ]);
+        $this->showForm = true;
+    }
+
+    public function deleteRecipe(int $recipeId): void
+    {
+        try {
+            $recipe = Recipe::findOrFail($recipeId);
+            $recipe->delete();
+
+            session()->flash('success', __('Recipe deleted successfully.'));
+        } catch (Exception $e) {
+            Log::error('Error deleting recipe:', ['error' => $e->getMessage()]);
+            session()->flash('error', __('Failed to delete recipe. Please try again.'));
         }
-        return $totalCost;
     }
 }

@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use App\Enums\Unit;
+use App\Enums\UnitType;
 use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\Price;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('layouts.app')]
+#[Title('Ingredient Management')]
 class IngredientManagement extends Component
 {
     use WithPagination;
@@ -22,42 +28,45 @@ class IngredientManagement extends Component
     public $showForm = false;
     public $editingId = null;
 
-    // Form fields
+    #[Validate('required|string|max:255')]
     public $name = '';
+    #[Validate('required')]
     public $unit;
+    #[Validate('required|numeric|min:0')]
     public $conversionRate = 1;
+    #[Validate('required|numeric|min:0')]
     public $stock = 0;
+    #[Validate('nullable|date')]
     public $expiryDate = '';
+    #[Validate('nullable|array')]
     public $supplierInfo = [];
+    #[Validate('nullable|array')]
     public $instructions = [];
+    #[Validate('nullable|array')]
     public $storageConditions = [];
+    #[Validate('required|exists:categories,id')]
     public $categoryId = '';
+    #[Validate('required|numeric|min:0')]
     public $cost = 0;
+    #[Validate('required|numeric|min:0')]
     public $price = 0;
+    #[Validate('nullable|array')]
     public $nutritionalInfo = [];
 
     // Add new properties for price history
     public $showPriceHistory = false;
     public $selectedIngredientId;
+
+    public $date = '';
+
     public $newPrice = [
         'cost' => 0,
         'price' => 0,
+        'date' => '',
         'notes' => '',
     ];
 
     protected $rules = [
-        'name' => 'required|string|max:255',
-        'unit' => 'required',
-        'conversionRate' => 'required|numeric|min:0',
-        'stock' => 'required|numeric|min:0',
-        'expiryDate' => 'nullable|date|after:today',
-        'supplierInfo' => 'nullable|array',
-        'instructions' => 'nullable|array',
-        'storageConditions' => 'nullable|array',
-        'categoryId' => 'required|exists:categories,id',
-        'cost' => 'required|numeric|min:0',
-        'price' => 'required|numeric|min:0',
-        'nutritionalInfo' => 'nullable|array',
         'newPrice.cost' => 'required|numeric|min:0',
         'newPrice.price' => 'required|numeric|min:0',
         'newPrice.notes' => 'nullable|string|max:255',
@@ -68,10 +77,14 @@ class IngredientManagement extends Component
     {
         return Ingredient::query()
             ->with('category')
-            ->when($this->search, fn ($query) => 
+            ->when(
+                $this->search,
+                fn ($query) =>
                 $query->where('name', 'like', '%' . $this->search . '%')
             )
-            ->when($this->category_id, fn ($query) => 
+            ->when(
+                $this->category_id,
+                fn ($query) =>
                 $query->where('category_id', $this->category_id)
             )
             ->latest()
@@ -87,7 +100,7 @@ class IngredientManagement extends Component
     #[Computed]
     public function units()
     {
-        return Unit::cases();
+        return UnitType::cases();
     }
 
     public function saveIngredient(): void
@@ -110,7 +123,7 @@ class IngredientManagement extends Component
             ];
 
             if ($this->editingId) {
-                $ingredient = Ingredient::find($this->editingId);
+                $ingredient = Ingredient::findOrFail($this->editingId);
                 $ingredient->update($ingredientData);
             } else {
                 $ingredient = Ingredient::create($ingredientData);
@@ -118,17 +131,23 @@ class IngredientManagement extends Component
 
             // Add initial price record
             if ($this->cost > 0 || $this->price > 0) {
-                $ingredient->addPrice($this->cost, $this->price, 'Initial price');
+                $ingredient->addPrice($this->cost, $this->price, $this->date, 'Initial price');
             }
 
             DB::commit();
             $this->reset();
             $this->showForm = false;
             session()->flash('success', __('Ingredient saved successfully.'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
-            session()->flash('error', __('Error saving ingredient.'));
+            session()->flash('error', __('Error saving ingredient: ') . $e->getMessage());
         }
+    }
+
+    public function addIngredient(): void
+    {
+        $this->reset();
+        $this->showForm = true;
     }
 
     public function editIngredient(Ingredient $ingredient): void
@@ -143,8 +162,8 @@ class IngredientManagement extends Component
         $this->supplierInfo = $ingredient->supplier_info;
         $this->instructions = $ingredient->instructions;
         $this->storageConditions = $ingredient->storage_conditions;
-        $this->cost = $ingredient->cost;
-        $this->price = $ingredient->price;
+        $this->cost = $ingredient->getCurrentPrice()?->cost ?? 0;
+        $this->price = $ingredient->getCurrentPrice()?->price ?? 0;
         $this->nutritionalInfo = $ingredient->nutritional_info;
 
         $this->showForm = true;
@@ -166,8 +185,8 @@ class IngredientManagement extends Component
         try {
             $ingredient->updateStock($quantity, $reason);
             session()->flash('success', __('Stock updated successfully.'));
-        } catch (\Exception $e) {
-            session()->flash('error', __('Error updating stock.'));
+        } catch (Exception $e) {
+            session()->flash('error', __('Error updating stock: ') . $e->getMessage());
         }
     }
 
@@ -193,19 +212,19 @@ class IngredientManagement extends Component
 
             $this->reset('newPrice');
             session()->flash('success', __('Price updated successfully.'));
-        } catch (\Exception $e) {
-            session()->flash('error', __('Error updating price.'));
+        } catch (Exception $e) {
+            session()->flash('error', __('Error updating price: ') . $e->getMessage());
         }
     }
 
     #[Computed]
     public function priceHistory()
     {
-        if (!$this->selectedIngredientId) {
+        if ( ! $this->selectedIngredientId) {
             return collect();
         }
 
-        return Ingredient::find($this->selectedIngredientId)
+        return Ingredient::findOrFail($this->selectedIngredientId)
             ->getPriceHistory()
             ->map(function ($price) {
                 return [

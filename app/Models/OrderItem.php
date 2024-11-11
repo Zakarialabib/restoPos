@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
@@ -24,37 +26,34 @@ class OrderItem extends Model
         'details' => 'array',
     ];
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
-    public function composableJuice()
+    public function composableJuice(): BelongsTo
     {
         return $this->belongsTo(Composable::class);
     }
 
     // Accessor for the details (JSON)
-    public function getDetailsAttribute($value)
+    public function details($value): Attribute
     {
-        return json_decode($value, true);
+        return new Attribute(
+            get: fn ($value) => json_decode($value, true),
+            set: fn ($value) => json_encode($value),
+        );
     }
 
     // Methods
     public function getSubtotal(): float
     {
         return $this->price * $this->quantity;
-    }
-
-    // Mutator for the details (JSON)
-    public function setDetailsAttribute($value): void
-    {
-        $this->attributes['details'] = json_encode($value);
     }
 
     public function updateQuantity(int $quantity): void

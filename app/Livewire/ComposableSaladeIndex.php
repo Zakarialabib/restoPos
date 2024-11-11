@@ -6,7 +6,7 @@ namespace App\Livewire;
 
 use App\Models\Category;
 use App\Models\Composable;
-use App\Models\InventoryAlert;
+use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -87,7 +87,7 @@ class ComposableSaladeIndex extends Component
     #[Computed]
     public function salades()
     {
-        return Product::where('category_id', Category::where('name', 'Salade')->first()->id)
+        return Ingredient::where('category_id', Category::where('name', 'Salade')->first()->id)
             ->where('stock', '>', 0)
             ->where('name', 'like', '%' . $this->search . '%')
             ->get();
@@ -96,7 +96,7 @@ class ComposableSaladeIndex extends Component
     #[Computed]
     public function composables()
     {
-        return Composable::with('products', 'ingredients')->get();
+        return Composable::with('ingredients')->get();
     }
 
     public function nextStep(): void
@@ -186,16 +186,6 @@ class ComposableSaladeIndex extends Component
         ];
         session()->put('cart', $this->cart);
 
-        foreach ($this->selectedSalade as $saladeId) {
-            $salade = Product::find($saladeId);
-            $salade->decrement('stock');
-            if ($salade->isLowStock()) {
-                InventoryAlert::create([
-                    'product_id' => $salade->id,
-                    'message' => "Low stock alert for {$salade->name}",
-                ]);
-            }
-        }
         $this->resetSelections();
     }
 

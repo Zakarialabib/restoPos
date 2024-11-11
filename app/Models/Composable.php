@@ -44,14 +44,14 @@ class Composable extends Model
 
     public function calculateTotalPrice(): float
     {
-        return $this->products->sum('price');
+        return $this->ingredients->sum('price');
     }
 
     // Add price calculation based on ingredients
     public function calculatePrice(): float
     {
         $basePrice = $this->base_price;
-        $ingredientsCost = $this->ingredients->sum(fn($ingredient) => $ingredient->cost_per_unit * $ingredient->pivot->quantity);
+        $ingredientsCost = $this->ingredients->sum(fn ($ingredient) => $ingredient->cost_per_unit * $ingredient->pivot->quantity);
 
         return $basePrice + ($ingredientsCost * $this->profit_margin);
     }
@@ -59,7 +59,7 @@ class Composable extends Model
     // Add stock validation
     public function validateStock(): bool
     {
-        return $this->ingredients->every(fn($ingredient) => $ingredient->hasEnoughStock($ingredient->pivot->quantity));
+        return $this->ingredients->every(fn ($ingredient) => $ingredient->hasEnoughStock($ingredient->pivot->quantity));
     }
 
     // Add nutritional information
@@ -94,7 +94,7 @@ class Composable extends Model
     protected function price(): Attribute
     {
         return Attribute::make(
-            get: fn() => Number::currency($this->price, in: 'MAD', locale: 'fr_MA'),
+            get: fn () => Number::currency($this->price, in: 'MAD', locale: 'fr_MA'),
         );
     }
 
@@ -106,5 +106,10 @@ class Composable extends Model
     protected function validateSaladeIngredients(Collection $types): bool
     {
         return $types->contains('fruit') && $types->contains('liquid');
+    }
+
+    protected function validateDriedFruitsIngredients(Collection $types): bool
+    {
+        return $types->contains('fruit');
     }
 }

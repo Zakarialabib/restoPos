@@ -5,39 +5,27 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\Ingredient;
-use App\Notifications\ExpiryAlert;
 use App\Notifications\LowStockAlert;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Notification;
 
 class CheckLowStockIngredients implements ShouldQueue
 {
+    use Dispatchable;
+    use InteractsWithQueue;
     use Queueable;
+    use SerializesModels;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct()
-    {
-    }
-
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
-        // reorder_level is dropped
-        $lowStockIngredients = Ingredient::whereColumn('stock', '<=', 'reorder_level')->get();
+        $lowStockIngredients = Ingredient::where('stock', '<=', 10)->get();
+
         foreach ($lowStockIngredients as $ingredient) {
             Notification::send($ingredient->users, new LowStockAlert($ingredient));
-        }
-
-        $nearExpiryIngredients = Ingredient::where('expiry_date', '<=', now()->addDays(7))->get();
-        // Notify users about near expiry ingredients
-
-        foreach ($nearExpiryIngredients as $ingredient) {
-            Notification::send($ingredient->users, new ExpiryAlert($ingredient));
         }
     }
 }

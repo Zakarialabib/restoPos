@@ -1,32 +1,53 @@
 <div>
     <div class="w-full">
+        @if (session()->has('success'))
+            <x-alert type="success" :dismissal="false" :showIcon="true">
+                {{ session('success') }}
+            </x-alert>
+        @endif
+
+        @if (session()->has('error'))
+            <x-alert type="error" :dismissal="false" :showIcon="true">
+                {{ session('error') }}
+            </x-alert>
+        @endif
         <!-- Header with Analytics -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">{{ __('Product Management') }}</h2>
-                    <p class="text-sm text-gray-600">{{ __('Manage your product catalog') }}</p>
-                </div>
-                <div class="flex gap-4">
-                    <x-button wire:click="$toggle('showForm')" color="primary">
-                        <span class="material-icons">{{ $showForm ? 'close' : 'add' }}</span>
-                        {{ $showForm ? __('Close Form') : __('Add Product') }}
-                    </x-button>
-                    <x-button wire:click="$toggle('showAnalytics')" color="success">
-                        <span class="material-icons">{{ $showAnalytics ? 'visibility_off' : 'visibility' }}</span>
-                        {{ $showAnalytics ? __('Hide Analytics') : __('Show Analytics') }}
-                    </x-button>
-                </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">{{ __('Product Management') }}</h2>
+                <p class="text-sm text-gray-600">{{ __('Manage your product catalog') }}</p>
+            </div>
+            <div class="flex gap-4">
+                <x-input type="text" wire:model.live="search" class="w-full rounded border-gray-300"
+                    placeholder="{{ __('Search products...') }}" />
+                <select wire:model.live="category_id" class="rounded border-gray-300">
+                    <option value="">{{ __('All categories') }}</option>
+                    @foreach ($this->categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
             </div>
 
-            @if ($showAnalytics)
-                <div class="grid grid-cols-4 gap-4 mb-6">
-                    <x-stat-card title="{{ __('Total Products') }}" :value="$this->totalProducts" icon="box" />
-                    <x-stat-card title="{{ __('Total Value') }}" :value="number_format($this->inventoryValue, 2) . ' DH'" icon="currency-dollar" />
-                    <x-stat-card title="{{ __('Active Categories') }}" :value="$this->activeCategories" icon="folder" />
-                </div>
-            @endif
+            <div class="flex gap-4">
+                <x-button wire:click="addProduct" color="primary">
+                    <span class="material-icons">add</span>
+                    {{ __('Add Product') }}
+                </x-button>
+                <x-button wire:click="$toggle('showAnalytics')" color="success">
+                    <span class="material-icons">{{ $showAnalytics ? 'visibility_off' : 'visibility' }}</span>
+                    {{ $showAnalytics ? __('Hide Analytics') : __('Show Analytics') }}
+                </x-button>
+            </div>
         </div>
+
+        @if ($showAnalytics)
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <x-stat-card title="{{ __('Total Products') }}" :value="$this->productAnalytics['total_products']" icon="box" />
+                <x-stat-card title="{{ __('Total Value') }}" :value="number_format($this->productAnalytics['total_value'], 2) . ' DH'" icon="currency-dollar" />
+                <x-stat-card title="{{ __('Active Categories') }}" :value="$this->productAnalytics['active_categories']" icon="folder" />
+            </div>
+        @endif
 
         <!-- Product Form -->
         @if ($showForm)
@@ -160,7 +181,8 @@
                                 </div>
                             @else
                                 <div class="mt-4">
-                                    <x-button wire:click="toggleRecipeForm({{ $editingProductId }})" color="secondary">
+                                    <x-button wire:click="toggleRecipeForm({{ $editingProductId }})"
+                                        color="secondary">
                                         {{ __('Add Recipe') }}
                                     </x-button>
                                 </div>
@@ -202,12 +224,12 @@
                         <!-- Stock Management -->
                         <div class="col-span-1 bg-blue-50 p-6 rounded-lg">
                             <h4 class="font-semibold text-blue-800 mb-4">{{ __('Stock Management') }}</h4>
-                            
+
                             <div class="space-y-4">
                                 <div>
                                     <x-input-label for="stock" :value="__('Current Stock')" />
-                                    <x-input type="number" wire:model="stock" id="stock" 
-                                        class="w-full" step="1" min="0" />
+                                    <x-input type="number" wire:model="stock" id="stock" class="w-full"
+                                        step="1" min="0" />
                                     @error('stock')
                                         <span class="text-red-500 text-sm">{{ $message }}</span>
                                     @enderror
@@ -215,7 +237,7 @@
 
                                 <div>
                                     <x-input-label for="reorder_point" :value="__('Reorder Point')" />
-                                    <x-input type="number" wire:model="reorder_point" id="reorder_point" 
+                                    <x-input type="number" wire:model="reorder_point" id="reorder_point"
                                         class="w-full" step="1" min="0" />
                                     @error('reorder_point')
                                         <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -224,11 +246,12 @@
 
                                 <div>
                                     <x-input-label for="cost" :value="__('Cost')" />
-                                    <x-input type="number" wire:model="cost" id="cost" 
-                                        class="w-full" step="0.01" min="0" />
+                                    <x-input type="number" wire:model="cost" id="cost" class="w-full"
+                                        step="0.01" min="0" />
                                     <p class="text-sm text-gray-500 mt-1">
-                                        {{ __('Calculated from ingredients: ') }} 
-                                        {{ $editingProductId ? number_format($this->calculateProductCost(\App\Models\Product::find($editingProductId)), 2) : '0.00' }} DH
+                                        {{ __('Calculated from ingredients: ') }}
+                                        {{ $editingProductId ? number_format($this->calculateProductCost(\App\Models\Product::find($editingProductId)), 2) : '0.00' }}
+                                        DH
                                     </p>
                                 </div>
                             </div>
@@ -236,16 +259,16 @@
                             <!-- Ingredient Requirements -->
                             <div class="mt-6">
                                 <h5 class="font-medium mb-2">{{ __('Required Ingredients') }}</h5>
-                                @foreach($selectedIngredients as $index => $ingredient)
+                                @foreach ($selectedIngredients as $index => $ingredient)
                                     <div class="flex items-center gap-2 mb-2">
-                                        <select wire:model="selectedIngredients.{{ $index }}.id" 
+                                        <select wire:model="selectedIngredients.{{ $index }}.id"
                                             class="w-2/3 rounded border-gray-300">
                                             <option value="">{{ __('Select Ingredient') }}</option>
-                                            @foreach($this->ingredients as $ing)
+                                            @foreach ($this->ingredients as $ing)
                                                 <option value="{{ $ing->id }}">{{ $ing->name }}</option>
                                             @endforeach
                                         </select>
-                                        <x-input type="number" 
+                                        <x-input type="number"
                                             wire:model="selectedIngredients.{{ $index }}.quantity"
                                             class="w-1/3" step="0.01" min="0"
                                             placeholder="{{ __('Qty') }}" />
@@ -286,10 +309,6 @@
             @forelse($this->products as $product)
                 <div
                     class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    @if ($product->image)
-                        <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}"
-                            class="w-full h-48 object-cover">
-                    @endif
                     <div class="p-4">
                         <div class="flex justify-between items-start">
                             <div>
@@ -332,23 +351,6 @@
                                 </ul>
                             </div>
                         @endif
-
-                        <!-- Stock Information -->
-                        <div class="mt-2 flex justify-between items-center">
-                            <div class="text-sm">
-                                <span @class([
-                                    'px-2 py-1 rounded-full text-xs font-medium',
-                                    'bg-green-100 text-green-800' => $product->stock > $product->reorder_point,
-                                    'bg-yellow-100 text-yellow-800' => $product->stock <= $product->reorder_point && $product->stock > 0,
-                                    'bg-red-100 text-red-800' => $product->stock <= 0,
-                                ])>
-                                    {{ $product->stock > 0 ? __('In Stock: ') . $product->stock : __('Out of Stock') }}
-                                </span>
-                            </div>
-                            <div class="text-sm text-gray-500">
-                                {{ __('Cost: ') }} {{ number_format($product->calculateCost(), 2) }} DH
-                            </div>
-                        </div>
                     </div>
                 </div>
             @empty

@@ -8,18 +8,17 @@ use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Composable;
 use App\Models\Ingredient;
-use App\Models\InventoryAlert;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use Illuminate\Support\Number;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 #[Layout('layouts.guest')]
 #[Title('Composable Juices')]
@@ -43,7 +42,6 @@ class ComposableJuicesIndex extends Component
     // public $cartTotal;
     public $search = '';
 
-    public function mount(): void {}
 
     #[Computed]
     public function cart()
@@ -126,7 +124,7 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function popularJuices()
     {
-        return Composable::with('products', 'ingredients')->get();
+        return Composable::with('ingredients')->get();
     }
 
     // public function getJuiceIngredients($recipeId)
@@ -148,14 +146,14 @@ class ComposableJuicesIndex extends Component
 
     public function toggleFruit($fruitId): void
     {
-        if (count($this->selectedFruits) >= 5 && !in_array($fruitId, $this->selectedFruits)) {
+        if (count($this->selectedFruits) >= 5 && ! in_array($fruitId, $this->selectedFruits)) {
             $this->addError('fruitLimit', __("You can only select up to 5 fruits."));
             return;
         }
 
         $fruit = Ingredient::find($fruitId);
 
-        if (!$fruit) {
+        if ( ! $fruit) {
             $this->addError('invalidFruit', __("The selected fruit is not available."));
             return;
         }
@@ -220,37 +218,11 @@ class ComposableJuicesIndex extends Component
         $this->totalPrice = round($this->totalPrice, 2);
     }
 
-    // Update the helper method to use dynamic portions
-    private function calculateIngredientPortion(string $type): float
-    {
-        $fruitCount = count($this->selectedFruits);
-
-        // Calculate base portion
-        $basePortionSize = match ($fruitCount) {
-            1 => 0.6,
-            2 => 0.5,
-            3 => 0.4,
-            4 => 0.3,
-            5 => 0.2,
-            default => 0.6
-        };
-
-        // Calculate fruit portion
-        $fruitPortionSize = (1 - $basePortionSize) / ($fruitCount ?: 1);
-
-        return match ($type) {
-            'fruit' => $fruitPortionSize,
-            'base' => $basePortionSize,
-            'addon' => 0.1, // Addons remain fixed at 10%
-            default => 0.0
-        };
-    }
-
     public function validateIngredients(): bool
     {
         foreach ($this->selectedFruits as $fruitId) {
             $fruit = Ingredient::find($fruitId);
-            if (!$fruit || !$fruit->hasEnoughStock(1)) {
+            if ( ! $fruit || ! $fruit->hasEnoughStock(1)) {
                 $this->addError('stock', __('Some ingredients are out of stock.'));
                 return false;
             }
@@ -258,7 +230,7 @@ class ComposableJuicesIndex extends Component
 
         if ($this->selectedBase) {
             $base = Ingredient::where('name', $this->selectedBase)->first();
-            if (!$base || !$base->hasEnoughStock(1)) {
+            if ( ! $base || ! $base->hasEnoughStock(1)) {
                 $this->addError('stock', __('Base ingredient is out of stock.'));
                 return false;
             }
@@ -280,7 +252,7 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function cartTotal()
     {
-        return array_reduce($this->cart, fn($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
+        return array_reduce($this->cart, fn ($carry, $item) => $carry + ($item['price'] * $item['quantity']), 0);
     }
 
     public function addToCart(): void
@@ -311,7 +283,7 @@ class ComposableJuicesIndex extends Component
             $ingredients = [
                 'fruits' => Ingredient::whereIn('id', $this->selectedFruits)
                     ->get()
-                    ->map(fn($fruit) => [
+                    ->map(fn ($fruit) => [
                         'name' => $fruit->name,
                         'portion' => $this->calculateIngredientPortion('fruit'),
                         'price' => $fruit->price * $this->calculateIngredientPortion('fruit')
@@ -330,7 +302,7 @@ class ComposableJuicesIndex extends Component
                         ?->price * $this->calculateIngredientPortion('sugar') ?? 0
                 ],
                 'addons' => collect($this->selectedAddons)
-                    ->map(fn($addon) => [
+                    ->map(fn ($addon) => [
                         'name' => $addon,
                         'portion' => $this->calculateIngredientPortion('addon'),
                         'price' => optional(Ingredient::where('name', $addon)->first())
@@ -365,7 +337,7 @@ class ComposableJuicesIndex extends Component
             $this->step = 1;
 
             session()->flash('success', __('Custom juice added to cart successfully!'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addError('cart', __('Error adding juice to cart. Please try again.'));
             Log::error('Error adding juice to cart: ' . $e->getMessage());
         }
@@ -392,7 +364,7 @@ class ComposableJuicesIndex extends Component
         }
 
         try {
-            DB::transaction(function () {
+            DB::transaction(function (): void {
                 // Create order
                 $order = Order::create([
                     'customer_name' => 'Shop',
@@ -430,7 +402,7 @@ class ComposableJuicesIndex extends Component
                 $this->showSuccess = true;
                 $this->order = $order;
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // return exception message
             dd($e->getMessage());
             // $this->addError('order', __('Error processing order. Please try again.'));
@@ -456,6 +428,32 @@ class ComposableJuicesIndex extends Component
     #[Computed]
     public function composables()
     {
-        return Composable::with('products', 'ingredients')->get();
+        return Composable::with('ingredients')->get();
+    }
+
+    // Update the helper method to use dynamic portions
+    private function calculateIngredientPortion(string $type): float
+    {
+        $fruitCount = count($this->selectedFruits);
+
+        // Calculate base portion
+        $basePortionSize = match ($fruitCount) {
+            1 => 0.6,
+            2 => 0.5,
+            3 => 0.4,
+            4 => 0.3,
+            5 => 0.2,
+            default => 0.6
+        };
+
+        // Calculate fruit portion
+        $fruitPortionSize = (1 - $basePortionSize) / ($fruitCount ?: 1);
+
+        return match ($type) {
+            'fruit' => $fruitPortionSize,
+            'base' => $basePortionSize,
+            'addon' => 0.1, // Addons remain fixed at 10%
+            default => 0.0
+        };
     }
 }

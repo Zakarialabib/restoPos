@@ -35,12 +35,12 @@ class Order extends Model
     // Add order analytics methods
     public function getTotalRevenueAttribute(): float
     {
-        return $this->items->sum(fn($item) => $item->price * $item->quantity);
+        return $this->items->sum(fn ($item) => $item->price * $item->quantity);
     }
 
     public function getProfit(): float
     {
-        return $this->items->sum(fn($item) => ($item->price - $item->cost) * $item->quantity);
+        return $this->items->sum(fn ($item) => ($item->price - $item->cost) * $item->quantity);
     }
 
     // Add order validation
@@ -49,7 +49,7 @@ class Order extends Model
         // Check if all required ingredients are available
         foreach ($this->items as $item) {
             foreach ($item->product->ingredients as $ingredient) {
-                if (! $ingredient->hasEnoughStock($ingredient->pivot->quantity * $item->quantity)) {
+                if ( ! $ingredient->hasEnoughStock($ingredient->pivot->quantity * $item->quantity)) {
                     return false;
                 }
             }
@@ -101,14 +101,14 @@ class Order extends Model
             DB::transaction(function (): void {
                 foreach ($this->items as $item) {
                     $product = $item->product;
-                    if (! $product) {
+                    if ( ! $product) {
                         continue;
                     }
 
                     foreach ($product->ingredients as $ingredient) {
                         $requiredQuantity = $ingredient->pivot->stock * $item->quantity;
 
-                        if (! $ingredient->hasEnoughStock($requiredQuantity)) {
+                        if ( ! $ingredient->hasEnoughStock($requiredQuantity)) {
                             throw new Exception("Insufficient stock for ingredient: {$ingredient->name}");
                         }
 
@@ -127,7 +127,7 @@ class Order extends Model
 
     public function calculateTotal(): void
     {
-        $this->total_amount = $this->items->sum(fn($item) => $item->price * $item->quantity);
+        $this->total_amount = $this->items->sum(fn ($item) => $item->price * $item->quantity);
         $this->save();
     }
 
@@ -148,7 +148,7 @@ class Order extends Model
                 // Check ingredient availability
                 $isAvailable = $this->checkIngredientAvailability($product, $orderItem->quantity);
 
-                if (!$isAvailable) {
+                if ( ! $isAvailable) {
                     DB::rollBack();
                     return false;
                 }
@@ -159,7 +159,7 @@ class Order extends Model
 
             DB::commit();
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             // Log the error
             Log::error('Order Processing Failed: ' . $e->getMessage());
@@ -170,7 +170,7 @@ class Order extends Model
     private function checkIngredientAvailability(Product $product, int $quantity): bool
     {
         foreach ($product->ingredients as $ingredient) {
-            if (!$ingredient->isStockSufficientForProduct($product, $quantity)) {
+            if ( ! $ingredient->isStockSufficientForProduct($product, $quantity)) {
                 return false;
             }
         }

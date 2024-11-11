@@ -1,143 +1,148 @@
 <div>
     <div class="w-full">
-        <!-- Header with Title and Actions -->
+        @if (session()->has('success'))
+            <x-alert type="success" :dismissal="false" :showIcon="true">
+                {{ session('success') }}
+            </x-alert>
+        @endif
+
+        @if (session()->has('error'))
+            <x-alert type="error" :dismissal="false" :showIcon="true">
+                {{ session('error') }}
+            </x-alert>
+        @endif
+
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">{{ __('Ingredient Management') }}</h2>
                 <p class="text-sm text-gray-600">{{ __('Manage your ingredient inventory') }}</p>
             </div>
-            <x-button wire:click="$toggle('showForm')" color="primary">
-                <span class="material-icons">{{ $showForm ? 'close' : 'add' }}</span>
-                {{ $showForm ? __('Close Form') : __('Add Ingredient') }}
-            </x-button>
-        </div>
-
-        <!-- Search and Filter -->
-        <div class="mb-6 flex gap-4">
-            <div class="flex-1">
+            <div class="flex gap-4">
                 <x-input type="text" wire:model.live="search" class="w-full rounded border-gray-300"
                     placeholder="{{ __('Search ingredients...') }}" />
+                <select wire:model.live="category_id" class="rounded border-gray-300">
+                    <option value="">{{ __('All categories') }}</option>
+                    @foreach ($this->categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
             </div>
-            <select wire:model.live="category_id" class="rounded border-gray-300">
-                <option value="">{{ __('All categories') }}</option>
-                @foreach ($this->categories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                @endforeach
-            </select>
+
+            <x-button wire:click="addIngredient" color="primary">
+                <span class="material-icons">add</span>
+                {{ __('Add Ingredient') }}
+            </x-button>
         </div>
 
         <!-- Ingredient Form -->
         @if ($showForm)
             <div class="bg-white rounded-lg shadow-lg mb-6 p-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6">
                     {{ $editingId ? __('Edit Ingredient') : __('Add New Ingredient') }}
                 </h3>
 
-                <form wire:submit="saveIngredient">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Left Column - Basic Info -->
-                        <div class="space-y-6">
-                            <div>
-                                <x-input-label for="name" :value="__('Name')" />
-                                <x-input type="text" wire:model="name" id="name" class="w-full"
-                                    placeholder="{{ __('Enter ingredient name') }}" />
-                                @error('name')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
+                <form wire:submit="saveIngredient" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Left Column - Basic Info -->
+                    <div class="border border-gray-200 rounded-lg p-6 space-y-6">
+                        <h4 class="font-medium text-gray-700 border-b pb-2">{{ __('Basic Information') }}</h4>
 
-                            <div>
-                                <x-input-label for="categoryId" :value="__('Category')" />
-                                <select wire:model="categoryId" id="categoryId" class="w-full rounded border-gray-300">
-                                    <option value="">{{ __('Select category') }}</option>
-                                    @foreach ($this->categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('categoryId')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <x-input-label for="expiryDate" :value="__('Expiry Date')" />
-                                <x-input type="date" wire:model="expiryDate" id="expiryDate" class="w-full" />
-                                @error('expiryDate')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
+                        <div>
+                            <x-input-label for="name" :value="__('Name')" />
+                            <x-input type="text" wire:model="name" id="name" class="w-full mt-1"
+                                placeholder="{{ __('Enter ingredient name') }}" />
+                            @error('name')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
                         </div>
 
-                        <!-- Right Column - Stock Management -->
-                        <div class="space-y-6">
-                            <div>
-                                <x-input-label for="stock" :value="__('Stock Amount')" />
-                                <div class="flex gap-4">
-                                    <div class="flex-1">
-                                        <x-input type="number" wire:model="stock" id="stock" class="w-full"
-                                            step="0.01" placeholder="0.00" />
-                                        @error('stock')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div class="w-1/3">
-                                        <select wire:model="unit" id="unit" class="w-full rounded border-gray-300">
-                                            <option value="">{{ __('Unit') }}</option>
-                                            @foreach ($this->units as $unit)
-                                                <option @selected($unit->value === $this->unit) value="{{ $unit->value }}">
-                                                    {{ $unit->label() }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('unit')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
+                        <div>
+                            <x-input-label for="categoryId" :value="__('Category')" />
+                            <select wire:model="categoryId" id="categoryId"
+                                class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm py-2 mt-1">
+                                <option value="">{{ __('Select category') }}</option>
+                                @foreach ($this->categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('categoryId')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-                            <div>
-                                <x-input-label for="conversionRate" :value="__('Conversion Rate')" />
-                                <x-input type="number" wire:model="conversionRate" id="conversionRate" class="w-full"
-                                    step="0.01" placeholder="1.00" />
-                                <p class="text-sm text-gray-500 mt-1">
-                                    {{ __('Rate for converting between different units') }}
-                                </p>
-                                @error('conversionRate')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
+                        <div>
+                            <x-input-label for="expiryDate" :value="__('Expiry Date')" />
+                            <x-input type="date" wire:model="expiryDate" id="expiryDate" class="w-full mt-1" />
+                            @error('expiryDate')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <x-input-label for="stock" :value="__('Stock Amount')" />
+                            <div class="flex gap-4 mt-1">
+                                <div class="flex-1">
+                                    <x-input type="number" wire:model="stock" id="stock" class="w-full"
+                                        step="0.01" placeholder="0.00" />
+                                    @error('stock')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="w-1/3">
+                                    <select wire:model="unit" id="unit"
+                                        class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm py-2">
+                                        <option value="">{{ __('Unit') }}</option>
+                                        @foreach ($this->units as $unit)
+                                            <option @selected($unit->value === $this->unit) value="{{ $unit->value }}">
+                                                {{ $unit->label() }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('unit')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Add this section inside the form, after the Right Column -->
-                    <div class="col-span-2 space-y-6 mt-6 border-t pt-6">
-                        <h4 class="font-semibold text-lg">{{ __('Additional Information') }}</h4>
+                    <!-- Right Column - Additional Info -->
+                    <div class="border border-gray-200 rounded-lg p-6 space-y-6">
+                        <h4 class="font-medium text-gray-700 border-b pb-2">{{ __('Additional Information') }}</h4>
 
-                        <!-- Cost and Price -->
-                        <div class="grid grid-cols-2 gap-6">
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <x-input-label for="cost" :value="__('Cost')" />
-                                <x-input type="number" wire:model="cost" id="cost" class="w-full" step="0.01"
-                                    placeholder="0.00" />
+                                <x-input type="number" wire:model="cost" id="cost" class="w-full mt-1"
+                                    step="0.01" placeholder="0.00" />
                                 @error('cost')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div>
                                 <x-input-label for="price" :value="__('Price')" />
-                                <x-input type="number" wire:model="price" id="price" class="w-full" step="0.01"
-                                    placeholder="0.00" />
+                                <x-input type="number" wire:model="price" id="price" class="w-full mt-1"
+                                    step="0.01" placeholder="0.00" />
                                 @error('price')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
 
-                        <!-- Nutritional Information -->
                         <div>
-                            <x-input-label :value="__('Nutritional Information (per 100g)')" />
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                            <x-input-label for="conversionRate" :value="__('Conversion Rate')" />
+                            <x-input type="number" wire:model="conversionRate" id="conversionRate" class="w-full mt-1"
+                                step="0.01" placeholder="1.00" />
+                            <p class="text-sm text-gray-500 mt-1">
+                                {{ __('Rate for converting between different units') }}
+                            </p>
+                            @error('conversionRate')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <x-input-label :value="__('Nutritional Information (per 100g)')" class="mb-2" />
+                            <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <x-input type="number" wire:model="nutritionalInfo.calories" placeholder="Calories"
                                         class="w-full" step="0.1" />
@@ -163,7 +168,7 @@
                     </div>
 
                     <!-- Form Actions -->
-                    <div class="mt-6 flex justify-end gap-4">
+                    <div class="col-span-full flex justify-end gap-4 mt-6">
                         <x-button type="button" wire:click="$set('showForm', false)" color="secondary">
                             {{ __('Cancel') }}
                         </x-button>
@@ -272,7 +277,7 @@
                     @endforelse
                 </tbody>
             </table>
-    </div>
+        </div>
 
         <div class="mt-4">
             {{ $this->ingredients->links() }}

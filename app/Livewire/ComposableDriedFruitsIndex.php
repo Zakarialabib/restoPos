@@ -7,7 +7,6 @@ namespace App\Livewire;
 use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Composable;
-use App\Models\InventoryAlert;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -67,7 +66,7 @@ class ComposableDriedFruitsIndex extends Component
     #[Computed]
     public function composables()
     {
-        return Composable::with('products', 'ingredients')->get();
+        return Composable::with('ingredients')->get();
     }
 
     public function boot(): void
@@ -156,16 +155,6 @@ class ComposableDriedFruitsIndex extends Component
         ];
         session()->put('cart', $this->cart);
 
-        foreach ($this->selectedDriedFruits as $driedFruitId) {
-            $driedFruit = Product::find($driedFruitId);
-            $driedFruit->decrement('stock');
-            if ($driedFruit->isLowStock()) {
-                InventoryAlert::create([
-                    'product_id' => $driedFruit->id,
-                    'message' => "Low stock alert for {$driedFruit->name}",
-                ]);
-            }
-        }
         $this->resetSelections();
     }
 
