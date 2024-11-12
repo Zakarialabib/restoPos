@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\HasPricing;
 use App\Enums\UnitType;
 use App\Notifications\ExpiryAlert;
 use App\Traits\HasExpiry;
@@ -99,7 +100,7 @@ class Ingredient extends Model
         }
     }
 
-    public function updateStock(float $quantity, string $reason = 'Manual Update'): void
+    public function updateStock(int $quantity, string $reason = 'Manual Update'): void
     {
         $oldStock = $this->stock;
         $this->stock += $quantity;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+use App\Models\User;
 use App\Notifications\ExpiryAlert;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Notification;
@@ -24,6 +25,7 @@ trait HasExpiry
     protected function handleExpiringSoon(): void
     {
         // Override in model if needed
-        Notification::send($this->users, new ExpiryAlert($this));
+        $user = User::first();
+        Notification::send($user, new ExpiryAlert($this));
     }
 }

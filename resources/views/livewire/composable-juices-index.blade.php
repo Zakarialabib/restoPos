@@ -11,6 +11,7 @@
         cart: @entangle('cart'),
         {{-- customerName: @entangle('customerName'),
         customerPhone: @entangle('customerPhone'), --}}
+        selectedSize: @entangle('selectedSize'),
         showSuccess: @entangle('showSuccess'),
         order: @entangle('order'),
     }">
@@ -19,7 +20,7 @@
         </p>
 
         <!-- Onboarding Section -->
-        @if (empty($composableJuices))
+        @if (!empty($composableJuices))
             <div class="mb-12">
                 <h3 class="text-2xl font-semibold mb-4 text-retro-orange">
                     {{ __('Popular Composed Juices') }}
@@ -36,9 +37,22 @@
                 </div>
             </div>
         @endif
+        <div class="container mx-auto">
+            @if (session()->has('success'))
+                <x-alert type="success" :dismissal="false" :showIcon="true">
+                    {{ session('success') }}
+                </x-alert>
+            @endif
 
+            @if (session()->has('error'))
+                <x-alert type="error" :dismissal="false" :showIcon="true">
+                    {{ session('error') }}
+                </x-alert>
+            @endif
+        </div>
         <!-- Main Content Area -->
         <div class="flex flex-col lg:flex-row gap-8 my-4 p-6">
+
             <!-- Sidebar: Cart -->
             @if ($showSuccess)
                 <div class="w-full bg-white border-retro-orange border-solid border-4  rounded-lg shadow-lg p-6">
@@ -65,39 +79,45 @@
                                             </p>
                                             <div class="flex flex-col text-retro-blue">
                                                 @php
-                                                    $ingredients = $item->details;
+                                                    $ingredients = json_decode($item->details);
                                                 @endphp
                                                 <div><strong>{{ __('Fruits:') }}</strong>
                                                     <div>
-                                                        @foreach ($ingredients['fruits'] as $fruit)
+                                                        @foreach ($ingredients->fruits as $fruit)
                                                             <p>
-                                                                {{ $fruit['name'] }}
+                                                                {{ $fruit->name }}
                                                             </p>
                                                         @endforeach
                                                     </div>
                                                 </div>
                                                 <div><strong>{{ __('Base:') }}</strong>
                                                     <p>
-                                                        {{ $ingredients['base']['name'] }}
+                                                        {{ $ingredients->base }}
                                                     </p>
                                                 </div>
                                                 <div><strong>{{ __('Sugar:') }}</strong>
                                                     <p>
-                                                        {{ $ingredients['sugar']['name'] }}
+                                                        {{ $ingredients->sugar }}
                                                     </p>
                                                 </div>
                                                 <div><strong>{{ __('Add-ons:') }}</strong>
-                                                    @if (!empty($ingredients['addons']))
+                                                    @if (!empty($ingredients->addons))
                                                         <ul>
-                                                            @foreach ($ingredients['addons'] as $addon)
+                                                            @foreach ($ingredients->addons as $addon)
                                                                 <li>
-                                                                    {{ $addon['name'] }}
+                                                                    {{ $addon->name }}
                                                                 </li>
                                                             @endforeach
                                                         </ul>
                                                     @else
                                                         <p>{{ __('No add-ons selected') }}</p>
                                                     @endif
+                                                </div>
+
+                                                <div><strong>{{ __('Size:') }}</strong>
+                                                    <p>
+                                                        {{ $ingredients->size }}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -121,17 +141,17 @@
                         <h3 class="text-2xl text-retro-orange font-bold mb-4">
                             {{ __('Your Juice') }}
                         </h3>
-                        <div class="flex flex-col gap-y-6 rounded-lg mb-6 text-retro-blue">
+                        <div class="flex flex-col gap-y-4 rounded-lg mb-6 text-retro-blue">
                             @if (count($selectedFruits) > 0)
                                 <div>
                                     <span class="font-medium">
                                         {{ __('Fruit') }}:
                                     </span>
-                                    <ul class="text-sm mb-1">
+                                    <ol class="text-sm mb-1">
                                         @foreach ($this->fruits->whereIn('id', $selectedFruits)->pluck('name') as $fruit)
                                             <li>{{ $fruit }}</li>
                                         @endforeach
-                                    </ul>
+                                    </ol>
                                 </div>
                             @endif
                             @if ($selectedBase)
@@ -157,11 +177,21 @@
                                     <span class="font-medium">
                                         {{ __('Add-ons') }}:
                                     </span>
-                                    <div class="text-sm mb-1">
+                                    <ul class="text-sm mb-1">
                                         @foreach ($selectedAddons as $addon)
-                                            <p>{{ $addon }}</p>
+                                            <li>{{ $addon }}</li>
                                         @endforeach
-                                    </div>
+                                    </ul>
+                                </div>
+                            @endif
+                            @if (!empty($selectedSize))
+                                <div>
+                                    <span class="font-medium">
+                                        {{ __('Size') }}:
+                                    </span>
+                                    <p class="capitalize text-sm mb-1">
+                                        {{ $selectedSize }} - {{ $this->getSizeCapacity($selectedSize) }}
+                                    </p>
                                 </div>
                             @endif
                             @if (count($selectedFruits) === 0 && !$selectedBase && !$selectedSugar && count($selectedAddons) === 0)
@@ -175,20 +205,47 @@
                         </h4>
                         <div class="space-y-3 mb-6">
                             @forelse ($cart as $index => $item)
-                                <div class="flex justify-between items-center py-2 border-b border-retro-cream">
-                                    <div>
-                                        <h5 class="font-medium text-retro-blue">{{ $item['name'] }}</h5>
+                                <div
+                                    class="flex flex-col justify-between items-center py-2 border-b border-retro-cream">
+                                    <p class="font-medium text-retro-blue">
+                                        {{ $item['name'] }}
+                                    </p>
+
+                                    @if (!empty($item['ingredients']))
+                                        <p class="text-sm text-retro-blue">
+                                            {{ __('Ingredients') }}: <br>
+                                            {{ __('fruits') }}:<br>
+                                            @foreach ($item['ingredients']['fruits'] as $fruit)
+                                                {{ $fruit['name'] }} <br>
+                                            @endforeach
+                                            {{ __('Base') }}: {{ $item['ingredients']['base'] }} <br>
+                                            {{ __('Addons') }}:<br>
+                                            @foreach ($item['ingredients']['addons'] as $addon)
+                                                {{ $addon['name'] }} <br>
+                                            @endforeach
+                                            {{ __('Size') }}: {{ $item['ingredients']['size'] }}
+                                        </p>
+                                    @endif
+
+                                    @if (!empty($item['size']))
+                                        <p class="text-sm text-retro-blue">
+                                            {{ __('Size') }}: {{ $item['size'] }}
+                                        </p>
+                                    @endif
+
+                                    @if (!empty($item['quantity']))
                                         <p class="text-sm text-retro-blue">
                                             {{ __('Qty') }}: {{ $item['quantity'] }}
                                         </p>
-                                    </div>
+                                    @endif
                                     <div class="text-right">
                                         <p class="font-medium text-retro-blue">
-                                            {{ $item['price'] * $item['quantity'], 2 }}DH
+                                            {{ number_format($item['price'] * $item['quantity'], 2) }} DH
                                         </p>
                                         <button class="bg-red-600 text-white p-2 rounded-full text-xs"
                                             wire:loading.attr="disabled" wire:loading.class="opacity-50"
-                                            wire:click="removeFromCart({{ $index }})" type="button">
+                                            wire:click="removeFromCart({{ $index }})" type="button"
+                                            aria-label="{{ __('Remove item from cart') }}">
                                             <span class="material-icons">delete</span>
                                         </button>
                                     </div>
@@ -244,7 +301,7 @@
                 <!-- Main Content: Stepper -->
                 <div
                     class="lg:w-3/4 bg-white order-1 lg:order-2 border-retro-orange border-solid border-4 rounded-lg p-4">
-                    <nav class="grid grid-cols-2 md:grid-cols-4 gap-6 justify-center mb-8">
+                    <nav class="grid grid-cols-2 md:grid-cols-5 gap-6 justify-center mb-8">
                         @foreach ($this->steps as $index => $stepName)
                             <div class="step-wrapper flex flex-col items-center">
                                 <!-- Step Circle -->
@@ -302,10 +359,10 @@
                                 class="w-1/2 p-2 border border-retro-orange rounded-md text-gray-800 bg-transparent placeholder-gray-800 focus:outline-none focus:ring-2 focus:ring-retro-orange"
                                 placeholder="{{ __('Search for fruits') }}...">
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             @foreach ($this->fruits as $fruit)
                                 <div wire:key="{{ $fruit->id }}">
-                                    <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer  border-solid border-2 border-retro-orange"
+                                    <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer  border-solid border-2 border-black"
                                         wire:click="toggleFruit({{ $fruit->id }})"
                                         x-bind:class="{
                                             'ring-4 ring-retro-orange': @js(in_array($fruit->id, $selectedFruits))
@@ -335,11 +392,11 @@
                         <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
                             {{ __('Select Your Base') }}
                         </h3>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                             @foreach ($this->bases as $base)
-                                <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer"
-                                    x-bind:class="{ 'ring-4 ring-retro-orange': selectedBase === '{{ $base }}' }"
-                                    wire:click="$set('selectedBase', '{{ $base }}')">
+                                <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer  border-solid border-2 border-black"
+                                    x-bind:class="{ 'ring-4 ring-retro-orange': @js($base) === @js($selectedBase) }"
+                                    wire:click="toggleBase('{{ $base }}')">
                                     <h4 class="text-lg font-semibold text-retro-blue text-center">
                                         {{ $base }}
                                     </h4>
@@ -361,12 +418,13 @@
                         <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
                             {{ __('Sugar Preference') }}
                         </h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                             @foreach ($this->sugars as $sugarOption)
-                                <div class="relative bg-white p-4 rounded-lg shadow hover:shadow-lg transition-all duration-300  cursor-pointer"
-                                    wire:click="$set('selectedSugar', '{{ $sugarOption }}')"
-                                    x-bind:class="{ 'ring-4 ring-retro-orange': selectedSugar === '{{ $sugarOption }}' }">
-
+                                <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer  border-solid border-2 border-black"
+                                    wire:click="toggleSugar('{{ $sugarOption }}')"
+                                    x-bind:class="{
+                                        'ring-4 ring-retro-orange': @js($sugarOption) === @js($selectedSugar)
+                                    }">
                                     <h4 class="text-lg font-semibold text-retro-blue text-center">
                                         {{ $sugarOption }}
                                     </h4>
@@ -389,56 +447,84 @@
                         <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
                             {{ __('Select Add-ons') }}
                         </h3>
-                        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                             @foreach ($this->addons as $addon)
-                                <div class="relative cursor-pointer" wire:click="toggleAddon('{{ $addon }}')">
-                                    <div class="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-all duration-300"
-                                        x-bind:class="{
-                                            'ring-4 ring-retro-orange': selectedAddons.includes(
-                                                '{{ $addon }}')
-                                        }">
-                                        <h4 class="text-lg font-semibold text-center text-retro-blue">
-                                            {{ $addon }}</h4>
-                                        <div class="absolute top-2 right-2 bg-retro-orange rounded-full p-1"
-                                            x-show="selectedAddons.includes('{{ $addon }}')">
+                                <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer  border-solid border-2 border-black"
+                                    wire:click="toggleAddon('{{ $addon }}')"
+                                    x-bind:class="{
+                                        'ring-4 ring-retro-orange': selectedAddons.includes(
+                                            '{{ $addon }}')
+                                    }">
+                                    <h4 class="text-lg font-semibold text-center text-retro-blue">
+                                        {{ $addon }}
+                                    </h4>
+                                    @if (in_array($addon, $selectedAddons))
+                                        <div class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
                                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M5 13l4 4L19 7"></path>
                                             </svg>
                                         </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Add this new step content after the add-ons step -->
+                    <div x-show="step === 5">
+                        <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
+                            {{ __('Select Size') }}
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                            @foreach ($this->sizes as $sizeKey => $size)
+                                <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer  border-solid border-2 border-black"
+                                    wire:click="toggleSize('{{ $sizeKey }}')" wire:key="{{ $sizeKey }}">
+                                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-all duration-300"
+                                        x-bind:class="{ 'ring-4 ring-retro-orange': @js($sizeKey) === @js($selectedSize) }">
+                                        <h4 class="text-xl font-semibold text-center text-retro-blue mb-2">
+                                            {{ $size['name'] }}
+                                        </h4>
+                                        <p class="text-center text-retro-blue mb-2">
+                                            {{ $size['capacity'] }}
+                                        </p>
+                                        @if ($selectedSize === $sizeKey)
+                                            <div class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
+                                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     </div>
+
                     <!-- Navigation Buttons -->
                     <div class="flex justify-between mt-8 mb-4">
-                        <button wire:click="nextStep"
-                            class="bg-retro-orange text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-blue border-2 border-retro-orange transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-orange"
-                            x-show="step < 4">
-                            {{ __('Next') }}
-                        </button>
                         <button wire:click="previousStep"
                             class="bg-retro-blue text-white px-6 py-3 rounded-full hover:bg-retro-cream hover:text-retro-blue border-2 border-retro-blue transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-blue"
                             :disabled="step === 1" x-show="step > 1">
                             {{ __('Previous') }}
                         </button>
-                        {{-- if cart[] is empty dont show the button --}}
+
+                        <button wire:click="nextStep"
+                            class="bg-retro-orange text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-blue border-2 border-retro-orange transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-orange"
+                            x-show="step < 5">
+                            {{ __('Next') }}
+                        </button>
+
                         <button wire:click="addToCart" wire:loading.attr="disabled" wire:loading.class="opacity-50"
                             class="bg-retro-green text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-green border-2 border-retro-green transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-green"
-                            x-show="step === 4">
+                            x-show="step === 5">
                             <span wire:loading.remove>{{ __('Add to Cart') }}</span>
                             <span wire:loading>{{ __('Adding...') }}</span>
                         </button>
                     </div>
-                    {{--             $this->addError('cartEmpty', "Your cart is empty. Please add at least one item to your cart."); --}}
-                    @error('cartEmpty')
-                        <div class="w-full flex justify-center">
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        </div>
-                    @enderror
-                    {{-- emptySelection --}}
                 </div>
             @endif
         </div>

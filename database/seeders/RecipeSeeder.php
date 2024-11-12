@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Models\Ingredient;
 use App\Models\Recipe;
+use App\Enums\UnitType;
 use Illuminate\Database\Seeder;
 
 class RecipeSeeder extends Seeder
@@ -36,13 +37,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Pomme - تفاح')->first()->id,
                         'quantity' => 300,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'washed and cut'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -69,19 +70,19 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 50,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -108,13 +109,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Orange - برتقال')->first()->id,
                         'quantity' => 400,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'washed'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -141,13 +142,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Peach - الخوخ')->first()->id,
                         'quantity' => 300,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'washed and sliced'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -174,13 +175,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
                         'quantity' => 300,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -207,13 +208,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Pear - الاجاص')->first()->id,
                         'quantity' => 300,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'washed and sliced'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -240,13 +241,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Papaya - البابايا')->first()->id,
                         'quantity' => 300,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -273,13 +274,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Kiwi - كيوي')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and sliced'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -307,25 +308,25 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Orange - برتقال')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Ananas - اناناس')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'cored and cut'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -353,31 +354,31 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and cut'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Ananas - اناناس')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'cored and cut'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Sucre - سكر')->first()->id,
                         'quantity' => 20,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'optional'
                     ]
                 ]
@@ -405,31 +406,31 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Orange - برتقال')->first()->id,
                         'quantity' => 300,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'juiced'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Sucre - سكر')->first()->id,
                         'quantity' => 15,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'optional'
                     ]
                 ]
@@ -459,25 +460,25 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Dragon Fruit - فاكهة التنين')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and blended'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and blended'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Orange - برتقال')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'juiced'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -504,25 +505,25 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Avocate - الافوكادو')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and sliced'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -549,31 +550,31 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Ananas - اناناس')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'cored and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -600,19 +601,19 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Fruits Secs - فواكه مجففة')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'soaked'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -937,25 +938,25 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Avocate - الافوكادو')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1074,25 +1075,25 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Ananas - اناناس')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'cored and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait de Coco - حليب جوز الهند')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1118,25 +1119,25 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Avoine - شوفان')->first()->id,
                         'quantity' => 50,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Miel - عسل')->first()->id,
                         'quantity' => 10,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'optional'
                     ]
                 ]
@@ -1161,19 +1162,19 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Peach - الخوخ')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and sliced'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Yogourt - زبادي')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1198,19 +1199,19 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Papaya - البابايا')->first()->id,
                         'quantity' => 150,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled and chopped'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait de Coco - حليب جوز الهند')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1235,19 +1236,19 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'peeled'
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1273,19 +1274,19 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Avoine - شوفان')->first()->id,
                         'quantity' => 50,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => 'ml',
+                        'unit' => UnitType::Mililitre->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Miel - عسل')->first()->id,
                         'quantity' => 10,
-                        'unit' => 'g',
+                        'unit' => UnitType::Gram->value,
                         'preparation_notes' => 'optional'
                     ]
                 ]

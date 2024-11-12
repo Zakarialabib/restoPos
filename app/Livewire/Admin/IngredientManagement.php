@@ -53,7 +53,6 @@ class IngredientManagement extends Component
     #[Validate('nullable|array')]
     public $nutritionalInfo = [];
 
-    // Add new properties for price history
     public $showPriceHistory = false;
     public $selectedIngredientId;
 
@@ -180,7 +179,7 @@ class IngredientManagement extends Component
         session()->flash('success', __('Ingredient deleted successfully.'));
     }
 
-    public function updateStock(Ingredient $ingredient, float $quantity, string $reason = 'Manual Update'): void
+    public function updateStock(Ingredient $ingredient, int $quantity, string $reason = 'Manual Update'): void
     {
         try {
             $ingredient->updateStock($quantity, $reason);

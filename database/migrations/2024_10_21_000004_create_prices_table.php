@@ -16,6 +16,7 @@ return new class () extends Migration {
             $table->decimal('price', 10, 2);
             $table->datetime('date');
             $table->text('notes')->nullable();
+            $table->json('metadata')->nullable();
             $table->timestamps();
 
             // Index for better query performance

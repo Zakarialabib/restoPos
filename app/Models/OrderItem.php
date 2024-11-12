@@ -23,7 +23,7 @@ class OrderItem extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
-        'details' => 'array',
+        'details' => 'json',
     ];
 
     public function product(): BelongsTo
@@ -41,12 +41,11 @@ class OrderItem extends Model
         return $this->belongsTo(Composable::class);
     }
 
-    // Accessor for the details (JSON)
-    public function details($value): Attribute
+    protected function details(): Attribute
     {
-        return new Attribute(
-            get: fn ($value) => json_decode($value, true),
-            set: fn ($value) => json_encode($value),
+        return Attribute::make(
+            get: fn($value) => json_decode($value, true),
+            set: fn($value) => json_encode($value),
         );
     }
 

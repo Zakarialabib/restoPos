@@ -10,6 +10,7 @@ use App\Models\Composable;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Traits\HasSizes;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -20,6 +21,8 @@ use Livewire\Component;
 #[Title('Composable Dried Fruits')]
 class ComposableDriedFruitsIndex extends Component
 {
+    use HasSizes;
+
     #[Url('step', 'keep')]
     public $step = 1;
     public $selectedDriedFruits = [];
@@ -102,14 +105,17 @@ class ComposableDriedFruitsIndex extends Component
 
     public function calculatePrice(): void
     {
-        $this->totalPrice = 0;
-        foreach ($this->selectedDriedFruits as $driedFruitId) {
-            $driedFruit = Product::find($driedFruitId);
-            if ($driedFruit) {
-                $this->totalPrice += $driedFruit->price;
-            }
+        if (empty($this->selectedSize)) {
+            return;
         }
-        $this->totalPrice += count($this->selectedAddons) * 3; // Addons price
+
+        $this->totalPrice = $this->priceCalculator->calculate(
+            $this->selectedDriedFruits,
+            null,
+            $this->selectedAddons,
+            $this->selectedSize,
+            'dried_fruits'
+        );
     }
 
     public function toggleAddon($addon): void

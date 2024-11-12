@@ -8,11 +8,13 @@ use App\Traits\HasSlug;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 
@@ -25,7 +27,7 @@ class Product extends Model
         'name',
         'description',
         'slug',
-        'price',
+        'base_price',
         'category_id',
         'image',
         'is_available',
@@ -38,7 +40,7 @@ class Product extends Model
     protected $casts = [
         'is_available' => 'boolean',
         'is_featured' => 'boolean',
-        'price' => 'decimal:2',
+        'base_price' => 'decimal:2',
         'nutritional_info' => 'array',
     ];
 
@@ -72,6 +74,11 @@ class Product extends Model
         return $this->belongsTo(Recipe::class);
     }
 
+    public function prices(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'priceable');
+    }
+
     // Scopes
     public function scopeAvailable(Builder $query): Builder
     {
@@ -90,13 +97,14 @@ class Product extends Model
 
     public function updateAvailabilityStatus(): void
     {
-        $isAvailable = $this->stock > 0 && $this->hasRequiredIngredients();
+        $isAvailable = $this->hasRequiredIngredients();
 
         if ($this->is_available !== $isAvailable) {
             $this->is_available = $isAvailable;
             $this->save();
         }
     }
+
     public function hasRequiredIngredients(): bool
     {
         foreach ($this->ingredients as $ingredient) {
@@ -186,19 +194,58 @@ class Product extends Model
         return $totalNutrition;
     }
 
+    // Add size-specific price methods
+    public function getSizePrice(string $size): ?Price
+    {
+        return $this->prices()
+            ->where('metadata->size', $size)
+            ->where('date', '<=', now())
+            ->latest('date')
+            ->first();
+    }
+
+    public function addSizePrice(string $size, $cost, $price, $date = null, $notes = null): Price
+    {
+        return $this->prices()->create([
+            'cost' => $cost,
+            'price' => $price,
+            'date' => $date ?? now(),
+            'notes' => $notes,
+            'metadata' => ['size' => $size],
+        ]);
+    }
+
+    // Add method to get all available sizes with prices
+    public function getAvailableSizes(): Collection
+    {
+        return $this->prices()
+            ->where('date', '<=', now())
+            ->get()
+            ->groupBy('metadata.size')
+            ->map(fn ($prices) => $prices->sortByDesc('date')->first());
+    }
+
     // Attributes
     protected function price(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => Number::format((int) $value, locale: 'fr_MA'),
+            get: function (int $value) {
+                // Default to base price if no specific size price is set
+                return Number::format($value, locale: 'fr_MA');
+            }
         );
+    }
+
+    public function calculatePrice(): float
+    {
+        return $this->getAvailableSizes()->sum('price');
     }
 
     protected function stockStatus(): Attribute
     {
         return Attribute::make(
             get: function () {
-                if ($this->stock <= 0) {
+                if ( ! $this->is_available) {
                     return 'Out of Stock';
                 }
                 return 'In Stock';

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\Recipe;
 use Illuminate\Database\Seeder;
@@ -24,90 +25,156 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Jus de pomme - عصير التفاح',
                 'description' => 'Fresh, crisp apples perfect for snacking or baking.',
-                'price' => 0.99,
+                'price' => 12,
                 'image' => 'https://example.com/images/apple.jpg',
                 'is_available' => true,
-                'recipe_id' => Recipe::where('name', 'Jus de pomme - عصير التفاح')->first()->id ?? null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => Recipe::where('name', 'Jus de pomme - عصير التفاح')->first()->id ?? null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 15.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 12.00, 'price' => 18.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 15.00, 'price' => 20.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Panache - باناش',
                 'description' => 'Fresh fruit mix juice',
-                'price' => 4.99,
+                'price' => 12,
                 'image' => 'https://example.com/images/panache.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 12.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 15.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 18.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Jus de banane - عصير الموز',
                 'description' => 'Ripe, yellow bananas rich in potassium.',
-                'price' => 0.59,
+                'price' => 12,
                 'image' => 'https://example.com/images/banana.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 12.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 15.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 18.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => "Jus d'orange - عصير البرتقال",
                 'description' => 'Juicy oranges packed with vitamin C.',
-                'price' => 0.79,
+                'price' => 7,
                 'image' => 'https://example.com/images/orange.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 7.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 10.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 15.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Jus d\'ananas - عصير الاناناس',
                 'description' => 'Sweet and tangy tropical pineapples.',
-                'price' => 1.99,
+                'price' => 18,
                 'image' => 'https://example.com/images/pineapple.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 18.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 22.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 25.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Jus de pêche - عصير الخوخ',
                 'description' => 'Juicy and fragrant peaches, perfect for summer.',
-                'price' => 1.29,
+                'price' => 15,
                 'image' => 'https://example.com/images/peach.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 15.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 18.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 22.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Jus d\'avocat - عصير الافوكادو',
                 'description' => 'Creamy and nutritious avocados, great for salads and toast.',
-                'price' => 1.49,
+                'price' => 15,
                 'image' => 'https://example.com/images/avocado.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 15.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 18.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 22.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Jus de poire - عصير الاجاص',
                 'description' => 'Juicy and sweet pears with a delicate flavor.',
-                'price' => 0.89,
+                'price' => 15,
                 'image' => 'https://example.com/images/pear.jpg',
                 'is_available' => true,
-                'recipe_id' => Recipe::where('name', 'Jus de poire - عصير الاجاص')->first()->id ?? null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => Recipe::where('name', 'Jus de poire - عصير الاجاص')->first()->id ?? null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 15.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 18.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 22.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Jus de dragon fruit - عصير فاكهة التنين',
                 'description' => 'Exotic dragon fruit with a unique appearance and mild, sweet taste.',
-                'price' => 2.49,
+                'price' => 18,
                 'image' => 'https://example.com/images/dragon_fruit.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 18.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 25.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 30.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Jus de papaye - عصير البابايا',
                 'description' => 'Tropical papaya with a sweet, musky flavor and soft texture.',
-                'price' => 1.79,
+                'price' => 15,
                 'image' => 'https://example.com/images/papaya.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 15.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 18.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 22.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Jus de mangue - عصير المانجو',
                 'description' => 'Sweet and tropical mango juice.',
-                'price' => 1.99,
+                'price' => 15,
                 'image' => 'https://example.com/images/mango.jpg',
                 'is_available' => true,
-                'recipe_id' => Recipe::where('name', 'Jus de mangue - عصير المانجو')->first()->id ?? null
+                'category_id' => $fruitsCategory->id,
+                'recipe_id' => Recipe::where('name', 'Jus de mangue - عصير المانجو')->first()->id ?? null,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 15.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 18.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 22.00, 'notes' => 'Large size'],
+                ]
             ],
             // Mixed Fruit Smoothies
             [
@@ -116,7 +183,13 @@ class ProductSeeder extends Seeder
                 'price' => 5.99,
                 'image' => 'https://example.com/images/tropical_smoothie.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'recipe_id' => null,
+                'category_id' => $fruitsCategory->id,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 12.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 15.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 18.00, 'notes' => 'Large size'],
+                ]
             ],
             [
                 'name' => 'Smoothie Banane-Orange - سموذي موز وبرتقال',
@@ -124,7 +197,13 @@ class ProductSeeder extends Seeder
                 'price' => 5.49,
                 'image' => 'https://example.com/images/banana_orange_smoothie.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'recipe_id' => null,
+                'category_id' => $fruitsCategory->id,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 12.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 15.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 18.00, 'notes' => 'Large size'],
+                ]
             ],
             // Layered Juices
             [
@@ -133,7 +212,13 @@ class ProductSeeder extends Seeder
                 'price' => 6.99,
                 'image' => 'https://example.com/images/sunrise_layered.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'recipe_id' => null,
+                'category_id' => $fruitsCategory->id,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 12.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 15.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 18.00, 'notes' => 'Large size'],
+                ]
             ],
             // Energy Smoothies
             [
@@ -142,12 +227,34 @@ class ProductSeeder extends Seeder
                 'price' => 6.49,
                 'image' => 'https://example.com/images/green_energy.jpg',
                 'is_available' => true,
-                'recipe_id' => null
+                'recipe_id' => null,
+                'category_id' => $fruitsCategory->id,
+                'prices' => [
+                    ['size' => 'small', 'cost' => 8.00, 'price' => 12.00, 'notes' => 'Small size'],
+                    ['size' => 'medium', 'cost' => 15.00, 'price' => 15.00, 'notes' => 'Medium size'],
+                    ['size' => 'large', 'cost' => 18.00, 'price' => 18.00, 'notes' => 'Large size'],
+                ]
             ]
         ];
 
-        foreach ($fruits as $fruit) {
-            Product::create(array_merge($fruit, ['category_id' => $fruitsCategory->id]));
+        foreach ($fruits as $fruitData) {
+            $prices = $fruitData['prices'] ?? [];
+            unset($fruitData['prices']);
+
+            $product = Product::create($fruitData);
+
+            // Create prices for each size
+            foreach ($prices as $priceData) {
+                Price::create([
+                    'priceable_type' => Product::class,
+                    'priceable_id' => $product->id,
+                    'cost' => $priceData['cost'],
+                    'price' => $priceData['price'],
+                    'date' => now(),
+                    'notes' => $priceData['notes'] ?? null,
+                    'metadata' => ['size' => $priceData['size']],
+                ]);
+            }
         }
 
         // Dried Fruits Category

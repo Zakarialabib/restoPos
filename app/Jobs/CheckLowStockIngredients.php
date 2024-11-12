@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\Ingredient;
+use App\Models\User;
 use App\Notifications\LowStockAlert;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,8 +25,10 @@ class CheckLowStockIngredients implements ShouldQueue
     {
         $lowStockIngredients = Ingredient::where('stock', '<=', 10)->get();
 
+        $adminUsers = User::first();
+
         foreach ($lowStockIngredients as $ingredient) {
-            Notification::send($ingredient->users, new LowStockAlert($ingredient));
+            Notification::send($adminUsers, new LowStockAlert($ingredient));
         }
     }
 }
