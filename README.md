@@ -13,6 +13,8 @@ The Fruit Bar Management System is designed for fruit bar businesses, using the 
 4. [Data Models](#data-models)
 5. [Key Optimizations](#key-optimizations)
 6. [Implementation Focus](#implementation-focus)
+7. [Directory Structure](#directory-structure)
+8. [Testing Strategy](#testing-strategy)
 
 ---
 
@@ -133,3 +135,80 @@ To ensure optimal performance and functionality:
    - Enable predictive analytics and automated supplier order management.
 5. **Improve Data Visualization**
    - Enhance the dashboard for actionable insights on sales, stock, and trends.
+
+---
+## Directory Structure
+
+### app/
+#### Livewire/
+- **Admin/**
+  - `ProductManagement.php` - Product CRUD operations and management
+  - `OrderManagement.php` - Order processing and tracking
+  - `CategoryManagement.php` - Category management
+  - `IngredientManagement.php` - Ingredient inventory management
+  - `RecipeManagement.php` - Recipe creation and management
+  - `Dashboard.php` - Admin dashboard with analytics
+- **User/**
+  - `Index.php` - Main user interface component
+  - `ComposableJuicesIndex.php` - Custom juice creation interface
+  - `ComposableSaladeIndex.php` - Custom salad creation interface
+  - `ComposableDriedFruitsIndex.php` - Dried fruits selection interface
+
+### resources/views/
+#### livewire/
+- **admin/**
+  - `dashboard.blade.php` - Admin dashboard view with analytics
+  - `product-management.blade.php` - Product management interface
+  - `order-management.blade.php` - Order management interface
+  - `category-management.blade.php` - Category management interface
+  - `recipe-management.blade.php` - Recipe management interface
+- **user/**
+  - `index.blade.php` - Main user interface
+  - `composable-juices-index.blade.php` - Juice customization interface
+  - `composable-salade-index.blade.php` - Salad customization interface
+  - `composable-dried-fruits-index.blade.php` - Dried fruits selection interface
+
+### database/
+#### migrations/
+- `2024_01_01_000000_create_users_table.php`
+- `2024_01_01_000001_create_products_table.php`
+- `2024_01_01_000002_create_categories_table.php`
+- `2024_01_01_000003_create_ingredients_table.php`
+- `2024_01_01_000004_create_orders_table.php`
+- `2024_01_01_000005_create_order_items_table.php`
+- `2024_01_01_000006_create_recipes_table.php`
+- `2024_01_01_000007_create_composables_table.php`
+- `2024_01_01_000008_create_inventory_alerts_table.php`
+
+#### seeders/
+- `DatabaseSeeder.php`
+- `ProductSeeder.php`
+- `CategorySeeder.php`
+- `IngredientSeeder.php`
+- `RecipeSeeder.php`
+
+#### factories/
+- `UserFactory.php`
+- `ProductFactory.php`
+- `CategoryFactory.php`
+- `IngredientFactory.php`
+- `OrderFactory.php`
+
+### routes/
+- `web.php` - Web routes configuration
+- `auth.php` - Authentication routes
+- `api.php` - API routes (if needed)
+
+### lang/
+- `en/` - English translations
+- `fr/` - French translations
+- `ar/` - Arabic translations
+
+---
+
+## Testing Strategy
+
+- **Feature Tests**: Validate the functionality of key features like order processing and product management.
+- **Unit Tests**: Ensure individual components and models work as expected.
+- **Integration Tests**: Test the interaction between different parts of the application.
+- **Tools Used**: Pest for testing, with potential use of Laravel Dusk for end-to-end testing.

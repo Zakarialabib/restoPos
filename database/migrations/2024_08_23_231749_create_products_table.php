@@ -17,12 +17,16 @@ return new class () extends Migration {
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('slug')->unique();
-            $table->decimal('price', 10, 2);
-            $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->cascadeOnDelete();
             $table->foreignId('recipe_id')->nullable()->constrained('recipes')->cascadeOnDelete();
             $table->string('image')->nullable();
             $table->boolean('is_available')->default(true);
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_customizable')->default(false);
+            $table->json('customization_options')->nullable();
+            $table->json('nutritional_info')->nullable();
+            $table->json('allergens')->nullable();
+            $table->integer('preparation_time')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

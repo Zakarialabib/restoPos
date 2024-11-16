@@ -16,9 +16,9 @@ use Livewire\Volt\Volt;
 
 Volt::route('/', 'index')
     ->name('index');
-
-Volt::route('/compose', 'compose')
-    ->name('compose');
+    
+Volt::route('/tv', 'indexTv')
+    ->name('indexTv');
 
 Route::get('/composable-juices', ComposableJuicesIndex::class)->name('compose.juices');
 Route::get('/composable-salade', ComposableSaladeIndex::class)->name('compose.salade');
@@ -30,7 +30,6 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function (): voi
     Route::get('/products', ProductManagement::class)->name('admin.products');
     Route::get('/categories', CategoryManagement::class)->name('admin.categories');
     Route::get('/ingredients', IngredientManagement::class)->name('admin.ingredients');
-    Route::get('/order-management', OrderManagement::class)->name('admin.order-management');
     Route::get('/recipes', RecipeManagement::class)->name('admin.recipes');
 });
 

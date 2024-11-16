@@ -22,17 +22,17 @@ class CategoryFactory extends Factory
         $name = fake()->unique()->words(2, true);
 
         return [
+            'id' => fake()->unique()->numberBetween(1, 100),
             'name' => $name,
-            'slug' => Str::slug($name),
             'description' => fake()->sentence(),
-            'is_active' => fake()->boolean(90), // 90% chance of being active
+            'status' => fake()->boolean(90), // 90% chance of being active
         ];
     }
 
     public function active(): self
     {
         return $this->state(fn (array $attributes) => [
-            'is_active' => true,
+            'status' => true,
         ]);
     }
 }

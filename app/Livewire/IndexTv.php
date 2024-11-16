@@ -4,26 +4,22 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Enums\OrderStatus;
 use App\Models\Category;
-use App\Models\Order;
 use App\Models\Product;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Layout('layouts.guest')]
 #[Title('Menu')]
-class Index extends Component
+class IndexTv extends Component
 {
     use WithPagination;
 
     public $currentTheme = 'sunset';
-    public $selectedCategory = '';
-    public $searchQuery = '';
+
     public $themes = [
         'earth' => [
             'bg' => 'bg-[#FFFBEB]',
@@ -237,13 +233,6 @@ class Index extends Component
             ->when($this->category_id, function ($query): void {
                 $query->where('category_id', $this->category_id);
             })
-            ->when($this->selectedCategory, function ($query) {
-                $query->where('category_id', $this->selectedCategory);
-            })
-            ->when($this->searchQuery, function ($query) {
-                $query->where('name', 'like', "%{$this->searchQuery}%")
-                    ->orWhere('description', 'like', "%{$this->searchQuery}%");
-            })
             ->get();
     }
 
@@ -268,17 +257,6 @@ class Index extends Component
         $this->isOpen = ! $this->isOpen;
     }
 
-    #[Computed]
-    public function totalPrice()
-    {
-        $basePrice = $this->product->base_price ?? 0;
-        $optionsPrice = collect($this->selectedOptions)->sum(function ($option) {
-            return $option['price'] * $option['quantity'];
-        });
-
-        return ($basePrice + $optionsPrice) * $this->quantity;
-    }
-
     public function getProductPrice(Product $product, string $size, string $unit): ?float
     {
         $price = $product->getPriceForSizeAndUnit($size, $unit);
@@ -293,44 +271,23 @@ class Index extends Component
             ->getUnit();
     }
 
-    #[On('addToCart')]
-    public function addToCart($productId, $size, $quantity, $options)
+    public function addToCart($productId)
     {
-        $this->validate([
-            'quantity' => 'required|integer|min:1',
-            'options' => 'array|nullable',
-        ]);
-
-        $product = Product::find($productId);
-
-        if (!$product || !$product->is_available) {
-            session()->flash('error', __('The selected product is not available.'));
+        if (!isset($this->selectedSizes[$productId])) {
             return;
         }
 
-        $orderItemData = [
-            'product_id' => $product->id,
-            'size' => $size,
-            'quantity' => $quantity,
-            'price' => $this->getProductPrice($product, $size, 'default'),
-            'options' => json_encode($options),
-        ];
+        $product = Product::find($productId);
+        $price = $product->getPriceForSizeAndUnit(
+            $this->selectedSizes[$productId],
+            $this->selectedUnits[$productId] ?? 'default'
+        );
 
-        $order = Order::create([
-            'customer_name' => 'name',
-            'customer_email' => 'email@email.com',
-            'customer_phone' => '1234567890',
-            'total_amount' => $orderItemData['price'] * $quantity,
-            'status' => OrderStatus::Pending,
-        ]);
-
-        $order->addItem($orderItemData);
-
-        session()->flash('success', __('Product added to cart successfully!'));
+        // Add to cart logic here
     }
 
     public function render()
     {
-        return view('livewire.index');
+        return view('livewire.index-tv');
     }
 }

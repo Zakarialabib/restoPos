@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin;
 
 use App\Enums\OrderStatus;
+use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\Product;
 use Exception;
@@ -93,6 +94,16 @@ class OrderManagement extends Component
         }
     }
 
+    public function calculateCustomItemPrice($item): float
+    {
+        $basePrice = $item['product']->base_price;
+        $addonsPrice = collect($item['customizations'])->sum(function ($customization) {
+            return $customization['quantity'] * $customization['ingredient']->price;
+        });
+        
+        return $basePrice + $addonsPrice;
+    }
+
     public function saveOrder(): void
     {
         $this->validate();
@@ -107,35 +118,38 @@ class OrderManagement extends Component
 
             foreach ($this->orderItems as $item) {
                 $product = Product::findOrFail($item['product_id']);
+                $price = $product->is_customizable ? 
+                    $this->calculateCustomItemPrice($item) : 
+                    $product->price;
 
-                if ( ! $product->isProductAvailable($item['quantity'])) {
-                    $this->addError('order', "Insufficient stock for {$product->name}");
-                    DB::rollBack();
-                    return;
-                }
-
-                $order->items()->create([
+                $orderItem = $order->items()->create([
                     'product_id' => $product->id,
                     'name' => $product->name,
                     'quantity' => $item['quantity'],
-                    'price' => $product->price,
+                    'price' => $price,
+                    'customizations' => $item['customizations'] ?? null,
                 ]);
+
+                // Handle customizations inventory
+                if (!empty($item['customizations'])) {
+                    foreach ($item['customizations'] as $customization) {
+                        $ingredient = Ingredient::find($customization['ingredient_id']);
+                        if (!$ingredient->hasStock($customization['quantity'])) {
+                            throw new Exception("Insufficient stock for {$ingredient->name}");
+                        }
+                    }
+                }
             }
 
             $order->calculateTotal();
-
-            if ($order->processOrderIngredients()) {
-                $order->update(['status' => OrderStatus::Completed]);
-                DB::commit();
-                session()->flash('success', 'Order processed successfully');
-            } else {
-                DB::rollBack();
-                session()->flash('error', 'Unable to process order due to stock limitations');
-            }
+            DB::commit();
+            
+            session()->flash('success', __('Order saved successfully.'));
+            $this->reset();
+            
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Order Processing Error: ' . $e->getMessage());
-            session()->flash('error', 'An error occurred while processing the order');
+            session()->flash('error', __('Error saving order: ') . $e->getMessage());
         }
     }
 

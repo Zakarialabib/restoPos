@@ -25,6 +25,26 @@ class CategorySeeder extends Seeder
             ['name' => 'Dairy', 'description' => 'Dairy ingredients'],
             ['name' => 'Herbs', 'description' => 'Herbs ingredients'],
             ['name' => 'Spices', 'description' => 'Spices ingredients'],
+            [
+                'name' => 'Moroccan Sandwiches - ساندويتشات مغربية',
+                'description' => 'Traditional Moroccan sandwiches with fresh ingredients',
+            ],
+            [
+                'name' => 'Salades Marocaines - سلطات مغربية',
+                'description' => 'Fresh Moroccan-style salads',
+            ],
+            [
+                'name' => 'Smoothies & Jus - عصائر و سموذي',
+                'description' => 'Fresh fruit smoothies and juices',
+            ],
+            [
+                'name' => 'Bols Santé - أطباق صحية',
+                'description' => 'Healthy bowls with Moroccan flavors',
+            ],
+            [
+                'name' => 'Fruits Secs - فواكه جافة',
+                'description' => 'Dried fruits and nuts',
+            ]
         ];
 
         foreach ($categories as $category) {

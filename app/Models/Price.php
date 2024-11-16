@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Price extends Model
 {
+
     protected $fillable = [
         'cost',
         'price',
@@ -24,6 +25,7 @@ class Price extends Model
         'metadata' => 'array',
     ];
 
+
     public function priceable(): MorphTo
     {
         return $this->morphTo();
@@ -33,4 +35,40 @@ class Price extends Model
     {
         return $this->metadata['size'] ?? null;
     }
+    
+    public function getUnit(): ?string
+    {
+        return $this->metadata['unit'] ?? null;
+    }
+
+    public function getPricePerUnit(): ?float
+    {
+        return $this->price / $this->getSize();
+    }
+
+    public function getCostPerUnit(): ?float
+    {
+        return $this->cost / $this->getSize();
+    }
+
+    public function getProfitPerUnit(): ?float
+    {
+        return $this->getPricePerUnit() - $this->getCostPerUnit();
+    }
+
+    public function getProfitPercentage(): ?float
+    {
+        return $this->getProfitPerUnit() / $this->getCostPerUnit();
+    }
+
+    public function getProfitMargin(): ?float
+    {
+        return $this->getProfitPercentage() * 100;
+    }
+
+    public function getPriceForSizeAndUnit(): ?float
+    {
+        return $this->price / ($this->metadata['size'] ?? 1);
+    }
+
 }

@@ -20,7 +20,7 @@ return new class () extends Migration {
             $table->timestamps();
 
             // Index for better query performance
-            $table->index('date');
+            $table->index(['priceable_type', 'priceable_id', 'date']);
         });
     }
 

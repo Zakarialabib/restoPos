@@ -1,17 +1,18 @@
 <?php
 
-use function Livewire\Volt\{state};
+use function Livewire\Volt\{state, computed};
 
 state(['locale' => app()->getLocale()]);
 
-$switch = function () {
+$switch = computed(function () {
     $locale = $this->locale;
 
     if (in_array($locale, ['ar', 'en', 'fr'])) {
         session()->put('locale', $locale);
     }
+    
     return redirect()->back();
-};
+});
 
 ?>
 

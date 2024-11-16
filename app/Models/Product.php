@@ -204,14 +204,26 @@ class Product extends Model
             ->first();
     }
 
-    public function addSizePrice(string $size, $cost, $price, $date = null, $notes = null): Price
+    public function getUnitPrices(string $unit): Collection
+    {
+        return $this->prices()
+            ->where('metadata->unit', $unit)
+            ->where('date', '<=', now())
+            ->latest('date')
+            ->get();
+    }
+
+    public function addSizePrice(string $size, string $unit, $cost, $price, $date = null, $notes = null): Price
     {
         return $this->prices()->create([
             'cost' => $cost,
             'price' => $price,
             'date' => $date ?? now(),
             'notes' => $notes,
-            'metadata' => ['size' => $size],
+            'metadata' => [
+                'size' => $size,
+                'unit' => $unit,
+            ],
         ]);
     }
 
@@ -225,13 +237,22 @@ class Product extends Model
             ->map(fn ($prices) => $prices->sortByDesc('date')->first());
     }
 
+    public function getAvailableUnits(): Collection
+    {
+        return $this->prices()
+            ->where('date', '<=', now())
+            ->get()
+            ->groupBy('metadata.unit')
+            ->map(fn ($prices) => $prices->sortByDesc('date')->first());
+    }
+
     // Attributes
     protected function price(): Attribute
     {
         return Attribute::make(
-            get: function (int $value) {
-                // Default to base price if no specific size price is set
-                return Number::format($value, locale: 'fr_MA');
+            get: function () {
+                $currentPrice = $this->getCurrentPrice();
+                return $currentPrice ? $currentPrice->price : $this->base_price;
             }
         );
     }
@@ -240,6 +261,7 @@ class Product extends Model
     {
         return $this->getAvailableSizes()->sum('price');
     }
+
 
     protected function stockStatus(): Attribute
     {
@@ -267,5 +289,47 @@ class Product extends Model
                 ? (($this->price - $this->calculateCost()) / $this->price) * 100
                 : 0,
         );
+    }
+
+    public function getPriceForSizeAndUnit(string $size, string $unit): ?Price
+    {
+        return $this->prices()
+            ->where('metadata->size', $size)
+            ->where('metadata->unit', $unit)
+            ->where('date', '<=', now())
+            ->latest('date')
+            ->first();
+    }
+
+    public function getCurrentPrice(?string $size = null): ?Price
+    {
+        $query = $this->prices()
+            ->where('date', '<=', now())
+            ->latest('date');
+            
+        if ($size) {
+            $query->where('metadata->size', $size);
+        }
+            
+        return $query->first();
+    }
+
+    public function getPriceHistory(): Collection
+    {
+        return $this->prices()
+            ->orderBy('date', 'desc')
+            ->get()
+            ->groupBy('metadata.size');
+    }
+
+    public function updatePrice(float $cost, float $price, array $metadata = [], ?string $notes = null): Price
+    {
+        return $this->prices()->create([
+            'cost' => $cost,
+            'price' => $price,
+            'date' => now(),
+            'notes' => $notes,
+            'metadata' => $metadata,
+        ]);
     }
 }

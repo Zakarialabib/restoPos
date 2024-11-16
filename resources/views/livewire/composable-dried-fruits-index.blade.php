@@ -12,7 +12,6 @@
         showCheckout: @entangle('showCheckout'),
         showSuccess: @entangle('showSuccess'),
         order: @entangle('order'),
-        loading: false
     }">
         <p class="text-2xl md:text-3xl font-semibold mb-6 text-center">
             {{ __('Follow the steps to choose what you want to add to your box.') }}

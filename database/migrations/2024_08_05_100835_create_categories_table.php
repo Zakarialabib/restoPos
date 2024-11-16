@@ -15,9 +15,11 @@ return new class () extends Migration {
         Schema::create('categories', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
-            $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->string('image')->nullable();
+            $table->boolean('status')->default(true);
+            $table->boolean('is_customizable')->default(false);
+            $table->json('customization_rules')->nullable();
             $table->timestamps();
         });
     }
