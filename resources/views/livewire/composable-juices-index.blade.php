@@ -16,14 +16,14 @@
         order: @entangle('order'),
     }">
         <p class="text-2xl md:text-3xl font-semibold mb-6 text-center">
-            {{ __('Follow the steps to create your perfect juice blend.') }}
+            {{ __('Follow the steps to create your perfect juice blend. 🍹') }}
         </p>
 
         <!-- Onboarding Section -->
         @if (!empty($composableJuices))
             <div class="mb-12">
                 <h3 class="text-2xl font-semibold mb-4 text-retro-orange">
-                    {{ __('Popular Composed Juices') }}
+                    {{ __('Popular Composed Juices 🍊') }}
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {{-- @foreach ($popularJuices as $juice)
@@ -31,7 +31,7 @@
                                 <h4 class="text-xl font-bold">{{ $juice->name }}</h4>
                                 <p>{{ $juice->description }}</p>
                                 <p>{{ $juice->price }} DH</p>
-                                <button wire:click="addToCart({{ $juice->id }})" class="bg-green-500 text-white px-4 py-2 rounded mt-2">Add to Cart</button>
+                                <button wire:click="addToCart({{ $juice->id }})" class="bg-green-500 text-white px-4 py-2 rounded mt-2">Add to Cart 🛒</button>
                             </div>
                         @endforeach --}}
                 </div>
@@ -40,13 +40,13 @@
         <div class="container mx-auto">
             @if (session()->has('success'))
                 <x-alert type="success" :dismissal="false" :showIcon="true">
-                    {{ session('success') }}
+                    {{ session('success') }} 🎉
                 </x-alert>
             @endif
 
             @if (session()->has('error'))
                 <x-alert type="error" :dismissal="false" :showIcon="true">
-                    {{ session('error') }}
+                    {{ session('error') }} ❌
                 </x-alert>
             @endif
         </div>
@@ -55,16 +55,16 @@
 
             <!-- Sidebar: Cart -->
             @if ($showSuccess)
-                <div class="w-full bg-white border-retro-orange border-solid border-4  rounded-lg shadow-lg p-6">
+                <div class="w-full bg-white border-retro-orange border-solid border-4 rounded-lg shadow-lg p-6">
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                         <h3 class="text-xl font-bold mt-4 text-black">
-                            {{ __('Order Summary') }}
+                            {{ __('Order Summary 📝') }}
                         </h3>
                         @if (!empty($order))
                             <div class="mt-2">
                                 <p class="text-gray-700">
                                     {{ __('Thank you for your order,') }}
-                                    {{ $order?->customer_name }}!
+                                    {{ $order?->customer_name }}! 🎊
                                     {{ __('Here are the details of your order:') }}
                                 </p>
                                 {{-- customJuiceName --}}
@@ -81,7 +81,7 @@
                                                 @php
                                                     $ingredients = json_decode($item->details);
                                                 @endphp
-                                                <div><strong>{{ __('Fruits:') }}</strong>
+                                                <div><strong>{{ __('Fruits: 🍏') }}</strong>
                                                     <div>
                                                         @foreach ($ingredients->fruits as $fruit)
                                                             <p>
@@ -90,17 +90,17 @@
                                                         @endforeach
                                                     </div>
                                                 </div>
-                                                <div><strong>{{ __('Base:') }}</strong>
+                                                <div><strong>{{ __('Base: 🥛') }}</strong>
                                                     <p>
                                                         {{ $ingredients->base }}
                                                     </p>
                                                 </div>
-                                                <div><strong>{{ __('Sugar:') }}</strong>
+                                                <div><strong>{{ __('Sugar: 🍬') }}</strong>
                                                     <p>
                                                         {{ $ingredients->sugar }}
                                                     </p>
                                                 </div>
-                                                <div><strong>{{ __('Add-ons:') }}</strong>
+                                                <div><strong>{{ __('Add-ons: 🌟') }}</strong>
                                                     @if (!empty($ingredients->addons))
                                                         <ul>
                                                             @foreach ($ingredients->addons as $addon)
@@ -114,7 +114,7 @@
                                                     @endif
                                                 </div>
 
-                                                <div><strong>{{ __('Size:') }}</strong>
+                                                <div><strong>{{ __('Size: 📏') }}</strong>
                                                     <p>
                                                         {{ $ingredients->size }}
                                                     </p>
@@ -123,15 +123,15 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                <h3 class="text-xl font-bold mt-4 text-black">Total:
-                                    {{ $order?->total_amount }}DH
+                                <h3 class="text-xl font-bold mt-4 text-black">Total: 💰
+                                    {{ $order?->total_amount }} DH
                                 </h3>
                             </div>
                         @endif
                     </div>
                     <div class="w-full flex justify-center">
                         <x-button color="primaryOutline" wire:click="close" type="button">
-                            {{ __('Close') }}
+                            {{ __('Close') }} ❌
                         </x-button>
                     </div>
                 </div>
@@ -139,13 +139,13 @@
                 <div class="lg:w-1/4 order-2 lg:order-1">
                     <div class="border-retro-orange border-solid border-4 bg-white rounded-lg shadow-lg px-6">
                         <h3 class="text-2xl text-retro-orange font-bold mb-4">
-                            {{ __('Your Juice') }}
+                            {{ __('Your Juice 🍹') }}
                         </h3>
                         <div class="flex flex-col gap-y-4 rounded-lg mb-6 text-retro-blue">
                             @if (count($selectedFruits) > 0)
                                 <div>
                                     <span class="font-medium">
-                                        {{ __('Fruit') }}:
+                                        {{ __('Fruit 🍏') }}:
                                     </span>
                                     <ol class="text-sm mb-1">
                                         @foreach ($this->fruits->whereIn('id', $selectedFruits)->pluck('name') as $fruit)
@@ -157,7 +157,7 @@
                             @if ($selectedBase)
                                 <div>
                                     <span class="font-medium">
-                                        {{ __('Base') }}:
+                                        {{ __('Base 🥛') }}:
                                     </span>
                                     <p class="text-sm mb-1">
                                         {{ $selectedBase }}
@@ -167,7 +167,7 @@
                             @if ($selectedSugar)
                                 <div>
                                     <span class="font-medium">
-                                        {{ __('Sugar') }}:
+                                        {{ __('Sugar 🍬') }}:
                                     </span>
                                     <p class="text-sm mb-1"> {{ $selectedSugar }}</p>
                                 </div>
@@ -175,7 +175,7 @@
                             @if (count($selectedAddons) > 0)
                                 <div>
                                     <span class="font-medium">
-                                        {{ __('Add-ons') }}:
+                                        {{ __('Add-ons 🌟') }}:
                                     </span>
                                     <ul class="text-sm mb-1">
                                         @foreach ($selectedAddons as $addon)
@@ -187,7 +187,7 @@
                             @if (!empty($selectedSize))
                                 <div>
                                     <span class="font-medium">
-                                        {{ __('Size') }}:
+                                        {{ __('Size 📏') }}:
                                     </span>
                                     <p class="capitalize text-sm mb-1">
                                         {{ $selectedSize }} - {{ $this->getSizeCapacity($selectedSize) }}
@@ -196,12 +196,12 @@
                             @endif
                             @if (count($selectedFruits) === 0 && !$selectedBase && !$selectedSugar && count($selectedAddons) === 0)
                                 <p class="text-retro-blue text-sm underline">
-                                    {{ __('Start composing your juice!') }}
+                                    {{ __('Start composing your juice! 🍹') }}
                                 </p>
                             @endif
                         </div>
                         <h4 class="text-xl text-retro-orange font-bold mb-3">
-                            {{ __('Cart') }}
+                            {{ __('Cart 🛒') }}
                         </h4>
                         <div class="space-y-3 mb-6">
                             @forelse ($cart as $index => $item)
@@ -213,29 +213,29 @@
 
                                     @if (!empty($item['ingredients']))
                                         <p class="text-sm text-retro-blue">
-                                            {{ __('Ingredients') }}: <br>
+                                            {{ __('Ingredients 🍏') }}: <br>
                                             {{ __('fruits') }}:<br>
                                             @foreach ($item['ingredients']['fruits'] as $fruit)
                                                 {{ $fruit['name'] }} <br>
                                             @endforeach
-                                            {{ __('Base') }}: {{ $item['ingredients']['base'] }} <br>
-                                            {{ __('Addons') }}:<br>
+                                            {{ __('Base 🥛') }}: {{ $item['ingredients']['base'] }} <br>
+                                            {{ __('Addons 🌟') }}:<br>
                                             @foreach ($item['ingredients']['addons'] as $addon)
                                                 {{ $addon['name'] }} <br>
                                             @endforeach
-                                            {{ __('Size') }}: {{ $item['ingredients']['size'] }}
+                                            {{ __('Size 📏') }}: {{ $item['ingredients']['size'] }}
                                         </p>
                                     @endif
 
                                     @if (!empty($item['size']))
                                         <p class="text-sm text-retro-blue">
-                                            {{ __('Size') }}: {{ $item['size'] }}
+                                            {{ __('Size 📏') }}: {{ $item['size'] }}
                                         </p>
                                     @endif
 
                                     @if (!empty($item['quantity']))
                                         <p class="text-sm text-retro-blue">
-                                            {{ __('Qty') }}: {{ $item['quantity'] }}
+                                            {{ __('Qty 📦') }}: {{ $item['quantity'] }}
                                         </p>
                                     @endif
                                     <div class="text-right">
@@ -252,17 +252,17 @@
                                 </div>
                             @empty
                                 <p class="text-retro-blue text-sm underline mb-6">
-                                    {{ __('Your cart is empty.') }}
+                                    {{ __('Your cart is empty. 🛒') }}
                                 </p>
                             @endforelse
                         </div>
                         <div
                             class="flex justify-between items-center text-retro-blue font-bold text-lg mb-6 border-t border-2 border-retro-orange pt-6">
                             <span>
-                                {{ __('Total:') }}
+                                {{ __('Total: 💰') }}
                             </span>
                             <span>
-                                {{ $this->cartTotal, 2 }}DH
+                                {{ $this->cartTotal, 2 }} DH
                             </span>
                         </div>
 
@@ -293,7 +293,7 @@
                             </div> --}}
                             <button type="button" wire:click="placeOrder"
                                 class="w-full mb-4 bg-retro-orange text-white py-2 px-4 rounded-full hover:bg-retro-orange hover:text-retro-orange transition duration-300">
-                                {{ __('Confirm Order') }}
+                                {{ __('Confirm Order ✅') }}
                             </button>
                         @endif
                     </div>
@@ -301,87 +301,98 @@
                 <!-- Main Content: Stepper -->
                 <div
                     class="lg:w-3/4 bg-white order-1 lg:order-2 border-retro-orange border-solid border-4 rounded-lg p-4">
-                    <nav class="grid grid-cols-2 md:grid-cols-5 gap-6 justify-center mb-8">
+                    <nav class="grid grid-cols-2 md:grid-cols-5 gap-8 justify-center mb-12 px-6">
                         @foreach ($this->steps as $index => $stepName)
-                            <div class="step-wrapper flex flex-col items-center">
-                                <!-- Step Circle -->
+                            <div class="w-full flex-grow relative">
                                 <button wire:click="$set('step', {{ $index + 1 }})" type="button"
-                                    class="step-button flex items-center justify-center w-10 h-10 rounded-full border-2 mb-2 transition-all duration-300
-                                        @if ($step === $index + 1) bg-retro-orange text-white border-retro-orange
-                                        @elseif($step > $index + 1) 
-                                            bg-green-500 text-white border-green-500
-                                        @else
-                                            text-retro-blue border-retro-blue hover:bg-retro-orange hover:text-white hover:border-retro-orange @endif">
+                                    class="w-full flex flex-col items-center gap-4 p-6 rounded-2xl transition-all duration-300 transform hover:scale-105
+                                        @if ($step === $index + 1) bg-retro-orange text-white scale-110
+                                        @elseif($step > $index + 1) bg-green-500 text-white
+                                        @else bg-white text-retro-blue hover:bg-retro-cream @endif
+                                        shadow-xl border-4 border-retro-orange">
 
-                                    <!-- Checkmark or Step Number -->
+                                    <!-- Larger Step Emoji/Icon -->
+                                    <span class="text-6xl mb-2">
+                                        @switch($index + 1)
+                                            @case(1)
+                                                🍎
+                                            @break
+
+                                            @case(2)
+                                                🥤
+                                            @break
+
+                                            @case(3)
+                                                🍯
+                                            @break
+
+                                            @case(4)
+                                                ✨
+                                            @break
+
+                                            @case(5)
+                                                📏
+                                            @break
+                                        @endswitch
+                                    </span>
+
+                                    <!-- Larger Step Number -->
+                                    <span class="text-xl font-bold">Step {{ $index + 1 }}</span>
+
+                                    <!-- Larger Step Name -->
+                                    <span class="text-lg text-center font-medium">{{ $stepName }}</span>
+
+                                    <!-- Larger Completion Check -->
                                     @if ($step > $index + 1)
-                                        <!-- Completed Step -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                            fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    @else
-                                        <!-- Step Number -->
-                                        {{ $index + 1 }}
+                                        <span
+                                            class="absolute -top-3 -right-3 bg-green-500 rounded-full p-3 text-white text-2xl">
+                                            ✓
+                                        </span>
                                     @endif
                                 </button>
-
-                                <!-- Step Name -->
-                                <a href="#" wire:click="$set('step', {{ $index + 1 }})"
-                                    class="text-sm text-center transition-all duration-300
-                                    @if ($step === $index + 1) text-retro-orange font-semibold
-                                    @elseif($step > $index + 1) 
-                                        text-green-500 font-semibold
-                                    @else
-                                        text-retro-blue @endif">
-                                    {{ $stepName }}
-                                </a>
-
-                                <!-- Progress Bar (Active step only) -->
-                                <div class="relative w-full h-0.5 bg-gray-200 mt-2">
-                                    <div class="absolute left-0 h-0.5 bg-retro-orange transition-transform duration-300"
-                                        style="width: {{ $step === $index + 1 ? '100%' : '0' }};">
-                                    </div>
-                                </div>
                             </div>
                         @endforeach
                     </nav>
 
                     <!-- Step Content -->
                     <div x-show="step === 1">
-                        <div class="flex justify-between items-center my-2">
-                            <h3 class="text-2xl font-semibold text-retro-blue">
-                                {{ __('Select Your Fruits') }}
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+                            <h3 class="text-4xl font-bold text-retro-blue flex items-center gap-4">
+                                <span class="text-7xl">🍓</span>
+                                <span>{{ __('Select Your Fruits 🍏') }}</span>
                             </h3>
-                            <input type="text" wire:model.live="search"
-                                class="w-1/2 p-2 border border-retro-orange rounded-md text-gray-800 bg-transparent placeholder-gray-800 focus:outline-none focus:ring-2 focus:ring-retro-orange"
-                                placeholder="{{ __('Search for fruits') }}...">
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            @foreach ($this->fruits as $fruit)
-                                <div wire:key="{{ $fruit->id }}">
-                                    <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer  border-solid border-2 border-black"
-                                        wire:click="toggleFruit({{ $fruit->id }})"
-                                        x-bind:class="{
-                                            'ring-4 ring-retro-orange': @js(in_array($fruit->id, $selectedFruits))
-                                        }">
-                                        <img src="{{ $fruit->image }}" alt="{{ $fruit->name }}"
-                                            onerror="this.onerror=null" class="w-full h-32 object-cover">
-                                        <h4 class="text-lg text-center font-semibold text-retro-blue">
-                                            {{ $fruit->name }}
-                                        </h4>
 
-                                        @if (in_array($fruit->id, $selectedFruits))
-                                            <div class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
-                                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                            </div>
-                                        @endif
+                            <div class="w-full md:w-1/3">
+                                <input type="text" wire:model.live="search"
+                                    class="w-full p-4 text-xl border-4 border-retro-orange rounded-full text-gray-800 bg-white placeholder-gray-600 focus:outline-none focus:ring-4 focus:ring-retro-orange"
+                                    placeholder="🔍 Search fruits...">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                            @foreach ($this->fruits as $fruit)
+                                <div wire:key="{{ $fruit->id }}"
+                                    class="transform transition-all duration-300 hover:scale-105">
+                                    <div class="relative bg-white rounded-3xl overflow-hidden cursor-pointer shadow-2xl border-4 border-retro-orange
+                                        {{ in_array($fruit->id, $selectedFruits) ? 'ring-8 ring-retro-orange' : '' }}"
+                                        wire:click="toggleFruit({{ $fruit->id }})">
+
+                                        <div class="relative h-48 overflow-hidden">
+                                            <img src="{{ $fruit->image }}" alt="{{ $fruit->name }}"
+                                                class="w-full h-full object-cover transform transition-transform duration-300 hover:scale-110">
+                                            @if (in_array($fruit->id, $selectedFruits))
+                                                <div
+                                                    class="absolute inset-0 bg-retro-orange bg-opacity-30 flex items-center justify-center">
+                                                    <span class="text-7xl">✓</span>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <div class="p-6 text-center">
+                                            <h4 class="text-2xl font-bold text-retro-blue">
+                                                {{ $fruit->name }}
+                                            </h4>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -389,26 +400,36 @@
                     </div>
 
                     <div x-show="step === 2">
-                        <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
-                            {{ __('Select Your Base') }}
+                        <h3 class="text-4xl font-bold mb-8 text-retro-blue flex items-center gap-4">
+                            <span class="text-7xl">🥤</span>
+                            <span>{{ __('Select Your Base 🥛') }}</span>
                         </h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                             @foreach ($this->bases as $base)
-                                <div class="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer  border-solid border-2 border-black"
-                                    x-bind:class="{ 'ring-4 ring-retro-orange': @js($base) === @js($selectedBase) }"
-                                    wire:click="toggleBase('{{ $base }}')">
-                                    <h4 class="text-lg font-semibold text-retro-blue text-center">
-                                        {{ $base }}
-                                    </h4>
-                                    @if ($selectedBase === $base)
-                                        <div class="absolute top-2 right-2 bg-retro-orange rounded-full p-1">
-                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M5 13l4 4L19 7"></path>
-                                            </svg>
+                                <div class="transform transition-all duration-300 hover:scale-105">
+                                    <div class="relative bg-white p-8 rounded-3xl cursor-pointer shadow-2xl border-4 border-retro-orange
+                                        {{ $selectedBase === $base ? 'ring-8 ring-retro-orange' : '' }}"
+                                        wire:click="toggleBase('{{ $base }}')">
+
+                                        <div class="text-center">
+                                            <span class="text-8xl mb-6 block">
+                                                @if ($base === __('Water'))
+                                                    💧
+                                                @elseif ($base === __('Orange juice'))
+                                                    🍊
+                                                @elseif ($base === 'Milk')
+                                                    🥛
+                                                @else
+                                                    🍋
+                                                @endif
+                                            </span>
+                                            <h4 class="text-3xl font-bold text-retro-blue">{{ $base }}</h4>
                                         </div>
-                                    @endif
+
+                                        @if ($selectedBase === $base)
+                                            <span class="absolute top-4 right-4 text-4xl">✓</span>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -416,7 +437,7 @@
 
                     <div x-show="step === 3">
                         <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
-                            {{ __('Sugar Preference') }}
+                            {{ __('Sugar Preference 🍬') }}
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                             @foreach ($this->sugars as $sugarOption)
@@ -445,7 +466,7 @@
 
                     <div x-show="step === 4">
                         <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
-                            {{ __('Select Add-ons') }}
+                            {{ __('Select Add-ons 🌟') }}
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                             @foreach ($this->addons as $addon)
@@ -475,7 +496,7 @@
                     <!-- Add this new step content after the add-ons step -->
                     <div x-show="step === 5">
                         <h3 class="text-2xl font-semibold mb-6 text-retro-blue">
-                            {{ __('Select Size') }}
+                            {{ __('Select Size 📏') }}
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                             @foreach ($this->sizes as $sizeKey => $size)
@@ -505,24 +526,32 @@
                     </div>
 
                     <!-- Navigation Buttons -->
-                    <div class="flex justify-between mt-8 mb-4">
+                    <div class="flex justify-between mt-12 mb-6">
                         <button wire:click="previousStep"
-                            class="bg-retro-blue text-white px-6 py-3 rounded-full hover:bg-retro-cream hover:text-retro-blue border-2 border-retro-blue transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-blue"
+                            class="flex items-center gap-4 bg-retro-blue text-white px-8 py-4 text-xl rounded-full hover:bg-retro-cream hover:text-retro-blue border-4 border-retro-blue transition-all duration-300 transform hover:scale-105"
                             :disabled="step === 1" x-show="step > 1">
-                            {{ __('Previous') }}
+                            <span class="text-3xl">👈</span>
+                            <span class="font-bold">{{ __('Previous') }}</span>
                         </button>
 
                         <button wire:click="nextStep"
-                            class="bg-retro-orange text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-blue border-2 border-retro-orange transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-orange"
+                            class="flex items-center gap-4 bg-retro-orange text-white px-8 py-4 text-xl rounded-full hover:bg-retro-yellow hover:text-retro-blue border-4 border-retro-orange transition-all duration-300 transform hover:scale-105"
                             x-show="step < 5">
-                            {{ __('Next') }}
+                            <span class="font-bold">{{ __('Next') }}</span>
+                            <span class="text-3xl">👉</span>
                         </button>
 
-                        <button wire:click="addToCart" wire:loading.attr="disabled" wire:loading.class="opacity-50"
-                            class="bg-retro-green text-white px-6 py-3 rounded-full hover:bg-retro-yellow hover:text-retro-green border-2 border-retro-green transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-retro-green"
+                        <button wire:click="addToCart"
+                            class="flex items-center gap-4 bg-retro-green text-white px-8 py-4 text-xl rounded-full hover:bg-retro-yellow hover:text-retro-green border-4 border-retro-green transition-all duration-300 transform hover:scale-105"
                             x-show="step === 5">
-                            <span wire:loading.remove>{{ __('Add to Cart') }}</span>
-                            <span wire:loading>{{ __('Adding...') }}</span>
+                            <span wire:loading.remove>
+                                <span class="text-3xl">🛒</span>
+                                <span class="font-bold">{{ __('Add to Cart') }}</span>
+                            </span>
+                            <span wire:loading>
+                                <span class="text-3xl">⏳</span>
+                                <span class="font-bold">{{ __('Adding...') }}</span>
+                            </span>
                         </button>
                     </div>
                 </div>

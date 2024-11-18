@@ -10,13 +10,14 @@ use App\Livewire\Admin\RecipeManagement;
 use App\Livewire\ComposableDriedFruitsIndex;
 use App\Livewire\ComposableJuicesIndex;
 use App\Livewire\ComposableSaladeIndex;
+use App\Livewire\Home;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Volt::route('/', 'index')
+Route::get('/', Home::class)
     ->name('index');
-    
+
 Volt::route('/tv', 'indexTv')
     ->name('indexTv');
 

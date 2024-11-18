@@ -17,7 +17,7 @@ use Livewire\WithPagination;
 
 #[Layout('layouts.guest')]
 #[Title('Menu')]
-class Index extends Component
+class Home extends Component
 {
     use WithPagination;
 
@@ -225,6 +225,20 @@ class Index extends Component
     public $category_id = '';
     public $selectedSizes = [];
     public $selectedUnits = [];
+    public $selectedSize = 'medium';
+    public $selectedOptions = [];
+    public $product;
+    public $quantity = 1;
+
+    // showm got modal 
+    public $showModal = false;
+    
+    #[Computed]
+    public function price()
+    {
+        return collect($this->product?->prices)
+            ->firstWhere('size', $this->selectedSize)['price'] ?? 0;
+    }
 
     #[Computed]
     public function products()
@@ -279,7 +293,8 @@ class Index extends Component
         return ($basePrice + $optionsPrice) * $this->quantity;
     }
 
-    public function getProductPrice(Product $product, string $size, string $unit): ?float
+    #[Computed]
+    public function getProductPrice($product, string $size, string $unit)
     {
         $price = $product->getPriceForSizeAndUnit($size, $unit);
         return $price ? $price->price : null;
@@ -293,12 +308,10 @@ class Index extends Component
             ->getUnit();
     }
 
-    #[On('addToCart')]
-    public function addToCart($productId, $size, $quantity, $options)
+    public function addToCart($productId)
     {
         $this->validate([
             'quantity' => 'required|integer|min:1',
-            'options' => 'array|nullable',
         ]);
 
         $product = Product::find($productId);
@@ -310,17 +323,17 @@ class Index extends Component
 
         $orderItemData = [
             'product_id' => $product->id,
-            'size' => $size,
-            'quantity' => $quantity,
-            'price' => $this->getProductPrice($product, $size, 'default'),
-            'options' => json_encode($options),
+            'size' => $this->selectedSize,
+            'quantity' => $this->quantity,
+            'price' => $this->getProductPrice($product, $this->selectedSize, 'default'),
+            'options' => json_encode($this->selectedOptions),
         ];
 
         $order = Order::create([
             'customer_name' => 'name',
             'customer_email' => 'email@email.com',
             'customer_phone' => '1234567890',
-            'total_amount' => $orderItemData['price'] * $quantity,
+            'total_amount' => $orderItemData['price'] * $this->quantity,
             'status' => OrderStatus::Pending,
         ]);
 
@@ -331,6 +344,6 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.index');
+        return view('livewire.home');
     }
 }

@@ -28,6 +28,13 @@ class ComposableSaladeIndex extends Component
     // public bool $showSuccess = false;
     public string $customerName = '';
     public string $customerPhone = '';
+    public array $composableSalade = [];
+
+    // #[Computed]
+    // public function composableSalade()
+    // {
+    //     // $this->calculatePrice();
+    // }
 
     public function calculatePrice(): void
     {
