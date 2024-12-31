@@ -93,7 +93,7 @@
                                         <option value="">{{ __('Unit') }}</option>
                                         @foreach ($this->units as $unit)
                                             <option @selected($unit->value === $this->unit) value="{{ $unit->value }}">
-                                                {{ $unit->label() }}
+                                                {{ $unit     }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -215,7 +215,7 @@
                                 {{ $ingredient->category->name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {{ $ingredient->stock }} {{ $ingredient->unit->label() }}
+                                {{ $ingredient->stock }} {{ $ingredient->unit }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col gap-1">
@@ -229,10 +229,10 @@
                                     @if ($ingredient->expiry_date)
                                         <span @class([
                                             'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                            'bg-yellow-100 text-yellow-800' => $ingredient->expiry_date->isPast(),
-                                            'bg-blue-100 text-blue-800' => !$ingredient->expiry_date->isPast(),
+                                            'bg-yellow-100 text-yellow-800' => $ingredient->expiry_date,
+                                            'bg-blue-100 text-blue-800' => !$ingredient->expiry_date,
                                         ])>
-                                            {{ __('Expires:') }} {{ $ingredient->expiry_date->format('Y-m-d') }}
+                                            {{ __('Expires:') }} {{ $ingredient->expiry_date }}
                                         </span>
                                     @endif
                                 </div>

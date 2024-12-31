@@ -49,7 +49,7 @@
         @if ($showAnalytics)
             <div class="grid grid-cols-4 gap-4 mb-6">
                 <x-stat-card title="{{ __('Total Products') }}" :value="$this->productAnalytics['total_products']" icon="box" />
-                <x-stat-card title="{{ __('Total Value') }}" :value="number_format($this->productAnalytics['total_value'], 2) . ' DH'" icon="currency-dollar" />
+                {{-- <x-stat-card title="{{ __('Total Value') }}" :value="number_format($this->productAnalytics['total_value'], 2) . ' DH'" icon="currency-dollar" /> --}}
                 <x-stat-card title="{{ __('Active Categories') }}" :value="$this->productAnalytics['active_categories']" icon="folder" />
                 <!-- Added Low Stock Alert Card -->
                 <x-stat-card title="{{ __('Low Stock Items') }}" :value="$this->productAnalytics['low_stock_count']" icon="warning" color="red" />
@@ -128,7 +128,7 @@
                                             <img src="{{ $image->temporaryUrl() }}"
                                                 class="mx-auto h-48 w-48 object-cover rounded-lg mb-4">
                                         @elseif ($editingProductId && $image)
-                                            <img src="{{ Storage::url($image) }}"
+                                            <img src="{{ asset('products/' . $image) }}"
                                                 class="mx-auto h-48 w-48 object-cover rounded-lg mb-4">
                                         @else
                                             <span class="material-icons text-emerald-400 text-5xl">image</span>
@@ -164,22 +164,17 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="space-y-4">
+                            <div class="space-y-4 mt-4">
                                 <div class="flex items-center justify-between p-4 bg-white rounded-lg">
-                                    <div>
-                                        <h4 class="font-medium">{{ __('Available for Sale') }}</h4>
-                                        <p class="text-sm text-gray-500">
-                                            {{ __('Make this product available in store') }}</p>
-                                    </div>
-                                    <x-checkbox wire:model="is_available" />
+                                    <x-checkbox wire:model="status" color="blue" :label="__('Available for Sale')" />
+                                    <p class="text-sm text-gray-500">
+                                        {{ __('Make this product available in store') }}</p>
                                 </div>
 
-                                <div class="flex items-center justify-between p-4 bg-white rounded-lg">
-                                    <div>
-                                        <h4 class="font-medium">{{ __('Featured Product') }}</h4>
-                                        <p class="text-sm text-gray-500">{{ __('Show in featured section') }}</p>
-                                    </div>
-                                    <x-checkbox color="blue" wire:model="is_featured" />
+                                <div class="flex items-center justify-between p-4 bg-white rounded-lg"> 
+                                    <x-checkbox color="blue" wire:model="is_featured" color="blue"
+                                        :label="__('Featured Product')" />
+                                    <p class="text-sm text-gray-500">{{ __('Show in featured section') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -378,7 +373,7 @@
                                                     <td class="px-4 py-2">{{ $price->metadata['unit'] ?? '-' }}</td>
                                                     <td class="px-4 py-2">{{ number_format($price->cost, 2) }}</td>
                                                     <td class="px-4 py-2">{{ number_format($price->price, 2) }}</td>
-                                                    <td class="px-4 py-2">{{ $price->date->format('Y-m-d') }}</td>
+                                                    <td class="px-4 py-2">{{ $price->date }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -431,8 +426,8 @@
                     @endif
                     <div class="absolute top-0 right-4 mt-4">
                         <span
-                            class="px-2 py-1 rounded-full text-xs font-medium {{ $product->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $product->is_available ? __('Available') : __('Out of Stock') }}
+                            class="px-2 py-1 rounded-full text-xs font-medium {{ $product->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                            {{ $product->status ? __('Available') : __('Out of Stock') }}
                         </span>
                     </div>
                     <div
@@ -476,7 +471,7 @@
                                 <button wire:click="toggleAvailability({{ $product->id }})"
                                     class="p-2 rounded-full hover:bg-gray-100">
                                     <span
-                                        class="material-icons {{ $product->is_available ? 'text-green-600' : 'text-red-600' }}">
+                                        class="material-icons {{ $product->status ? 'text-green-600' : 'text-red-600' }}">
                                         power_settings_new
                                     </span>
                                 </button>
@@ -493,14 +488,6 @@
                                     color="info" class="rounded-full">
                                     <span class="material-icons">edit</span>
                                 </x-button>
-
-                                <x-button type="button"
-                                    wire:click="dispatch('openCustomizationModal', { productId: {{ $product->id }} })"
-                                    color="info">
-                                    <span class="material-icons">edit</span>
-                                </x-button>
-
-
 
                                 <x-button type="button" wire:click="deleteProduct({{ $product->id }})"
                                     color="danger" class="rounded-full">
@@ -522,7 +509,4 @@
             {{ $this->products->links() }}
         </div>
     </div>
-
-    <x-product-customization-modal :product="$product" />
-
 </div>

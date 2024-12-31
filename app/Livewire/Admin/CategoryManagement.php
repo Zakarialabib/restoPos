@@ -12,13 +12,11 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 #[Title('Category Management')]
 class CategoryManagement extends Component
 {
     use WithPagination;
-
-    public $categories;
 
     #[Validate('required|string|max:255')]
     public $name;
@@ -28,7 +26,7 @@ class CategoryManagement extends Component
     #[Computed]
     public function categories()
     {
-        return Category::all();
+        return Category::query()->orderBy('name')->get();
     }
 
     public function saveCategory(): void

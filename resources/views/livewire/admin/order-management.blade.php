@@ -1,16 +1,12 @@
 <div>
     <div class="w-full">
-        @if (session()->has('success'))
-            <x-alert type="success" :dismissal="false" :showIcon="true">
-                {{ session('success') }}
-            </x-alert>
-        @endif
+        {{-- <x-alerts /> --}}
 
-        @if (session()->has('error'))
+        @error('order')
             <x-alert type="error" :dismissal="false" :showIcon="true">
-                {{ session('error') }}
+                {{ $message }}
             </x-alert>
-        @endif
+        @enderror
         <!-- Header with Analytics -->
         <div class="mb-8">
             <div class="flex justify-between items-center mb-6">
@@ -86,58 +82,47 @@
 
         <!-- Orders Table -->
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+            <x-table>
+                <x-slot name="header">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <x-table.th>
                             <input type="checkbox" wire:model="selectAll">
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {{ __('Order ID') }}
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {{ __('Customer') }}
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {{ __('Total') }}
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {{ __('Status') }}
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {{ __('Date') }}
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {{ __('Actions') }}
-                        </th>
+                        </x-table.th>
+                        <x-table.th>{{ __('Order ID') }}</x-table.th>
+                        <x-table.th>{{ __('Customer') }}</x-table.th>
+                        <x-table.th>{{ __('Total') }}</x-table.th>
+                        <x-table.th>{{ __('Status') }}</x-table.th>
+                        <x-table.th>{{ __('Date') }}</x-table.th>
+                        <x-table.th>{{ __('Actions') }}</x-table.th>
                     </tr>
-                </thead>
+                </x-slot>
+
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($this->orders as $order)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <x-table.td>
                                 <input type="checkbox" wire:model="selectedOrders" value="{{ $order->id }}">
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            </x-table.td>
+                            <x-table.td>
                                 #{{ $order->id }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            </x-table.td>
+                            <x-table.td>
                                 <div class="text-sm font-medium text-gray-900">
                                     {{ $order->customer_name }}
                                 </div>
                                 <div class="text-sm text-gray-500">
                                     {{ $order->customer_phone }}
                                 </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            </x-table.td>
+                            <x-table.td>
                                 <div class="text-sm font-medium text-gray-900">
                                     {{ number_format($order->total_amount, 2) }} DH
                                 </div>
                                 <div class="text-xs text-gray-500">
                                     {{ __('Profit') }}: {{ number_format($order->getProfit(), 2) }} DH
                                 </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            </x-table.td>
+                            <x-table.td>
                                 <span @class([
                                     'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
                                     'bg-yellow-100 text-yellow-800' =>
@@ -151,15 +136,15 @@
                                 ])>
                                     {{ $order->status->name }}
                                 </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            </x-table.td>
+                            <x-table.td>
                                 {{ $order->created_at->format('M d, Y H:i') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button wire:click="viewOrderDetails({{ $order->id }})"
-                                    class="text-blue-600 hover:text-blue-900 mr-3">
+                            </x-table.td>
+                            <x-table.td>
+                                <x-button color="infoOutline" wire:click="viewOrderDetails({{ $order->id }})"
+                                    type="button">
                                     {{ __('View') }}
-                                </button>
+                                </x-button>
                                 <div class="relative" x-data="{ open: false }">
                                     <button @click="open = !open" class="text-gray-600 hover:text-gray-900">
                                         {{ __('Status') }} ▼
@@ -177,17 +162,17 @@
                                         </div>
                                     </div>
                                 </div>
-                            </td>
+                            </x-table.td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            <x-table.td colspan="7" class="text-center text-gray-500">
                                 {{ __('No orders found.') }}
-                            </td>
+                            </x-table.td>
                         </tr>
                     @endforelse
                 </tbody>
-            </table>
+            </x-table>
         </div>
 
         <!-- Pagination -->
@@ -196,9 +181,9 @@
         </div>
 
         <!-- Order Details Modal -->
-        @if ($showOrderDetails && $selectedOrder)
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-                <div class="bg-white rounded-lg p-6 max-w-2xl w-full">
+        @if ($this->showOrderDetails)
+            <x-modal name="order-details" wire:model="showOrderDetails">
+                <div class="p-6">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-lg font-medium">{{ __('Order Details') }} #{{ $selectedOrder->id }}
                         </h3>
@@ -211,15 +196,16 @@
                         <!-- Customer Info -->
                         <div class="border-b pb-4">
                             <h4 class="font-medium mb-2">{{ __('Customer Information') }}</h4>
-                            <p>{{ $selectedOrder->customer_name }}</p>
-                            <p>{{ $selectedOrder->customer_phone }}</p>
+                            <p>{{ $this->selectedOrder->customer_name }}</p>
+                            <p>{{ $this->selectedOrder->customer_phone }}</p>
                         </div>
 
                         <!-- Order Items -->
                         <div>
                             <h4 class="font-medium mb-2">{{ __('Order Items') }}</h4>
                             <div class="space-y-2">
-                                @foreach ($selectedOrder->items as $item)
+
+                                @foreach ($this->selectedOrder->items() as $item)
                                     <div class="flex justify-between items-center">
                                         <div>
                                             <p class="font-medium">{{ $item->name }}</p>
@@ -237,25 +223,16 @@
                         <div class="border-t pt-4">
                             <div class="flex justify-between items-center font-medium">
                                 <p>{{ __('Total Amount') }}</p>
-                                <p>{{ number_format($selectedOrder->total_amount, 2) }} DH</p>
+                                <p>{{ number_format($this->selectedOrder->total_amount, 2) }} DH</p>
                             </div>
                             <div class="flex justify-between items-center text-sm text-gray-500">
                                 <p>{{ __('Profit') }}</p>
-                                <p>{{ number_format($selectedOrder->getProfit(), 2) }} DH</p>
+                                <p>{{ number_format($this->selectedOrder->getProfit(), 2) }} DH</p>
                             </div>
                         </div>
-
-                        <!-- Stock Validation -->
-                        @if (!$this->validateOrder($selectedOrder))
-                            <div class="bg-red-50 border border-red-200 rounded p-4 mt-4">
-                                <p class="text-red-700">
-                                    {{ __('Warning: Insufficient stock for some items in this order.') }}
-                                </p>
-                            </div>
-                        @endif
                     </div>
                 </div>
-            </div>
+            </x-modal>
         @endif
     </div>
 </div>

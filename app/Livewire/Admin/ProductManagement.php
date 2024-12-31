@@ -9,6 +9,7 @@ use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\Recipe;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -17,9 +18,8 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\DB;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 #[Title('Product Management')]
 class ProductManagement extends Component
 {
@@ -36,8 +36,11 @@ class ProductManagement extends Component
     #[Validate('required|exists:categories,id')]
     public $category_id = '';
     #[Validate('required|boolean')]
-    public $is_available = true;
+    public $status = true;
+
+    #[Validate('image')]
     public $image;
+
     #[Validate('required|boolean')]
     public $is_featured = false;
     public $editingProductId = null;
@@ -64,19 +67,22 @@ class ProductManagement extends Component
     public $isCustomizable = false;
     public $allowedIngredients = [];
     public $basePrice = 0.00;
-    public $customizationOptions = [];
+
+    public string $searchIngredient = '';
+    public bool $showIngredientModal = false;
 
     protected $rules = [
         'selectedIngredients.*.id' => 'exists:ingredients,id',
         'selectedIngredients.*.quantity' => 'required|numeric|min:0',
         'recipeInstructions.*' => 'required|string',
         'recipeInstructions.*.step' => 'required|numeric',
-        'prices.*.price' => 'required|numeric|min:0', // Added validation for prices
+        'prices.*.price' => 'required|numeric|min:0',
         'isCustomizable' => 'boolean',
         'allowedIngredients' => 'array',
         'basePrice' => 'required_if:isCustomizable,true|numeric|min:0',
-        'customizationOptions' => 'array',
+        // 'image' => 'nullable|image|max:2048|mimes:jpg,jpeg,png,webp',
     ];
+
 
     #[Computed]
     public function products()
@@ -111,97 +117,95 @@ class ProductManagement extends Component
 
     public function saveProduct(): void
     {
-        $this->validate();
+        // $this->validate();
 
-        try {
-            DB::beginTransaction();
+        // Handle image upload
+        if ($this->image && !is_string($this->image)) {
+            $fileName = Str::slug($this->name) . '-' . time() . '.' . $this->image->getClientOriginalExtension();
+            $image = $this->image->storeAs('products', $fileName, 'public');
+        }
 
-            $productData = [
+        $productData = [
+            'name' => $this->name,
+            'description' => $this->description,
+            'slug' => Str::slug($this->name),
+            'category_id' => $this->category_id,
+            'status' => $this->status,
+            'is_featured' => $this->is_featured,
+            'is_customizable' => $this->isCustomizable,
+            'base_price' => $this->basePrice,
+            'image' => $image,
+        ];
+
+        // Create or update product
+        if ($this->editingProductId) {
+            $product = $this->editingProductId;
+            $product->update($productData);
+        } else {
+            $product = Product::create($productData);
+        }
+
+        // Save size-based prices
+        if (! empty($this->sizePrices)) {
+            foreach ($this->sizePrices as $sizePrice) {
+                $product->addSizePrice(
+                    $sizePrice['size'],
+                    $sizePrice['unit'],
+                    $sizePrice['cost'],
+                    $sizePrice['price']
+                );
+            }
+        }
+
+        // Save ingredients
+        if (! empty($this->selectedIngredients)) {
+            $ingredientData = collect($this->selectedIngredients)
+                ->filter(fn($ingredient) => ! empty($ingredient['id']))
+                ->mapWithKeys(function ($ingredient) {
+                    return [$ingredient['id'] => [
+                        'quantity' => $ingredient['quantity'],
+                        'unit' => $ingredient['unit'] ?? 'g'
+                    ]];
+                })->toArray();
+
+            $product->ingredients()->sync($ingredientData);
+        }
+
+        // Save recipe if instructions exist
+        if (! empty($this->recipeInstructions)) {
+            $recipeData = [
                 'name' => $this->name,
                 'description' => $this->description,
-                'slug' => Str::slug($this->name),
-                'category_id' => $this->category_id,
-                'is_available' => $this->is_available,
-                'is_featured' => $this->is_featured,
-                'is_customizable' => $this->isCustomizable,
-                'base_price' => $this->basePrice,
-                'customization_options' => $this->customizationOptions,
+                'instructions' => collect($this->recipeInstructions)->pluck('instruction')->toArray(),
+                'preparation_time' => 10,
+                'type' => 'juice',
+                'is_featured' => false,
+                'nutritional_info' => $product->calculateNutritionalInfo(),
             ];
 
-            // Handle image upload
-            if ($this->image && !is_string($this->image)) {
-                $productData['image'] = $this->image->store('products', 'public');
-            }
-
-            // Create or update product
-            if ($this->editingProductId) {
-                $product = $this->editingProductId;
-                $product->update($productData);
+            if ($product->recipe) {
+                $product->recipe->update($recipeData);
             } else {
-                $product = Product::create($productData);
+                $recipe = Recipe::create($recipeData);
+                $product->recipe()->associate($recipe);
+                $product->save();
             }
-
-            // Save size-based prices
-            if (!empty($this->sizePrices)) {
-                foreach ($this->sizePrices as $sizePrice) {
-                    $product->addSizePrice(
-                        $sizePrice['size'],
-                        $sizePrice['unit'],
-                        $sizePrice['cost'],
-                        $sizePrice['price']
-                    );
-                }
-            }
-
-            // Save ingredients
-            if (!empty($this->selectedIngredients)) {
-                $ingredientData = collect($this->selectedIngredients)
-                    ->filter(fn($ingredient) => !empty($ingredient['id']))
-                    ->mapWithKeys(function ($ingredient) {
-                        return [$ingredient['id'] => [
-                            'quantity' => $ingredient['quantity'],
-                            'unit' => $ingredient['unit'] ?? 'g'
-                        ]];
-                    })->toArray();
-                
-                $product->ingredients()->sync($ingredientData);
-            }
-
-            // Save recipe if instructions exist
-            if (!empty($this->recipeInstructions)) {
-                $recipeData = [
-                    'name' => $this->name,
-                    'description' => $this->description,
-                    'instructions' => collect($this->recipeInstructions)->pluck('instruction')->toArray(),
-                    'preparation_time' => 10,
-                    'type' => 'juice',
-                    'is_featured' => false,
-                    'nutritional_info' => $product->calculateNutritionalInfo(),
-                ];
-
-                if ($product->recipe) {
-                    $product->recipe->update($recipeData);
-                } else {
-                    $recipe = Recipe::create($recipeData);
-                    $product->recipe()->associate($recipe);
-                    $product->save();
-                }
-            }
-
-            // If product is customizable, save allowed ingredients
-            if ($this->isCustomizable && !empty($this->allowedIngredients)) {
-                $product->allowedIngredients()->sync($this->allowedIngredients);
-            }
-
-            DB::commit();
-            
-            $this->reset();
-            session()->flash('success', __('Product saved successfully.'));
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', __('Error saving product: ') . $e->getMessage());
         }
+
+        // If product is customizable, save allowed ingredients
+        if ($this->isCustomizable && ! empty($this->allowedIngredients)) {
+            $product->allowedIngredients()->sync($this->allowedIngredients);
+        }
+
+        if ($this->selectedIngredients) {
+            $this->ingredientService->attachIngredientsToProduct(
+                $this->editingProductId ?? $product,
+                $this->selectedIngredients
+            );
+        }
+
+        $this->reset();
+        session()->flash('success', __('Product saved successfully.'));
     }
 
     public function toggleRecipeForm($productId = null): void
@@ -294,7 +298,7 @@ class ProductManagement extends Component
         $this->name = $product->name;
         $this->description = $product->description;
         $this->category_id = $product->category_id;
-        $this->is_available = $product->is_available;
+        $this->status = $product->status;
         $this->is_featured = $product->is_featured;
         $this->image = $product->image; // Store existing image path
 
@@ -347,8 +351,8 @@ class ProductManagement extends Component
         $products = Product::with('ingredients')->get();
         foreach ($products as $product) {
             $isAvailable = $product->isProductAvailable(1);
-            if ($product->is_available !== $isAvailable) {
-                $product->update(['is_available' => $isAvailable]);
+            if ($product->status !== $isAvailable) {
+                $product->update(['status' => $isAvailable]);
             }
         }
     }
@@ -389,7 +393,7 @@ class ProductManagement extends Component
     #[Computed]
     public function lowStockProducts()
     {
-        return Product::whereHas('ingredients', fn($query) => $query->where('stock', '<', 10))->get();
+        return Product::whereHas('ingredients', fn($query) => $query->where('stock_quantity', '<', 10))->get();
     }
 
     #[Computed]
@@ -398,32 +402,24 @@ class ProductManagement extends Component
         return [
             'total_products' => Product::count(),
             // total_value
-            'total_value' => Product::sum('price'),
+            // 'total_value' => Product::sum('price'),
             // active_categories
-            'active_categories' => Category::where('is_active', true)->count(),
+            'active_categories' => Category::where('status', true)->count(),
+            'low_stock_count' => '',
         ];
     }
 
-    public function updatedSelectedSize($size)
+    public function updatedSelectedSize($size): void
     {
         $this->updatePrice();
     }
 
-    public function updatedSelectedUnit($unit)
+    public function updatedSelectedUnit($unit): void
     {
         $this->updatePrice();
     }
 
-    protected function updatePrice(): void
-    {
-        if ($this->selectedSize && $this->selectedUnit) {
-            $price = $this->editingProductId
-                ->getPriceForSizeAndUnit($this->selectedSize, $this->selectedUnit);
-            $this->price = $price ? $price->price : null;
-        }
-    }
-
-    public function addSizePrice()
+    public function addSizePrice(): void
     {
         $this->sizePrices[] = [
             'size' => '',
@@ -433,7 +429,7 @@ class ProductManagement extends Component
         ];
     }
 
-    public function removeSizePrice($index)
+    public function removeSizePrice($index): void
     {
         unset($this->sizePrices[$index]);
         $this->sizePrices = array_values($this->sizePrices);
@@ -449,15 +445,15 @@ class ProductManagement extends Component
     }
 
     //toggleAvailability
-    public function toggleAvailability($productId)
+    public function toggleAvailability($productId): void
     {
         $product = Product::find($productId);
-        $product->is_available = ! $product->is_available;
+        $product->status = ! $product->status;
         $product->save();
     }
 
     // toggleFeatured
-    public function toggleFeatured($productId)
+    public function toggleFeatured($productId): void
     {
         $product = Product::find($productId);
         $product->is_featured = ! $product->is_featured;
@@ -494,5 +490,52 @@ class ProductManagement extends Component
                 ->get();
         }
         return collect();
+    }
+
+    public function addIngredient($ingredientId): void
+    {
+        if (! isset($this->selectedIngredients[$ingredientId])) {
+            $this->selectedIngredients[$ingredientId] = [
+                'id' => $ingredientId,
+                'quantity' => 1,
+                'unit' => 'g',
+                'sort_order' => count($this->selectedIngredients)
+            ];
+        }
+    }
+
+    public function updateIngredientQuantity($ingredientId, $quantity): void
+    {
+        if (isset($this->selectedIngredients[$ingredientId])) {
+            $this->selectedIngredients[$ingredientId]['quantity'] = $quantity;
+        }
+    }
+
+    public function removeIngredient($ingredientId): void
+    {
+        unset($this->selectedIngredients[$ingredientId]);
+    }
+
+    #[Computed]
+    public function availableIngredients()
+    {
+        return Ingredient::query()
+            ->when(
+                $this->searchIngredient,
+                fn($query) =>
+                $query->where('name', 'like', "%{$this->searchIngredient}%")
+            )
+            ->where('status', true)
+            ->orderBy('name')
+            ->get();
+    }
+
+    protected function updatePrice(): void
+    {
+        if ($this->selectedSize && $this->selectedUnit) {
+            $price = $this->editingProductId
+                ->getPriceForSizeAndUnit($this->selectedSize, $this->selectedUnit);
+            $this->price = $price ? $price->price : null;
+        }
     }
 }

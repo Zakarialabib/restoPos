@@ -52,18 +52,18 @@ class OrderManagement extends Component
     }
 
     #[Computed]
-    public function getOrdersProperty()
+    public function orders()
     {
         return Order::query()
             ->when(
                 $this->search,
-                fn ($query) =>
+                fn($query) =>
                 $query->where('customer_name', 'like', '%' . $this->search . '%')
                     ->orWhere('customer_phone', 'like', '%' . $this->search . '%')
             )
             ->when(
                 $this->status,
-                fn ($query) =>
+                fn($query) =>
                 $query->where('status', $this->status)
             )
             ->when($this->dateRange, function ($query) {
@@ -76,13 +76,13 @@ class OrderManagement extends Component
 
     public function viewOrderDetails(Order $order): void
     {
-        $this->selectedOrder = $order->load(['items.product']);
+        $this->selectedOrder = Order::where('id', $order->id)->first();
         $this->showOrderDetails = true;
     }
 
     public function updateOrderStatus(Order $order, OrderStatus $status): void
     {
-        if (OrderStatus::Completed === $status && ! $order->validate()) {
+        if (OrderStatus::Completed === $status) {
             $this->addError('order', 'Cannot complete order - insufficient stock');
             return;
         }
@@ -90,18 +90,31 @@ class OrderManagement extends Component
         $order->updateStatus($status);
 
         if (OrderStatus::Completed === $status) {
-            $order->updateInventory();
-        }
-    }
+            try {
+                DB::transaction(function () use ($order): void {
+                    foreach ($order->items as $item) {
+                        $product = $item->product;
+                        if (! $product) {
+                            continue;
+                        }
 
-    public function calculateCustomItemPrice($item): float
-    {
-        $basePrice = $item['product']->base_price;
-        $addonsPrice = collect($item['customizations'])->sum(function ($customization) {
-            return $customization['quantity'] * $customization['ingredient']->price;
-        });
-        
-        return $basePrice + $addonsPrice;
+                        foreach ($product->ingredients as $ingredient) {
+                            $requiredQuantity = $ingredient->pivot->stock * $item->quantity;
+
+                            if (! $ingredient->hasEnoughStock($requiredQuantity)) {
+                                throw new Exception("Insufficient stock for ingredient: {$ingredient->name}");
+                            }
+
+                            $ingredient->updateStock(-$requiredQuantity);
+                        }
+                    }
+                });
+                $this->addError('order', 'Order completed successfully.');
+            } catch (Exception $e) {
+                Log::error('Order inventory update failed: ' . $e->getMessage());
+                $this->addError('order', 'Order completed with errors: ' . $e->getMessage());
+            }
+        }
     }
 
     public function saveOrder(): void
@@ -118,8 +131,8 @@ class OrderManagement extends Component
 
             foreach ($this->orderItems as $item) {
                 $product = Product::findOrFail($item['product_id']);
-                $price = $product->is_customizable ? 
-                    $this->calculateCustomItemPrice($item) : 
+                $price = $product->is_customizable ?
+                    $this->calculateCustomItemPrice($item) :
                     $product->price;
 
                 $orderItem = $order->items()->create([
@@ -127,26 +140,14 @@ class OrderManagement extends Component
                     'name' => $product->name,
                     'quantity' => $item['quantity'],
                     'price' => $price,
-                    'customizations' => $item['customizations'] ?? null,
                 ]);
-
-                // Handle customizations inventory
-                if (!empty($item['customizations'])) {
-                    foreach ($item['customizations'] as $customization) {
-                        $ingredient = Ingredient::find($customization['ingredient_id']);
-                        if (!$ingredient->hasStock($customization['quantity'])) {
-                            throw new Exception("Insufficient stock for {$ingredient->name}");
-                        }
-                    }
-                }
             }
 
             $order->calculateTotal();
             DB::commit();
-            
+
             session()->flash('success', __('Order saved successfully.'));
             $this->reset();
-            
         } catch (Exception $e) {
             DB::rollBack();
             session()->flash('error', __('Error saving order: ') . $e->getMessage());
@@ -175,11 +176,6 @@ class OrderManagement extends Component
         });
     }
 
-    public function validateOrder(Order $order): bool
-    {
-        return $order->validate();
-    }
-
     public function render()
     {
         return view('livewire.admin.order-management');
@@ -196,7 +192,7 @@ class OrderManagement extends Component
     {
         foreach ($order->items as $item) {
             $product = Product::findOrFail($item->product_id);
-            if ( ! $product->isProductAvailable($item->quantity)) {
+            if (! $product->isProductAvailable($item->quantity)) {
                 session()->flash('error', "{$product->name} is out of stock.");
             }
         }

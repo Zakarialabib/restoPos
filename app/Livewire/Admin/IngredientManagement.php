@@ -17,7 +17,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 #[Title('Ingredient Management')]
 class IngredientManagement extends Component
 {
@@ -153,10 +153,10 @@ class IngredientManagement extends Component
     {
         $this->editingId = $ingredient->id;
         $this->name = $ingredient->name;
-        $this->unit = $ingredient->unit->value;
+        $this->unit = $ingredient->unit;
         $this->conversionRate = $ingredient->conversion_rate;
-        $this->stock = $ingredient->stock;
-        $this->expiryDate = $ingredient->expiry_date?->format('Y-m-d');
+        $this->stock = $ingredient->stock_quantity;
+        $this->expiryDate = $ingredient->expiry_date;
         $this->categoryId = $ingredient->category_id;
         $this->supplierInfo = $ingredient->supplier_info;
         $this->instructions = $ingredient->instructions;
