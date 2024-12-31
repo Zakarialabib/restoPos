@@ -1,4 +1,4 @@
-@props(['options', 'name', 'label', 'value', 'placeholder' => 'Select an option', 'required' => false, 'disabled' => false, 'multiple' => false, 'error' => false])
+@props(['options' , 'name' => null, 'label' => null, 'placeholder' => 'Select an option', 'required' => false, 'disabled' => false, 'multiple' => false, 'error' => false])
 
 @php
     $id = Str::random(10);
@@ -6,7 +6,7 @@
 
 <div class="mb-4">
     <label for="{{ $id }}" class="block text-sm font-medium text-gray-700">
-        {{ $label }}
+       @if($label) {{ $label }} @endif
         @if($required)
             <span class="text-red-500">*</span>
         @endif
@@ -22,9 +22,15 @@
         @if(!$multiple)
             <option value="">{{ $placeholder }}</option>
         @endif
-        @foreach($options as $option)
-            <option value="{{ $option['value'] }}" @if($option['value'] == $value) selected @endif>{{ $option['label'] }}</option>
-        @endforeach
+        @if(!is_array($options))
+            @foreach($options as $option)
+                <option value="{{ $option['value'] }}" @if($option['value'] == $value) selected @endif>{{ $option['label'] }}</option>
+            @endforeach
+        @else
+            @foreach($options as $index => $option)
+                <option value="{{ $option }}" @if($option == $value) selected @endif>{{ $option }}</option>
+            @endforeach
+        @endif
     </select>
     @if($error)
         <p class="mt-2 text-sm text-red-600" id="email-error">{{ $error }}</p>

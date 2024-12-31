@@ -1,33 +1,25 @@
-@props([
-    'id' => null,
-    'type' => 'text',
-    'name' => null,
-    'value' => null,
-    'disabled' => false,
-    'required' => false,
-    'placeholder' => null,
-    'autofocus' => false,
-    'autocomplete' => null,
-    'readonly' => false,
-])
+@props(['label' => null, 'name' => null, 'type' => 'text', 'value' => '', 'error' => null, 'required' => false])
 
-@php
-    $attributes = $attributes->class([
-        'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm py-2',
-        'disabled:opacity-50' => $disabled,
-        'border-red-300 text-red-900 placeholder-red-300 focus:border-red-300 focus:ring-red-500' => $errors->has($name),
-    ])->merge([
-        'id' => $id,
-        'type' => $type,
-        'name' => $name,
-        'value' => $value,
-        'disabled' => $disabled,
-        'required' => $required,
-        'placeholder' => $placeholder,
-        'autofocus' => $autofocus,
-        'autocomplete' => $autocomplete,
-        'readonly' => $readonly,
-    ]);
-@endphp
+<div class="space-y-2">
+    @if ($label)
+        <label for="{{ $name }}" class="block text-sm font-medium text-gray-700">
+            {{ $label }}
+            @if ($required)
+                <span class="text-red-500">*</span>
+            @endif
+        </label>
+    @endif
+    <input type="{{ $type }}" id="{{ $name }}" name="{{ $name }}" value="{{ $value }}"
+        {{ $attributes->merge([
+            'class' =>
+                'mt-1 block py-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500' .
+                ($error ? ' border-red-500' : ''),
+        ]) }}
+        @if ($required) required @endif aria-describedby="{{ $name }}-error">
 
-<input {{ $attributes }} dir="ltr" wire:dirty.class="border-red-500" />
+    @if ($error)
+        <p class="mt-1 text-sm text-red-600" id="{{ $name }}-error">
+            {{ $error }}
+        </p>
+    @endif
+</div>
