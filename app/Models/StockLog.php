@@ -4,23 +4,35 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class StockLog extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'ingredient_id',
-        'old_stock',
-        'new_stock',
-        'change',
+        'stockable_type',
+        'stockable_id',
+        'adjustment',
         'reason',
+        'previous_quantity',
+        'new_quantity',
+        'user_id',
     ];
 
-    public function ingredient()
+    protected $casts = [
+        'adjustment' => 'float',
+        'previous_quantity' => 'float',
+        'new_quantity' => 'float',
+    ];
+
+    public function stockable(): MorphTo
     {
-        return $this->belongsTo(Ingredient::class);
+        return $this->morphTo();
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

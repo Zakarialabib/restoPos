@@ -4,240 +4,156 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Contracts\HasPricing;
-use App\Enums\UnitType;
-use App\Notifications\ExpiryAlert;
-use App\Traits\HasExpiry;
-use DateTime;
-use Exception;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Collection;
+use App\Traits\HasPrices;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Number;
+use Illuminate\Support\Facades\Storage;
 
 class Ingredient extends Model
 {
-    use HasExpiry;
     use HasFactory;
-    use Notifiable;
+    use HasPrices;
 
     protected $fillable = [
         'name',
-        'unit',
-        'conversion_rate',
+        'sku',
         'category_id',
-        'cost',
-        'price',
-        'stock',
-        'expiry_date',
+        'stock_quantity',
+        'unit',
+        'cost_per_unit',
+        'reorder_point',
+        'status',
+        'is_seasonal',
+        'image',
         'nutritional_info',
-        'storage_conditions',
-        'supplier_info',
-        'instructions',
         'is_composable',
-        'lead_time',
+        'popularity',
+        'portion_size',
+        'portion_unit'
     ];
 
     protected $casts = [
-        'conversion_rate' => 'decimal:2',
-        'stock' => 'integer',
-        'expiry_date' => 'date',
-        'supplier_info' => 'array',
-        'instructions' => 'array',
+        'cost' => 'decimal:2',
+        'min_stock' => 'decimal:2',
+        'stock_quantity' => 'decimal:2',
         'nutritional_info' => 'array',
-        'storage_conditions' => 'array',
-        'unit' => UnitType::class,
+        'popularity' => 'integer',
         'is_composable' => 'boolean',
-        'lead_time' => 'integer',
+        'portion_size' => 'decimal:2',
     ];
 
+    // Relationships
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function products(): BelongsToMany
+    public function juices(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'ingredient_recipe')
-            ->withPivot(['quantity', 'unit'])
+        return $this->belongsToMany(Ingredient::class)
+            ->withPivot('portion')
             ->withTimestamps();
     }
 
-    public function recipes(): BelongsToMany
+    public function stockLogs(): MorphMany
     {
-        return $this->belongsToMany(Recipe::class, 'ingredient_recipe')
-            ->withPivot(['quantity', 'unit'])
-            ->withTimestamps();
+        return $this->morphMany(StockLog::class, 'stockable');
     }
 
-    public function composables(): BelongsToMany
+    // Computed Attributes
+    public function getImageUrlAttribute(): ?string
     {
-        return $this->belongsToMany(Composable::class, 'composable_ingredient');
+        return $this->image ? Storage::url($this->image) : null;
     }
 
-    public function inventoryAlerts(): HasMany
+    // Stock Management Methods
+    public function adjustStock(float $quantity, string $reason = 'Manual Adjustment'): void
     {
-        return $this->hasMany(InventoryAlert::class);
-    }
-
-    public function prices(): MorphMany
-    {
-        return $this->morphMany(Price::class, 'priceable');
-    }
-
-    public function checkExpiry(): void
-    {
-        $expiryThreshold = now()->addDays(7);
-        if ($this->expiry_date && $this->expiry_date <= $expiryThreshold) {
-            $this->notify(new ExpiryAlert($this));
-        }
-    }
-
-    public function updateStock(int $quantity, string $reason = 'Manual Update'): void
-    {
-        $oldStock = $this->stock;
-        $this->stock += $quantity;
+        $this->stock_quantity += $quantity;
         $this->save();
 
-        // Optional: Log stock changes
-        StockLog::create([
-            'ingredient_id' => $this->id,
-            'old_stock' => $oldStock,
-            'new_stock' => $this->stock,
-            'change' => $quantity,
-            'reason' => $reason
+        $this->stockLogs()->create([
+            'quantity' => $quantity,
+            'reason' => $reason,
+            'previous_stock' => $this->stock_quantity - $quantity,
+            'new_stock' => $this->stock_quantity
         ]);
-    }
-
-    public function scopeExpiringSoon(Builder $query, int $days = 30): Builder
-    {
-        return $query->whereNotNull('expiry_date')
-            ->where('expiry_date', '<=', now()->addDays($days));
-    }
-
-    public function stock(): Attribute
-    {
-        return Attribute::make(
-            get: fn (int $value) => Number::format($value, locale: 'fr_MA'),
-            set: fn (int $value) => max(0, $value),
-        );
-    }
-
-    public function hasEnoughStock(float $quantity): bool
-    {
-        return $this->stock >= $quantity;
-    }
-
-    public function calculateNutritionalInfo(float $quantity): array
-    {
-        $nutritionalInfo = $this->nutritional_info;
-        return [
-            'calories' => ($nutritionalInfo['calories'] ?? 0) * $quantity / 100,
-            'protein' => ($nutritionalInfo['protein'] ?? 0) * $quantity / 100,
-            'carbs' => ($nutritionalInfo['carbs'] ?? 0) * $quantity / 100,
-            'fat' => ($nutritionalInfo['fat'] ?? 0) * $quantity / 100,
-        ];
-    }
-
-    public function reduceStockForProduct(Product $product, int $quantity): bool
-    {
-        $pivotQuantity = $product->ingredients()
-            ->where('ingredient_id', $this->id)
-            ->first()?->pivot->quantity ?? 0;
-
-        $totalReduction = $pivotQuantity * $quantity;
-
-        if ($this->stock < $totalReduction) {
-            return false;
-        }
-
-        $this->decrement('stock', $totalReduction);
-
-        return true;
-    }
-
-    public function isStockSufficientForProduct(Product $product, int $quantity): bool
-    {
-        $pivotQuantity = $product->ingredients()
-            ->where('ingredient_id', $this->id)
-            ->first()?->pivot->quantity ?? 0;
-
-        $totalRequired = $pivotQuantity * $quantity;
-
-        return $this->stock >= $totalRequired;
-    }
-
-    public function decrementStock(float $quantity): void
-    {
-        if ( ! $this->hasEnoughStock($quantity)) {
-            throw new Exception("Insufficient stock for ingredient: {$this->name}");
-        }
-
-        $this->decrement('stock', $quantity);
-    }
-
-    public function getCurrentPrice(): ?Price
-    {
-        return $this->prices()
-            ->where('date', '<=', now())
-            ->latest('date')
-            ->first();
-    }
-
-    public function addPrice($cost, $price, $date = null, $notes = null): Price
-    {
-        return $this->prices()->create([
-            'cost' => $cost,
-            'price' => $price,
-            'date' => $date ?? now(),
-            'notes' => $notes,
-        ]);
-    }
-
-    public function getPriceHistory(?DateTime $startDate = null, ?DateTime $endDate = null): Collection
-    {
-        $query = $this->prices();
-
-        if ($startDate) {
-            $query->where('date', '>=', $startDate);
-        }
-
-        if ($endDate) {
-            $query->where('date', '<=', $endDate);
-        }
-
-        return $query->orderBy('date', 'desc')->get();
     }
 
     public function isLowStock(): bool
     {
-        return $this->stock < 10;
+        return $this->stock_quantity <= $this->reorder_point;
     }
 
-    protected function cost(): Attribute
+    public function isOutOfStock(): bool
     {
-        return Attribute::make(
-            get: function () {
-                $currentPrice = $this->getCurrentPrice();
-                return $currentPrice ? $currentPrice->cost : $this->attributes['cost'] ?? 0;
-            }
-        );
+        return $this->stock_quantity <= 0;
     }
 
-    protected function price(): Attribute
+    // Nutritional Calculation
+    public function calculateNutrition(float $quantity): array
     {
-        return Attribute::make(
-            get: function () {
-                $currentPrice = $this->getCurrentPrice();
-                return $currentPrice ? $currentPrice->price : $this->attributes['price'] ?? 0;
-            }
-        );
+        if ( ! $this->nutritional_info) {
+            return [
+                'calories' => 0,
+                'protein' => 0,
+                'carbs' => 0,
+                'fat' => 0
+            ];
+        }
+
+        $multiplier = $quantity / $this->portion_size;
+
+        return [
+            'calories' => ($this->nutritional_info['calories'] ?? 0) * $multiplier,
+            'protein' => ($this->nutritional_info['protein'] ?? 0) * $multiplier,
+            'carbs' => ($this->nutritional_info['carbs'] ?? 0) * $multiplier,
+            'fat' => ($this->nutritional_info['fat'] ?? 0) * $multiplier
+        ];
+    }
+
+    // Composable Methods
+    public function incrementPopularity(): void
+    {
+        $this->increment('popularity');
+    }
+
+    public function getStandardizedPortion(): array
+    {
+        return [
+            'size' => $this->portion_size,
+            'unit' => $this->portion_unit,
+        ];
+    }
+
+    // Price-related methods
+    public function getCurrentPrice(): ?Price
+    {
+        return $this->prices()
+            ->where('is_current', true)
+            // ->latest('effective_date')
+            ->first();
+    }
+
+    public function addPrice(float $cost, float $price, ?string $notes = null, ?string $date = null): Price
+    {
+        // Deactivate previous current prices
+        $this->prices()->update(['is_current' => false]);
+
+        return $this->prices()->create([
+            'cost' => $cost,
+            'price' => $price,
+            'notes' => $notes,
+            'effective_date' => $date ?? now(),
+            'is_current' => true
+        ]);
+    }
+
+    public function getPriceHistory()
+    {
+        return $this->morphMany(PriceHistory::class, 'priceable');
     }
 }

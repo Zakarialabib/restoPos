@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Traits\HasPrice;
+use App\Models\Traits\HasStock;
 use App\Traits\HasSlug;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,32 +17,40 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Number;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
     use HasFactory;
+    use HasPrice;
     use HasSlug;
+    use HasStock;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
         'description',
         'slug',
-        'base_price',
         'category_id',
         'image',
-        'is_available',
+        'status',
         'is_featured',
         'recipe_id',
         'is_composable',
         'nutritional_info',
+        'min_stock',
+        'stock_quantity',
+        'reorder_point',
+        'deleted_at',
     ];
 
     protected $casts = [
-        'is_available' => 'boolean',
+        'status' => 'boolean',
         'is_featured' => 'boolean',
-        'base_price' => 'decimal:2',
         'nutritional_info' => 'array',
+        'min_stock' => 'integer',
+        'stock_quantity' => 'float',
+        'reorder_point' => 'float',
     ];
 
     // Relationships
@@ -74,15 +83,34 @@ class Product extends Model
         return $this->belongsTo(Recipe::class);
     }
 
-    public function prices(): MorphMany
+    public function prices(): MorphMany // Changed from HasMany to MorphMany
     {
         return $this->morphMany(Price::class, 'priceable');
+    }
+
+    public function currentPrice()
+    {
+        return $this->morphOne(Price::class, 'priceable')->where('is_current', true); // Use morphOne for single current price
+    }
+
+
+    public function stockLogs(): MorphMany
+    {
+        return $this->morphMany(StockLog::class, 'stockable');
+    }
+
+    public function activeStockAlert()
+    {
+        return $this->alerts()->where('status', 'pending')->latest();
     }
 
     // Scopes
     public function scopeAvailable(Builder $query): Builder
     {
-        return $query->where('is_available', true);
+        return $query->where('status', true)
+            ->whereHas('ingredients', function ($query): void {
+                $query->where('stock_quantity', '>', 0);
+            });
     }
 
     public function scopeFeatured(Builder $query): Builder
@@ -95,241 +123,164 @@ class Product extends Model
         return $query->whereIn('category_id', (array) $categoryIds);
     }
 
+    public function scopePopular(Builder $query): Builder
+    {
+        return $query->withCount('orderItems')
+            ->orderByDesc('order_items_count');
+    }
+
+    // Stock Management
     public function updateAvailabilityStatus(): void
     {
         $isAvailable = $this->hasRequiredIngredients();
 
-        if ($this->is_available !== $isAvailable) {
-            $this->is_available = $isAvailable;
+        if ($this->status !== $isAvailable) {
+            $this->status = $isAvailable;
             $this->save();
         }
     }
 
     public function hasRequiredIngredients(): bool
     {
-        foreach ($this->ingredients as $ingredient) {
-            if ( ! $ingredient->hasEnoughStock($ingredient->pivot->quantity)) {
-                return false;
-            }
-        }
-        return true;
+        return $this->ingredients->every(
+            fn ($ingredient) => $ingredient->hasEnoughStock($ingredient->pivot->quantity)
+        );
     }
 
-    public function calculateCost(): float
-    {
-        return $this->ingredients->sum(fn ($ingredient) => $ingredient->cost * $ingredient->pivot->quantity);
-    }
-
-    // Add method to calculate ingredient requirements
-    public function calculateIngredientRequirements($quantity): array
-    {
-        $requirements = [];
-
-        foreach ($this->ingredients as $ingredient) {
-            $requiredQuantity = $ingredient->pivot->quantity * $quantity;
-            $requirements[$ingredient->id] = [
-                'required' => $requiredQuantity,
-                'available' => $ingredient->stock,
-                'sufficient' => $ingredient->stock >= $requiredQuantity,
-                'unit' => $ingredient->unit
-            ];
-        }
-
-        return $requirements;
-    }
-
-    public function hasEnoughIngredients($quantity): bool
-    {
-        $requirements = $this->calculateIngredientRequirements($quantity);
-        return collect($requirements)->every(fn ($req) => $req['sufficient']);
-    }
-
-    public function consumeIngredients($quantity): void
+    public function consumeIngredients(int $quantity): void
     {
         if ( ! $this->hasEnoughIngredients($quantity)) {
-            throw new Exception('Insufficient ingredients for product: ' . $this->name);
+            throw new Exception("Insufficient ingredients for product: {$this->name}");
         }
 
         DB::transaction(function () use ($quantity): void {
             foreach ($this->ingredients as $ingredient) {
-                $requiredQuantity = $ingredient->pivot->quantity * $quantity;
-                $ingredient->decrementStock($requiredQuantity);
+                $ingredient->decrementStock($ingredient->pivot->quantity * $quantity);
             }
         });
     }
 
-    // Method to check if product can be made with current ingredient stocks
-    public function isProductAvailable($quantity): bool
+    // Cost Calculations
+    public function calculateCost(): float
     {
-        foreach ($this->ingredients as $ingredient) {
-            $pivotQuantity = $ingredient->pivot->quantity;
-            $totalRequired = $pivotQuantity * $quantity;
-
-            if ($ingredient->stock < $totalRequired) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Nutritional Information Methods
-    public function calculateNutritionalInfo(): array
-    {
-        $totalNutrition = [
-            'calories' => 0,
-            'protein' => 0,
-            'carbs' => 0,
-            'fat' => 0,
-        ];
-
-        foreach ($this->ingredients as $ingredient) {
-            $quantity = $ingredient->pivot->quantity;
-            $nutrition = $ingredient->calculateNutritionalInfo($quantity);
-
-            foreach ($totalNutrition as $key => &$value) {
-                $value += $nutrition[$key];
-            }
-        }
-
-        return $totalNutrition;
-    }
-
-    // Add size-specific price methods
-    public function getSizePrice(string $size): ?Price
-    {
-        return $this->prices()
-            ->where('metadata->size', $size)
-            ->where('date', '<=', now())
-            ->latest('date')
-            ->first();
-    }
-
-    public function getUnitPrices(string $unit): Collection
-    {
-        return $this->prices()
-            ->where('metadata->unit', $unit)
-            ->where('date', '<=', now())
-            ->latest('date')
-            ->get();
-    }
-
-    public function addSizePrice(string $size, string $unit, $cost, $price, $date = null, $notes = null): Price
-    {
-        return $this->prices()->create([
-            'cost' => $cost,
-            'price' => $price,
-            'date' => $date ?? now(),
-            'notes' => $notes,
-            'metadata' => [
-                'size' => $size,
-                'unit' => $unit,
-            ],
-        ]);
-    }
-
-    // Add method to get all available sizes with prices
-    public function getAvailableSizes(): Collection
-    {
-        return $this->prices()
-            ->where('date', '<=', now())
-            ->get()
-            ->groupBy('metadata.size')
-            ->map(fn ($prices) => $prices->sortByDesc('date')->first());
-    }
-
-    public function getAvailableUnits(): Collection
-    {
-        return $this->prices()
-            ->where('date', '<=', now())
-            ->get()
-            ->groupBy('metadata.unit')
-            ->map(fn ($prices) => $prices->sortByDesc('date')->first());
-    }
-
-    // Attributes
-    protected function price(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                $currentPrice = $this->getCurrentPrice();
-                return $currentPrice ? $currentPrice->price : $this->base_price;
-            }
+        return $this->ingredients->sum(
+            fn ($ingredient) => $ingredient->cost * $ingredient->pivot->quantity
         );
     }
 
-    public function calculatePrice(): float
+    // Nutritional Information
+    public function calculateNutritionalInfo(): array
     {
-        return $this->getAvailableSizes()->sum('price');
+        return $this->ingredients->reduce(function (array $total, Ingredient $ingredient) {
+            $quantity = $ingredient->pivot->quantity;
+            $nutrition = $ingredient->calculateNutritionalInfo($quantity);
+
+            return [
+                'calories' => $total['calories'] + ($nutrition['calories'] ?? 0),
+                'protein' => $total['protein'] + ($nutrition['protein'] ?? 0),
+                'carbs' => $total['carbs'] + ($nutrition['carbs'] ?? 0),
+                'fat' => $total['fat'] + ($nutrition['fat'] ?? 0),
+            ];
+        }, ['calories' => 0, 'protein' => 0, 'carbs' => 0, 'fat' => 0]);
     }
 
+    // Scope for filtering by category
+    public function scopeFilterByCategory(Builder $query, ?int $categoryId): Builder
+    {
+        if ($categoryId) {
+            return $query->where('category_id', $categoryId);
+        }
+
+        return $query;
+    }
+
+    // Method to retrieve the current active price
+    public function getCurrentActivePrice(): ?Price
+    {
+        return $this->prices()->active()->first();
+    }
+
+    public function getActivePrice(): ?float
+    {
+        return $this->getCurrentPrice()?->amount;
+    }
+
+    public function getProfitMarginPercentage(): ?float
+    {
+        $price = $this->getActivePrice();
+        $cost = $this->calculateCost();
+
+        if ( ! $price || ! $cost) {
+            return null;
+        }
+
+        return round((($price - $cost) / $cost) * 100, 2);
+    }
+
+    public function isLowStock(): bool
+    {
+        return $this->stock_quantity <= $this->reorder_point;
+    }
+
+    public function isOutOfStock(): bool
+    {
+        return 0 === $this->stock_quantity;
+    }
+
+    // Attributes
+    protected function profitMargin(): Attribute
+    {
+        return Attribute::make(
+            get: function (): ?float {
+                $currentPrice = $this->getCurrentPrice();
+                $cost = $this->calculateCost();
+
+                if ( ! $currentPrice || ! $cost) {
+                    return null;
+                }
+
+                return (($currentPrice - $cost) / $cost) * 100;
+            }
+        );
+    }
 
     protected function stockStatus(): Attribute
     {
         return Attribute::make(
-            get: function () {
-                if ( ! $this->is_available) {
-                    return 'Out of Stock';
+            get: function (): string {
+                if ($this->isLowStock()) {
+                    return 'low';
                 }
-                return 'In Stock';
+                return $this->getCurrentStock() > 0 ? 'in_stock' : 'out_of_stock';
             }
         );
     }
 
-    protected function profit(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->price - $this->calculateCost(),
-        );
-    }
-
-    protected function profitMargin(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->calculateCost() > 0
-                ? (($this->price - $this->calculateCost()) / $this->price) * 100
-                : 0,
-        );
-    }
-
+    // getPriceForSizeAndUnit
     public function getPriceForSizeAndUnit(string $size, string $unit): ?Price
     {
-        return $this->prices()
-            ->where('metadata->size', $size)
-            ->where('metadata->unit', $unit)
-            ->where('date', '<=', now())
-            ->latest('date')
-            ->first();
+        return $this->prices()->where('size', $size)->where('unit', $unit)->first();
     }
 
-    public function getCurrentPrice(?string $size = null): ?Price
+    public function getCurrentPrice(): ?float
     {
-        $query = $this->prices()
-            ->where('date', '<=', now())
-            ->latest('date');
-            
-        if ($size) {
-            $query->where('metadata->size', $size);
+        return $this->currentPrice?->amount;
+    }
+
+    public function validateStockQuantity(float $quantity): bool
+    {
+        if ($quantity < 0) {
+            return false;
         }
-            
-        return $query->first();
+
+        if (!$this->is_composable) {
+            return $this->stock_quantity >= $quantity;
+        }
+
+        return $this->ingredients->every(function ($ingredient) use ($quantity) {
+            $requiredQuantity = $ingredient->pivot->quantity * $quantity;
+            return $ingredient->stock_quantity >= $requiredQuantity;
+        });
     }
 
-    public function getPriceHistory(): Collection
-    {
-        return $this->prices()
-            ->orderBy('date', 'desc')
-            ->get()
-            ->groupBy('metadata.size');
-    }
-
-    public function updatePrice(float $cost, float $price, array $metadata = [], ?string $notes = null): Price
-    {
-        return $this->prices()->create([
-            'cost' => $cost,
-            'price' => $price,
-            'date' => now(),
-            'notes' => $notes,
-            'metadata' => $metadata,
-        ]);
-    }
 }

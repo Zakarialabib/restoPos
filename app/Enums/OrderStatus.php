@@ -4,40 +4,66 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum OrderStatus: int
+enum OrderStatus: string
 {
-    case Pending = 0;
-    case Processing = 1;
-    case Completed = 2;
-    case Cancelled = 3;
+    case Pending = 'pending';
+    case Processing = 'processing';
+    case Completed = 'completed';
+    case Cancelled = 'cancelled';
+    case Refunded = 'refunded';
 
     public function label(): string
     {
-        return match ($this) {
+        return match($this) {
             self::Pending => 'Pending',
             self::Processing => 'Processing',
             self::Completed => 'Completed',
             self::Cancelled => 'Cancelled',
+            self::Refunded => 'Refunded',
         };
     }
 
     public function color(): string
     {
-        return match ($this) {
-            self::Pending => 'bg-yellow-100 text-yellow-800',
-            self::Processing => 'bg-blue-100 text-blue-800',
-            self::Completed => 'bg-green-100 text-green-800',
-            self::Cancelled => 'bg-red-100 text-red-800',
+        return match($this) {
+            self::Pending => 'yellow',
+            self::Processing => 'blue',
+            self::Completed => 'green',
+            self::Cancelled => 'red',
+            self::Refunded => 'gray',
         };
     }
 
-    public function value(): string
+    public function icon(): string
     {
-        return match ($this) {
-            self::Pending => 'pending',
-            self::Processing => 'processing',
-            self::Completed => 'completed',
-            self::Cancelled => 'cancelled',
+        return match($this) {
+            self::Pending => 'clock',
+            self::Processing => 'refresh',
+            self::Completed => 'check',
+            self::Cancelled => 'x',
+            self::Refunded => 'arrow-left',
+        };
+    }
+
+    public function description(): string
+    {
+        return match($this) {
+            self::Pending => 'Order has been placed but not yet processed',
+            self::Processing => 'Order is being prepared',
+            self::Completed => 'Order has been completed and delivered',
+            self::Cancelled => 'Order was cancelled',
+            self::Refunded => 'Order was refunded',
+        };
+    }
+
+    public function canTransitionTo(self $status): bool
+    {
+        return match($this) {
+            self::Pending => in_array($status, [self::Processing, self::Cancelled]),
+            self::Processing => in_array($status, [self::Completed, self::Cancelled]),
+            self::Completed => in_array($status, [self::Refunded]),
+            self::Cancelled => false,
+            self::Refunded => false,
         };
     }
 }

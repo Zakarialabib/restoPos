@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
@@ -41,21 +42,6 @@ class Order extends Model
     public function getProfit(): float
     {
         return $this->items->sum(fn ($item) => ($item->price - $item->cost) * $item->quantity);
-    }
-
-    // Add order validation
-    public function validate(): bool
-    {
-        // Check if all required ingredients are available
-        foreach ($this->items as $item) {
-            foreach ($item->product->ingredients as $ingredient) {
-                if ( ! $ingredient->hasEnoughStock($ingredient->pivot->quantity * $item->quantity)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     // Add order statistics scopes
@@ -95,48 +81,19 @@ class Order extends Model
         // Additional logic for updating inventory or notifying users can be added here
     }
 
-    public function updateInventory(): bool
-    {
-        try {
-            DB::transaction(function (): void {
-                foreach ($this->items as $item) {
-                    $product = $item->product;
-                    if ( ! $product) {
-                        continue;
-                    }
 
-                    foreach ($product->ingredients as $ingredient) {
-                        $requiredQuantity = $ingredient->pivot->stock * $item->quantity;
+    // public function calculateTotal(): void
+    // {
+    //     $this->total_amount = $this->items->sum(fn ($item) => $item->price * $item->quantity);
+    //     $this->save();
+    // }
 
-                        if ( ! $ingredient->hasEnoughStock($requiredQuantity)) {
-                            throw new Exception("Insufficient stock for ingredient: {$ingredient->name}");
-                        }
-
-                        $ingredient->updateStock(-$requiredQuantity);
-                    }
-                }
-            });
-
-            return true;
-        } catch (Exception $e) {
-            Log::error('Order inventory update failed: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-
-    public function calculateTotal(): void
-    {
-        $this->total_amount = $this->items->sum(fn ($item) => $item->price * $item->quantity);
-        $this->save();
-    }
-
-    public function addItem(array $itemData): OrderItem
-    {
-        $item = $this->items()->create($itemData);
-        $this->calculateTotal();
-        return $item;
-    }
+    // public function addItem(array $itemData): OrderItem
+    // {
+    //     $item = $this->items()->create($itemData);
+    //     $this->calculateTotal();
+    //     return $item;
+    // }
 
     public function processOrderIngredients(): bool
     {
@@ -165,6 +122,100 @@ class Order extends Model
             Log::error('Order Processing Failed: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Relationship with User.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Add an item to the order.
+     *
+     * @param array $itemData
+     * @return void
+     * @throws Exception
+     */
+    public function addItem(array $itemData): void
+    {
+        DB::transaction(function () use ($itemData): void {
+            $orderItem = $this->items()->create([
+                'product_id' => $itemData['product_id'],
+                'quantity' => $itemData['quantity'],
+                'price' => $itemData['price'],
+                'details' => $itemData['details'] ?? [],
+            ]);
+
+            // Additional logic such as reducing stock
+            $product = Product::findOrFail($itemData['product_id']);
+            $product->reduceStock($itemData['quantity']);
+        });
+    }
+
+    /**
+     * Remove an item from the order.
+     *
+     * @param int $orderItemId
+     * @return void
+     */
+    public function removeItem(int $orderItemId): void
+    {
+        $orderItem = $this->items()->findOrFail($orderItemId);
+
+        DB::transaction(function () use ($orderItem): void {
+            $orderItem->delete();
+
+            // Additional logic such as restoring stock
+            $product = Product::findOrFail($orderItem->product_id);
+            $product->restoreStock($orderItem->quantity);
+        });
+    }
+
+    /**
+     * Calculate the total amount for the order.
+     *
+     * @return float
+     */
+    public function calculateTotal(): float
+    {
+        return $this->items->sum(fn (OrderItem $item) => $item->price * $item->quantity);
+    }
+
+    /**
+     * Add multiple items to the order at once
+     */
+    public function addItems(array $items): void
+    {
+        foreach ($items as $item) {
+            $this->addItem($item);
+        }
+        $this->calculateTotal();
+    }
+
+    /**
+     * Update item quantity
+     */
+    public function updateItemQuantity(int $orderItemId, int $quantity): void
+    {
+        $item = $this->items()->find($orderItemId);
+        if ($item) {
+            $item->updateQuantity($quantity);
+            $this->calculateTotal();
+        }
+    }
+
+    /**
+     * Check if order can be modified
+     */
+    public function canBeModified(): bool
+    {
+        return in_array($this->status, [
+            OrderStatus::Pending,
+            OrderStatus::Processing
+        ]);
     }
 
     private function checkIngredientAvailability(Product $product, int $quantity): bool

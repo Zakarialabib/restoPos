@@ -4,71 +4,40 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Price extends Model
 {
-
     protected $fillable = [
+        'priceable_type',
+        'priceable_id',
         'cost',
         'price',
-        'date',
+        'effective_date',
         'notes',
-        'metadata',
+        'is_current'
     ];
 
     protected $casts = [
-        'cost' => 'decimal:2',
-        'price' => 'decimal:2',
-        'date' => 'datetime',
-        'metadata' => 'array',
+        'cost' => 'float',
+        'price' => 'float',
+        'effective_date' => 'date',
+        'is_current' => 'boolean'
     ];
-
 
     public function priceable(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function getSize(): ?string
+    // metadata convert to json  use Attribute
+    protected function metadata(): Attribute
     {
-        return $this->metadata['size'] ?? null;
+        return Attribute::make(
+            get: fn ($value) => json_decode($value, true),
+            set: fn ($value) => json_encode($value),
+        );
     }
-    
-    public function getUnit(): ?string
-    {
-        return $this->metadata['unit'] ?? null;
-    }
-
-    public function getPricePerUnit(): ?float
-    {
-        return $this->price / $this->getSize();
-    }
-
-    public function getCostPerUnit(): ?float
-    {
-        return $this->cost / $this->getSize();
-    }
-
-    public function getProfitPerUnit(): ?float
-    {
-        return $this->getPricePerUnit() - $this->getCostPerUnit();
-    }
-
-    public function getProfitPercentage(): ?float
-    {
-        return $this->getProfitPerUnit() / $this->getCostPerUnit();
-    }
-
-    public function getProfitMargin(): ?float
-    {
-        return $this->getProfitPercentage() * 100;
-    }
-
-    public function getPriceForSizeAndUnit(): ?float
-    {
-        return $this->price / ($this->metadata['size'] ?? 1);
-    }
-
 }

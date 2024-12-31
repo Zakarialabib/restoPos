@@ -15,10 +15,12 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
-        'name',
+        'product_id',
+        // 'name',
         'quantity',
         'price',
         'details',
+        'notes'
     ];
 
     protected $casts = [
@@ -41,14 +43,6 @@ class OrderItem extends Model
         return $this->belongsTo(Composable::class);
     }
 
-    protected function details(): Attribute
-    {
-        return Attribute::make(
-            get: fn($value) => json_decode($value, true),
-            set: fn($value) => json_encode($value),
-        );
-    }
-
     // Methods
     public function getSubtotal(): float
     {
@@ -60,5 +54,13 @@ class OrderItem extends Model
         $this->quantity = $quantity;
         $this->save();
         $this->order->calculateTotal();
+    }
+
+    protected function details(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => json_decode($value, true),
+            set: fn ($value) => json_encode($value),
+        );
     }
 }
