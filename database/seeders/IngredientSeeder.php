@@ -19,9 +19,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Ble - قمح',
                 'category_id' => Category::where('name', 'Base')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 1000,
+                'stock_quantity' => 1000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -38,9 +38,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Blilola - بليلولة',
                 'category_id' => Category::where('name', 'Base')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 800,
+                'stock_quantity' => 800,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -58,9 +58,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Oreo - اوريو',
                 'category_id' => Category::where('name', 'Topping')->first()->id,
-                'unit' => UnitType::Units->value,
+                'unit' => UnitType::Unit->value,
                 'conversion_rate' => 1,
-                'stock' => 400,
+                'stock_quantity' => 400,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -77,9 +77,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Chocolate - شوكولاطة',
                 'category_id' => Category::where('name', 'Topping')->first()->id,
-                'unit' => UnitType::Litre->value,
+                'unit' => UnitType::Liter->value,
                 'conversion_rate' => 1,
-                'stock' => 400,
+                'stock_quantity' => 400,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -97,9 +97,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Orange - برتقال',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 500,
+                'stock_quantity' => 500,
                 'expiry_date' => '2024-06-30',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -116,9 +116,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Dragon Fruit - فاكهة التنين',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 300,
+                'stock_quantity' => 300,
                 'expiry_date' => '2024-06-30',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -135,9 +135,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Pomme - تفاح',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 1000,
+                'stock_quantity' => 1000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -154,9 +154,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Bannane - الموز',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 1500,
+                'stock_quantity' => 1500,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -173,9 +173,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Ananas - اناناس',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 500,
+                'stock_quantity' => 500,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -192,9 +192,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Peach - الخوخ',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 750,
+                'stock_quantity' => 750,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -211,9 +211,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Avocate - الافوكادو',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 600,
+                'stock_quantity' => 600,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -230,9 +230,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Pear - الاجاص',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 900,
+                'stock_quantity' => 900,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -249,9 +249,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Papaya - البابايا',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 400,
+                'stock_quantity' => 400,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -268,9 +268,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Citron - الحامض',
                 'category_id' => Category::where('name', 'Liquid')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 500,
+                'stock_quantity' => 500,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -287,9 +287,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Mangue - المانجو',
                 'category_id' => Category::where('name', 'Fruits')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 500,
+                'stock_quantity' => 500,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -306,9 +306,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Lait - حليب',
                 'category_id' => Category::where('name', 'Liquid')->first()->id,
-                'unit' => UnitType::Litre->value,
+                'unit' => UnitType::Liter->value,
                 'conversion_rate' => 1,
-                'stock' => 1000,
+                'stock_quantity' => 1000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -325,9 +325,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Glace - الماء مثلج',
                 'category_id' => Category::where('name', 'Liquid')->first()->id,
-                'unit' => UnitType::Mililitre->value,
+                'unit' => UnitType::Milliliter->value,
                 'conversion_rate' => 1,
-                'stock' => 1000,
+                'stock_quantity' => 1000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -335,14 +335,18 @@ class IngredientSeeder extends Seeder
                     'protein' => 0.9,
                     'carbs' => 12,
                     'fat' => 0.1
-                ])
+                ]),
+                'price' => [
+                    'cost' => 0.50,
+                    'price' => 1.00,
+                ]
             ],
             [
                 'name' => 'Sucre - سكر',
                 'category_id' => Category::where('name', 'Sweetener')->first()->id,
                 'unit' => UnitType::Gram->value,
                 'conversion_rate' => 1,
-                'stock' => 5000,
+                'stock_quantity' => 5000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -350,14 +354,18 @@ class IngredientSeeder extends Seeder
                     'protein' => 0.9,
                     'carbs' => 12,
                     'fat' => 0.1
-                ])
+                ]),
+                'price' => [
+                    'cost' => 2.00,
+                    'price' => 3.00,
+                ]
             ],
             [
                 'name' => 'Fruits Secs - فواكه مجففة',
                 'category_id' => Category::where('name', 'Topping')->first()->id,
                 'unit' => UnitType::Gram->value,
                 'conversion_rate' => 1,
-                'stock' => 1000,
+                'stock_quantity' => 1000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -365,14 +373,18 @@ class IngredientSeeder extends Seeder
                     'protein' => 0.9,
                     'carbs' => 12,
                     'fat' => 0.1
-                ])
+                ]),
+                'price' => [
+                    'cost' => 15.00,
+                    'price' => 20.00,
+                ]
             ],
             [
                 'name' => 'Lait de Coco - حليب جوز الهند',
                 'category_id' => Category::where('name', 'Liquid')->first()->id,
-                'unit' => UnitType::Mililitre->value,
+                'unit' => UnitType::Milliliter->value,
                 'conversion_rate' => 1,
-                'stock' => 2000,
+                'stock_quantity' => 2000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -380,14 +392,18 @@ class IngredientSeeder extends Seeder
                     'protein' => 2.3,
                     'carbs' => 5.5,
                     'fat' => 24
-                ])
+                ]),
+                'price' => [
+                    'cost' => 12.00,
+                    'price' => 16.00,
+                ]
             ],
             [
                 'name' => 'Miel - عسل',
                 'category_id' => Category::where('name', 'Sweetener')->first()->id,
                 'unit' => UnitType::Gram->value,
                 'conversion_rate' => 1,
-                'stock' => 1000,
+                'stock_quantity' => 1000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -404,9 +420,9 @@ class IngredientSeeder extends Seeder
             [
                 'name' => 'Yogourt - زبادي',
                 'category_id' => Category::where('name', 'Base')->first()->id,
-                'unit' => UnitType::Litre->value,
+                'unit' => UnitType::Liter->value,
                 'conversion_rate' => 1,
-                'stock' => 2000,
+                'stock_quantity' => 2000,
                 'expiry_date' => '2024-06-30',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -425,7 +441,7 @@ class IngredientSeeder extends Seeder
                 'category_id' => Category::where('name', 'Topping')->first()->id,
                 'unit' => UnitType::Gram->value,
                 'conversion_rate' => 1,
-                'stock' => 1000,
+                'stock_quantity' => 1000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([
@@ -433,15 +449,19 @@ class IngredientSeeder extends Seeder
                     'protein' => 19.6,
                     'carbs' => 57.9,
                     'fat' => 13.7
-                ])
+                ]),
+                'price' => [
+                    'cost' => 8.00,
+                    'price' => 12.00,
+                ]
             ],
 
             [
                 'name' => 'Avoine - شوفان',
                 'category_id' => Category::where('name', 'Base')->first()->id,
-                'unit' => UnitType::Kilo->value,
+                'unit' => UnitType::Kilogram->value,
                 'conversion_rate' => 1,
-                'stock' => 2000,
+                'stock_quantity' => 2000,
                 'expiry_date' => '2024-12-31',
                 'is_composable' => true,
                 'nutritional_info' => json_encode([

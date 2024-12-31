@@ -15,7 +15,7 @@ class PriceSeeder extends Seeder
 
         foreach ($products as $product) {
             // Add different sizes for juice products
-            if ($product->category->name === 'Smoothies & Jus - عصائر و سموذي') {
+            if ('Smoothies & Jus - عصائر و سموذي' === $product->category->name) {
                 $product->prices()->createMany([
                     [
                         'cost' => 8.00,

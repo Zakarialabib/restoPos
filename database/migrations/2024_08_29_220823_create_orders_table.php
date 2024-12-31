@@ -19,9 +19,12 @@ return new class () extends Migration {
             $table->string('payment_method')->nullable();
             $table->text('notes')->nullable();
             $table->decimal('total_amount', 10, 2);
-            $table->integer('status')->default(OrderStatus::Pending);
+            $table->string('status')->default(OrderStatus::Pending->value);
             $table->timestamps();
             $table->softDeletes();
+            $table->index(['status', 'created_at']);
+            $table->index(['customer_email', 'created_at']);
+            $table->index(['payment_status', 'created_at']);
         });
     }
 

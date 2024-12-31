@@ -14,13 +14,11 @@ return new class () extends Migration {
             $table->morphs('priceable');
             $table->decimal('cost', 10, 2);
             $table->decimal('price', 10, 2);
-            $table->datetime('date');
+            $table->date('date')->nullable();
             $table->text('notes')->nullable();
+            $table->boolean('is_current')->default(true);
             $table->json('metadata')->nullable();
             $table->timestamps();
-
-            // Index for better query performance
-            $table->index(['priceable_type', 'priceable_id', 'date']);
         });
     }
 

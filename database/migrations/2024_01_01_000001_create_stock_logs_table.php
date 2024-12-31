@@ -6,17 +6,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateStockLogsTable extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('stock_logs', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('ingredient_id')->constrained()->onDelete('cascade');
-            $table->decimal('old_stock', 10, 2);
-            $table->decimal('new_stock', 10, 2);
-            $table->decimal('change', 10, 2);
-            $table->string('reason')->nullable();
+            $table->morphs('stockable');
+            $table->decimal('adjustment', 10, 2);
+            $table->string('reason');
+            $table->decimal('previous_quantity', 10, 2);
+            $table->decimal('new_quantity', 10, 2);
+            $table->foreignId('user_id')->constrained();
             $table->timestamps();
         });
     }
@@ -25,4 +25,4 @@ class CreateStockLogsTable extends Migration
     {
         Schema::dropIfExists('stock_logs');
     }
-}
+};

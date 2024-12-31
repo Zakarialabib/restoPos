@@ -4,38 +4,95 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Category;
+use App\Models\Ingredient;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class IngredientFactory extends Factory
 {
+    protected $model = Ingredient::class;
+
     public function definition(): array
     {
-        $types = ['fruit', 'liquid', 'ice'];
-        $units = ['g', 'ml', 'units'];
-
         return [
-            'name' => fake()->unique()->word(),
-            'type' => fake()->randomElement($types),
-            'unit' => fake()->randomElement($units),
-            'conversion_rate' => fake()->randomFloat(2, 0.5, 2),
-            'stock' => fake()->randomFloat(2, 100, 1000),
-            'expiry_date' => fake()->dateTimeBetween('now', '+1 year'),
-            'supplier_info' => [
-                'name' => fake()->company(),
-                'contact' => fake()->phoneNumber(),
-                'email' => fake()->companyEmail(),
-            ],
-            'instructions' => [
-                'storage' => fake()->sentence(),
-                'handling' => fake()->sentence(),
-            ],
+            'name' => $this->faker->unique()->word(),
+            'sku' => $this->faker->unique()->isbn10(),
+            'category_id' => Category::factory(),
+            'stock_quantity' => $this->faker->randomFloat(2, 0, 1000),
+            'unit' => $this->faker->randomElement(['kg', 'g', 'ml', 'l', 'piece']),
+            'cost_per_unit' => $this->faker->randomFloat(2, 1, 100),
+            'reorder_point' => $this->faker->randomFloat(2, 10, 50),
+            'status' => $this->faker->boolean(80),
+            'is_seasonal' => $this->faker->boolean(20),
+            'nutritional_info' => [
+                'calories' => $this->faker->randomFloat(2, 0, 500),
+                'protein' => $this->faker->randomFloat(2, 0, 50),
+                'carbs' => $this->faker->randomFloat(2, 0, 100),
+                'fat' => $this->faker->randomFloat(2, 0, 50)
+            ]
         ];
     }
 
-    public function expiringSoon(): self
+    public function fruit(): self
     {
-        return $this->state(fn (array $attributes) => [
-            'expiry_date' => fake()->dateTimeBetween('now', '+7 days'),
-        ]);
+        return $this->state(function () {
+            return [
+                'category_id' => Category::firstOrCreate([
+                    'name' => 'Fruits',
+                    'description' => 'Fresh fruits'
+                ])->id
+            ];
+        });
+    }
+
+    public function vegetable(): self
+    {
+        return $this->state(function () {
+            return [
+                'category_id' => Category::firstOrCreate([
+                    'name' => 'Vegetables',
+                    'description' => 'Fresh vegetables'
+                ])->id
+            ];
+        });
+    }
+
+    public function supplement(): self
+    {
+        return $this->state(function () {
+            return [
+                'category_id' => Category::firstOrCreate([
+                    'name' => 'Supplements',
+                    'description' => 'Nutritional supplements'
+                ])->id
+            ];
+        });
+    }
+
+    public function lowStock(): self
+    {
+        return $this->state(function () {
+            return [
+                'stock_quantity' => $this->faker->randomFloat(2, 0, 10)
+            ];
+        });
+    }
+
+    public function outOfStock(): self
+    {
+        return $this->state(function () {
+            return [
+                'stock_quantity' => 0
+            ];
+        });
+    }
+
+    public function seasonal(): self
+    {
+        return $this->state(function () {
+            return [
+                'is_seasonal' => true
+            ];
+        });
     }
 }

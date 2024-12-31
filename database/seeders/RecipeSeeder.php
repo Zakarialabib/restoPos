@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\UnitType;
 use App\Models\Ingredient;
 use App\Models\Recipe;
-use App\Enums\UnitType;
 use Illuminate\Database\Seeder;
 
 class RecipeSeeder extends Seeder

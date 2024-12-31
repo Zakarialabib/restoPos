@@ -20,13 +20,23 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'admin@gmail.com',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
         ]);
 
-        $this->call([
-            CategorySeeder::class,
-            IngredientSeeder::class,
-            // RecipeSeeder::class,
-            ProductSeeder::class,
+        User::factory()->create([
+            'name' => 'Demo User',
+            'email' => 'user@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'user',
         ]);
+
+        if (app()->environment('local', 'staging')) {
+            $this->call([
+                CategorySeeder::class,
+                IngredientSeeder::class,
+                ProductSeeder::class,
+            ]);
+        }
     }
 }

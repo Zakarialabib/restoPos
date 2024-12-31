@@ -7,23 +7,21 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('inventory_alerts', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('ingredient_id')->constrained()->onDelete('cascade');
-            $table->string('message');
-            $table->boolean('is_resolved')->default(false);
+            $table->morphs('alertable');
+            $table->string('type');
+            $table->string('status');
+            $table->text('message');
+            $table->text('resolution')->nullable();
+            $table->timestamp('resolved_at')->nullable();
+            $table->foreignId('resolved_by')->nullable()->constrained('users');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('inventory_alerts');

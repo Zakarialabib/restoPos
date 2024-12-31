@@ -6,36 +6,33 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
-    /**
-     * Run the migrations.
-     */
+return new class() extends Migration {
     public function up(): void
     {
         Schema::create('ingredients', function (Blueprint $table): void {
             $table->id();
-            $table->string('name');
-            $table->integer('unit'); // default to grams
-            $table->decimal('cost', 10, 2)->nullable();
-            $table->decimal('price', 10, 2)->default(10);
-            $table->decimal('conversion_rate', 8, 2)->default(1.00);
-            $table->integer('stock')->default(0);
+            $table->string('name')->unique();
+            // $table->string('sku')->unique();
+            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->decimal('conversion_rate', 10, 2)->default(1);
+            $table->decimal('stock_quantity', 10, 2)->default(0);
+            $table->date('entry_date')->nullable();
             $table->date('expiry_date')->nullable();
-            $table->json('supplier_info')->nullable();
+            $table->string('unit')->nullable();
+            $table->decimal('cost_per_unit', 10, 2)->nullable();
+            $table->decimal('reorder_point', 10, 2)->nullable();
+            $table->boolean('status')->default(true);
+            $table->boolean('is_seasonal')->default(false);
+            $table->string('image')->nullable();
             $table->json('nutritional_info')->nullable();
-            $table->json('storage_conditions')->nullable();
-            $table->json('instructions')->nullable();
-            $table->boolean('is_composable')->default(true);
-            $table->foreignId('category_id')->constrained('categories')->nullable();
-            $table->integer('lead_time')->nullable();
+            $table->boolean('is_composable')->default(false);
+            $table->index(['stock_quantity', 'reorder_point']);
+            $table->index(['category_id', 'status']);
+
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('ingredients');
