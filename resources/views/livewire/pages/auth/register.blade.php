@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 
-use function Livewire\Volt\layout;
-use function Livewire\Volt\rules;
-use function Livewire\Volt\state;
+use function Livewire\Volt\{layout, rules, state};
 
 layout('layouts.guest');
 

@@ -10,20 +10,20 @@
     <link rel="prerender" href="{{ request()->getSchemeAndHttpHost() }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="canonical" href="{{ URL::current() }}">
-    <meta name="title" content="{{ $title }}">
+    <meta name="title" content="{{ $title ?? config('app.name', 'RestoApp') }}">
 
     <title>{{ $title ?? config('app.name', 'RestoApp') }}</title>
 
     <!-- SEO Meta Tags -->
     <meta name="description" content="Financial Services">
     <meta name="keywords" content="Financial Services">
-    <meta property="og:title" content="{{ $title }}">
+    <meta property="og:title" content="{{ $title ?? config('app.name', 'RestoApp') }}">
     <meta property="og:description" content="Financial Services">
     <meta property="og:url" content="/" />
     <meta property="og:locale" content="{{ app()->getLocale() }}" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="{{ $title }}" />
-    <meta name="author" content="{{ $title }}">
+    <meta property="og:site_name" content="{{ $title ?? config('app.name', 'RestoApp') }}" />
+    <meta name="author" content="{{ $title ?? config('app.name', 'RestoApp') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <meta name="robots" content="all,follow">
 
@@ -33,10 +33,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=glass_cup" />
+    {{-- @inertiaHead --}}
+
     <!-- Styles -->
     @livewireStyles
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    @vite(['resources/css/app.css'])
     <style>
         [x-cloak] {
             display: none;
@@ -65,12 +66,14 @@
 
     @stack('styles')
     <!-- Scripts -->
-    @vite(['resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireScriptConfig
     @stack('scripts')
+
 </head>
 
 <body class="font-sans antialiased bg-retro-cream text-retro-blue">
+    {{-- @inertia --}}
     <div x-data="{ isOpen: false }" x-cloak>
         <!-- Header -->
         {{ $header ?? '' }}
