@@ -8,6 +8,7 @@ use App\Models\Ingredient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
 class LowStockAlert extends Notification
 {
@@ -41,10 +42,11 @@ class LowStockAlert extends Notification
         return (new MailMessage())
             ->subject('Low Stock Alert: ' . $this->ingredient->name)
             ->line('The stock for the ingredient "' . $this->ingredient->name . '" is running low.')
-            ->line('Current stock level: ' . $this->ingredient->stock)
+            ->line('Current stock level: ' . $this->ingredient->stock_quantity)
             ->action('View Ingredient', url('/ingredients/' . $this->ingredient->id))
             ->line('Please restock as soon as possible.');
     }
+
 
     /**
      * Get the array representation of the notification.
@@ -56,7 +58,15 @@ class LowStockAlert extends Notification
         return [
             'ingredient_id' => $this->ingredient->id,
             'ingredient_name' => $this->ingredient->name,
-            'current_stock' => $this->ingredient->stock,
+            'current_stock' => $this->ingredient->stock_quantity,
         ];
+    }
+
+    public function toBroadcast($notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'type' => 'low_stock_alert',
+            'data' => $this->ingredient
+        ]);
     }
 }

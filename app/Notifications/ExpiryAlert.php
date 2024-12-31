@@ -36,12 +36,12 @@ class ExpiryAlert extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $daysUntilExpiry = now()->diffInDays($this->ingredient->expiry_date);
-        
+
         return (new MailMessage())
             ->subject('Ingredient Expiry Alert')
             ->greeting('Hello!')
             ->line("The ingredient '{$this->ingredient->name}' will expire in {$daysUntilExpiry} days.")
-            ->line("Current stock: {$this->ingredient->stock} {$this->ingredient->unit->value}")
+            ->line("Current stock: {$this->ingredient->stock_quantity} {$this->ingredient->unit->value}")
             ->action('View Ingredient', url("/admin/ingredients/{$this->ingredient->id}"))
             ->line('Please take necessary action to prevent waste.');
     }
@@ -56,8 +56,8 @@ class ExpiryAlert extends Notification
         return [
             'ingredient_id' => $this->ingredient->id,
             'ingredient_name' => $this->ingredient->name,
-            'expiry_date' => $this->ingredient->expiry_date->format('Y-m-d'),
-            'current_stock' => $this->ingredient->stock,
+            'expiry_date' => $this->ingredient->expiry_date,
+            'current_stock' => $this->ingredient->stock_quantity,
             'unit' => $this->ingredient->unit->value
         ];
     }
