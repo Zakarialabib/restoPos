@@ -18,16 +18,6 @@
                 <h2 class="text-2xl font-bold text-gray-800">{{ __('Product Management') }}</h2>
                 <p class="text-sm text-gray-600">{{ __('Manage your product catalog') }}</p>
             </div>
-            <div class="flex gap-4">
-                <x-input type="text" wire:model.live="search" class="w-full rounded border-gray-300"
-                    placeholder="{{ __('Search products...') }}" />
-                <select wire:model.live="category_id" class="rounded border-gray-300">
-                    <option value="">{{ __('All categories') }}</option>
-                    @foreach ($this->categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
-            </div>
 
             <div class="flex gap-4">
                 <x-button wire:click="addProduct" color="primary">
@@ -37,11 +27,6 @@
                 <x-button wire:click="$toggle('showAnalytics')" color="success">
                     <span class="material-icons">{{ $showAnalytics ? 'visibility_off' : 'visibility' }}</span>
                     {{ $showAnalytics ? __('Hide Analytics') : __('Show Analytics') }}
-                </x-button>
-                <!-- Added Export Button -->
-                <x-button wire:click="exportProducts" color="secondary">
-                    <span class="material-icons">download</span>
-                    {{ __('Export Products') }}
                 </x-button>
             </div>
         </div>
@@ -171,79 +156,11 @@
                                         {{ __('Make this product available in store') }}</p>
                                 </div>
 
-                                <div class="flex items-center justify-between p-4 bg-white rounded-lg"> 
+                                <div class="flex items-center justify-between p-4 bg-white rounded-lg">
                                     <x-checkbox color="blue" wire:model="is_featured" color="blue"
                                         :label="__('Featured Product')" />
                                     <p class="text-sm text-gray-500">{{ __('Show in featured section') }}</p>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Settings & Recipe Section -->
-                        <div class="col-span-1 bg-blue-50 p-6 rounded-lg">
-                            <h4 class="font-semibold text-amber-800 mb-4">{{ __('Recipe Management') }}</h4>
-
-                            <!-- Recipe Section -->
-                            @if ($editingProductId && $editingProductId->recipe)
-                                <div class="mt-4">
-                                    <h4 class="font-semibold">{{ __('Current Recipe Instructions') }}</h4>
-                                    <ul class="list-disc pl-5">
-                                        @foreach ($editingProductId->recipe->instructions as $instruction)
-                                            <li>{{ $instruction }}</li>
-                                        @endforeach
-                                    </ul>
-                                    <div class="mt-4 w-full flex justify-end">
-                                        <x-button wire:click="toggleRecipeForm({{ $editingProductId }})"
-                                            color="secondary">
-                                            {{ __('Edit Recipe') }}
-                                        </x-button>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="mt-4">
-                                    <x-button wire:click="toggleRecipeForm()" color="secondary">
-                                        {{ __('Add Recipe') }}
-                                    </x-button>
-                                </div>
-                            @endif
-
-                            @if ($showRecipeForm)
-                                <div class="border p-4 rounded-lg mt-4">
-                                    <h4 class="font-medium">{{ __('Add or Edit Recipe Instructions') }}</h4>
-                                    <div class="grid grid-cols-1 gap-2">
-                                        @foreach ($recipeInstructions as $index => $instruction)
-                                            <div class="flex flex-col items-center gap-2">
-                                                <x-input type="text"
-                                                    wire:model="recipeInstructions.{{ $index }}"
-                                                    class="w-full rounded border-gray-300"
-                                                    placeholder="{{ __('Instruction') }}" />
-                                                <div class="flex gap-2">
-                                                    <x-button type="button"
-                                                        wire:click="removeInstruction({{ $index }})"
-                                                        color="danger">
-                                                        <span class="material-icons text-red-500">delete</span>
-                                                    </x-button>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    <x-button type="button" wire:click="addRecipeInstruction" color="secondary"
-                                        class="mt-2">
-                                        {{ __('Add Instruction') }}
-                                    </x-button>
-                                </div>
-                            @endif
-
-                            <!-- Form Actions -->
-                            <div class="mt-8 flex justify-end gap-4">
-                                <x-button type="button" color="secondary" wire:click="$set('showForm', false)">
-                                    {{ __('Cancel') }}
-                                </x-button>
-                                <x-button type="submit" color="primary">
-                                    <span
-                                        class="material-icons mr-2">{{ $editingProductId ? 'update' : 'save' }}</span>
-                                    {{ $editingProductId ? __('Update Product') : __('Create Product') }}
-                                </x-button>
                             </div>
                         </div>
 
@@ -454,16 +371,6 @@
                                 </div>
                             @endforeach
                         </div>
-
-                        <!-- Recipe Preview -->
-                        @if ($product->recipe)
-                            <div class="mb-4">
-                                <div class="flex items-center text-gray-700 mb-2">
-                                    <span class="material-icons mr-2">restaurant_menu</span>
-                                    <span class="font-medium">{{ __('Recipe Available') }}</span>
-                                </div>
-                            </div>
-                        @endif
 
                         <!-- Action Buttons -->
                         <div class="flex justify-between items-center pt-4 border-t">

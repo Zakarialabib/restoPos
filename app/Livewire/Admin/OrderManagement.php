@@ -19,7 +19,6 @@ class OrderManagement extends Component
 {
     use WithPagination;
 
-    public bool $showOrderForm = false;
     public bool $showOrderDetails = false;
     public ?Order $selectedOrder = null;
     public string $customerName = '';
@@ -33,17 +32,24 @@ class OrderManagement extends Component
     public ?string $endDate = null;
     public bool $showAnalytics = false;
     public string $selectedStatus = '';
+    public string $sortField = 'created_at';
+    public string $sortDirection = 'desc';
+    public bool $showBulkActions = false;
+    public string $timeFilter = 'all';
+    public bool $onlyUnpaid = false;
 
     public array $selectAll = [];
     public array $selectedOrders = [];
     public string $bulkAction = '';
 
-    protected array $rules = [
-        'customerName' => 'required|string|max:255',
-        'customerPhone' => 'required|string|max:20',
-        'orderItems' => 'required|array|min:1',
-        'orderItems.*.product_id' => 'required|exists:products,id',
-        'orderItems.*.quantity' => 'required|integer|min:1',
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'status' => ['except' => ''],
+        'dateRange' => ['except' => ''],
+        'timeFilter' => ['except' => 'all'],
+        'sortField' => ['except' => 'created_at'],
+        'sortDirection' => ['except' => 'desc'],
+        'onlyUnpaid' => ['except' => false],
     ];
 
     public function mount(): void
@@ -51,32 +57,97 @@ class OrderManagement extends Component
         $this->products = Product::available()->get();
     }
 
+    public function sortBy(string $field): void
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selectedOrders = $this->orders->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedOrders = [];
+        }
+    }
+
+    public function bulkUpdateStatus(string $status): void
+    {
+        if (empty($this->selectedOrders)) {
+            $this->addError('bulk', 'Please select orders to update');
+            return;
+        }
+
+        Order::whereIn('id', $this->selectedOrders)->update(['status' => $status]);
+        $this->selectedOrders = [];
+        $this->selectAll = [];
+        session()->flash('success', 'Orders updated successfully');
+    }
+
+    public function bulkMarkAsPaid(): void
+    {
+        if (empty($this->selectedOrders)) {
+            $this->addError('bulk', 'Please select orders to mark as paid');
+            return;
+        }
+
+        Order::whereIn('id', $this->selectedOrders)->update(['is_paid' => true]);
+        $this->selectedOrders = [];
+        $this->selectAll = [];
+        session()->flash('success', 'Orders marked as paid successfully');
+    }
+
+    public function deleteOrder(Order $order): void
+    {
+        $order->delete();
+        session()->flash('success', __('Order deleted successfully.'));
+    }
+
+    public function markAsPaid(Order $order): void
+    {
+        $order->update(['is_paid' => true]);
+        session()->flash('success', __('Order marked as paid.'));
+    }
+
     #[Computed]
     public function orders()
     {
         return Order::query()
-            ->when(
-                $this->search,
-                fn($query) =>
-                $query->where('customer_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('customer_phone', 'like', '%' . $this->search . '%')
-            )
-            ->when(
-                $this->status,
-                fn($query) =>
-                $query->where('status', $this->status)
-            )
+            ->with(['items.product'])
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('customer_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('customer_phone', 'like', '%' . $this->search . '%')
+                        ->orWhere('id', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->status, fn($query) => $query->where('status', $this->status))
+            ->when($this->onlyUnpaid, fn($query) => $query->where('is_paid', false))
+            ->when($this->timeFilter, function ($query) {
+                return match ($this->timeFilter) {
+                    'today' => $query->whereDate('created_at', today()),
+                    'yesterday' => $query->whereDate('created_at', today()->subDay()),
+                    'this_week' => $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]),
+                    'this_month' => $query->whereMonth('created_at', now()->month),
+                    default => $query
+                };
+            })
             ->when($this->dateRange, function ($query) {
                 [$start, $end] = explode(' - ', $this->dateRange);
-                return $query->whereBetween('created_at', [$start, $end]);
+                return $query->whereBetween('created_at', [$start, $end . ' 23:59:59']);
             })
-            ->latest()
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
     }
 
     public function viewOrderDetails(Order $order): void
     {
-        $this->selectedOrder = Order::where('id', $order->id)->first();
+        $this->selectedOrder = $order->load(['items.product']);
         $this->showOrderDetails = true;
     }
 
@@ -109,7 +180,7 @@ class OrderManagement extends Component
                         }
                     }
                 });
-                $this->addError('order', 'Order completed successfully.');
+                session()->flash('success', 'Order completed successfully.');
             } catch (Exception $e) {
                 Log::error('Order inventory update failed: ' . $e->getMessage());
                 $this->addError('order', 'Order completed with errors: ' . $e->getMessage());
@@ -117,84 +188,32 @@ class OrderManagement extends Component
         }
     }
 
-    public function saveOrder(): void
-    {
-        $this->validate();
-
-        DB::beginTransaction();
-        try {
-            $order = Order::create([
-                'customer_name' => $this->customerName,
-                'customer_phone' => $this->customerPhone,
-                'status' => OrderStatus::Pending,
-            ]);
-
-            foreach ($this->orderItems as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                $price = $product->is_customizable ?
-                    $this->calculateCustomItemPrice($item) :
-                    $product->price;
-
-                $orderItem = $order->items()->create([
-                    'product_id' => $product->id,
-                    'name' => $product->name,
-                    'quantity' => $item['quantity'],
-                    'price' => $price,
-                ]);
-            }
-
-            $order->calculateTotal();
-            DB::commit();
-
-            session()->flash('success', __('Order saved successfully.'));
-            $this->reset();
-        } catch (Exception $e) {
-            DB::rollBack();
-            session()->flash('error', __('Error saving order: ') . $e->getMessage());
-        }
-    }
-
     #[Computed]
-    public function getOrderAnalyticsProperty()
+    public function orderAnalytics()
     {
-        return [
-            'total_revenue' => $this->orders->sum('total_revenue'),
-            'total_profit' => $this->orders->sum('profit'),
-            'average_order_value' => $this->orders->avg('total_amount'),
-            'order_count' => $this->orders->count(),
-        ];
-    }
+        $query = Order::query();
 
-    public function bulkUpdateStatus(OrderStatus $status): void
-    {
-        $selectedOrders = Order::whereIn('id', $this->selectedOrders)->get();
+        if ($this->dateRange) {
+            [$start, $end] = explode(' - ', $this->dateRange);
+            $query->whereBetween('created_at', [$start, $end . ' 23:59:59']);
+        }
 
-        DB::transaction(function () use ($selectedOrders, $status): void {
-            foreach ($selectedOrders as $order) {
-                $this->updateOrderStatus($order, $status);
-            }
+        $orders = $query->get();
+        $totalRevenue = $orders->sum('total_amount');
+        $totalProfit = $orders->sum(function ($order) {
+            return $order->getProfit();
         });
+
+        return [
+            'total_revenue' => $totalRevenue,
+            'total_profit' => $totalProfit,
+            'average_order_value' => $orders->count() > 0 ? $totalRevenue / $orders->count() : 0,
+            'order_count' => $orders->count(),
+        ];
     }
 
     public function render()
     {
         return view('livewire.admin.order-management');
-    }
-
-    public function processBatchOrders(array $orders): void
-    {
-        foreach ($orders as $order) {
-            $this->validateStock($order);
-        }
-    }
-
-    public function validateStock(Order $order): void
-    {
-        foreach ($order->items as $item) {
-            $product = Product::findOrFail($item->product_id);
-            if (! $product->isProductAvailable($item->quantity)) {
-                session()->flash('error', "{$product->name} is out of stock.");
-            }
-        }
     }
 }

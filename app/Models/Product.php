@@ -147,19 +147,6 @@ class Product extends Model
         );
     }
 
-    public function consumeIngredients(int $quantity): void
-    {
-        if ( ! $this->hasEnoughIngredients($quantity)) {
-            throw new Exception("Insufficient ingredients for product: {$this->name}");
-        }
-
-        DB::transaction(function () use ($quantity): void {
-            foreach ($this->ingredients as $ingredient) {
-                $ingredient->decrementStock($ingredient->pivot->quantity * $quantity);
-            }
-        });
-    }
-
     // Cost Calculations
     public function calculateCost(): float
     {
@@ -265,22 +252,6 @@ class Product extends Model
     public function getCurrentPrice(): ?float
     {
         return $this->currentPrice?->amount;
-    }
-
-    public function validateStockQuantity(float $quantity): bool
-    {
-        if ($quantity < 0) {
-            return false;
-        }
-
-        if (!$this->is_composable) {
-            return $this->stock_quantity >= $quantity;
-        }
-
-        return $this->ingredients->every(function ($ingredient) use ($quantity) {
-            $requiredQuantity = $ingredient->pivot->quantity * $quantity;
-            return $ingredient->stock_quantity >= $requiredQuantity;
-        });
     }
 
 }

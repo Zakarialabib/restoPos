@@ -33,4 +33,10 @@ class Category extends Model
     {
         return $query->withCount('products');
     }
+ 
+     public function scopeActive(Builder $query): Builder
+     {
+         return $query->where('status', true);
+     }
+ 
 }

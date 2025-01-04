@@ -65,6 +65,16 @@ class IngredientManagement extends Component
         'notes' => '',
     ];
 
+    public bool $showAnalytics = false;
+    public string $selectedCategory = '';
+    public string $sortField = 'created_at';
+    public string $sortDirection = 'desc';
+    public array $selectAll = [];
+    public array $selectedIngredients = [];
+
+    public $dateRange = '';
+    
+
     protected $rules = [
         'newPrice.cost' => 'required|numeric|min:0',
         'newPrice.price' => 'required|numeric|min:0',
@@ -93,7 +103,7 @@ class IngredientManagement extends Component
     #[Computed]
     public function categories()
     {
-        return Category::query()->get();
+        return Category::query()->active()->get();
     }
 
     #[Computed]
@@ -233,6 +243,73 @@ class IngredientManagement extends Component
                     'notes' => $price->notes,
                 ];
             });
+    }
+
+    #[Computed]
+    public function ingredientAnalytics()
+    {
+        $query = Ingredient::query();
+
+        if ($this->dateRange) {
+            [$start, $end] = explode(' - ', $this->dateRange);
+            $query->whereBetween('created_at', [$start, $end . ' 23:59:59']);
+        }
+
+        $ingredients = $query->get();
+        $totalStock = $ingredients->sum('stock');
+        $averagePrice = $ingredients->avg('currentPrice.amount');
+
+        return [
+            'total_ingredients' => $ingredients->count(),
+            'total_stock' => $totalStock,
+            'average_price' => $averagePrice,
+            'category_count' => $ingredients->groupBy('category_id')->count(),
+        ];
+    }
+
+    public function sortBy(string $field): void
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selectedIngredients = $this->ingredients->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedIngredients = [];
+        }
+    }
+
+    public function bulkUpdateCategory(string $category): void
+    {
+        if (empty($this->selectedIngredients)) {
+            $this->addError('bulk', 'Please select ingredients to update');
+            return;
+        }
+
+        Ingredient::whereIn('id', $this->selectedIngredients)->update(['category_id' => $category]);
+        $this->selectedIngredients = [];
+        $this->selectAll = [];
+        session()->flash('success', 'Ingredients updated successfully');
+    }
+
+    public function bulkDeleteIngredients(): void
+    {
+        if (empty($this->selectedIngredients)) {
+            $this->addError('bulk', 'Please select ingredients to delete');
+            return;
+        }
+
+        Ingredient::whereIn('id', $this->selectedIngredients)->delete();
+        $this->selectedIngredients = [];
+        $this->selectAll = [];
+        session()->flash('success', 'Ingredients deleted successfully');
     }
 
     public function render()

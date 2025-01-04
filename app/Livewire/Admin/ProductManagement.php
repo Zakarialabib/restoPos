@@ -7,9 +7,6 @@ namespace App\Livewire\Admin;
 use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\Product;
-use App\Models\Recipe;
-use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -51,13 +48,7 @@ class ProductManagement extends Component
     public $showForm = false;
     public $showAnalytics = false;
     public $totalProducts = 0;
-    public $inventoryValue = 0;
     public $activeCategories = 0;
-    public $showRecipeForm = false;
-    public $recipeId = null;
-    public $product = '';
-    public $recipeInstructions = [];
-    public $recipeNutritionalInfo = [];
     public $selectedSize;
     public $selectedUnit;
     public $sizePrices = [];
@@ -74,8 +65,6 @@ class ProductManagement extends Component
     protected $rules = [
         'selectedIngredients.*.id' => 'exists:ingredients,id',
         'selectedIngredients.*.quantity' => 'required|numeric|min:0',
-        'recipeInstructions.*' => 'required|string',
-        'recipeInstructions.*.step' => 'required|numeric',
         'prices.*.price' => 'required|numeric|min:0',
         'isCustomizable' => 'boolean',
         'allowedIngredients' => 'array',
@@ -171,27 +160,6 @@ class ProductManagement extends Component
             $product->ingredients()->sync($ingredientData);
         }
 
-        // Save recipe if instructions exist
-        if (! empty($this->recipeInstructions)) {
-            $recipeData = [
-                'name' => $this->name,
-                'description' => $this->description,
-                'instructions' => collect($this->recipeInstructions)->pluck('instruction')->toArray(),
-                'preparation_time' => 10,
-                'type' => 'juice',
-                'is_featured' => false,
-                'nutritional_info' => $product->calculateNutritionalInfo(),
-            ];
-
-            if ($product->recipe) {
-                $product->recipe->update($recipeData);
-            } else {
-                $recipe = Recipe::create($recipeData);
-                $product->recipe()->associate($recipe);
-                $product->save();
-            }
-        }
-
         // If product is customizable, save allowed ingredients
         if ($this->isCustomizable && ! empty($this->allowedIngredients)) {
             $product->allowedIngredients()->sync($this->allowedIngredients);
@@ -208,82 +176,6 @@ class ProductManagement extends Component
         session()->flash('success', __('Product saved successfully.'));
     }
 
-    public function toggleRecipeForm($productId = null): void
-    {
-        $this->showRecipeForm = ! $this->showRecipeForm;
-        $this->recipeId = null;
-        $this->recipeInstructions = [
-            [
-                'step' => 1,
-                'instruction' => ''
-            ]
-        ];
-
-        if ($this->showRecipeForm) {
-            if ($productId) {
-                $product = Product::with('recipe')->find($productId);
-                if ($product->recipe) {
-                    $this->recipeId = $product->recipe->id;
-                    $this->recipeInstructions = $product->recipe->instructions;
-                }
-            } else {
-                $this->recipeId = null;
-                $this->recipeInstructions = [
-                    [
-                        'step' => 1,
-                        'instruction' => ''
-                    ]
-                ];
-            }
-        }
-    }
-
-    // add more recipe instructions
-    public function addRecipeInstruction(): void
-    {
-        $this->recipeInstructions[] = [
-            'step' => count($this->recipeInstructions) + 1,
-            'instruction' => ''
-        ];
-    }
-
-    // removeInstruction
-    public function removeInstruction($index): void
-    {
-        unset($this->recipeInstructions[$index]);
-        $this->recipeInstructions = array_values($this->recipeInstructions);
-    }
-
-    public function saveRecipe(): void
-    {
-        $this->validate([
-            'recipeInstructions' => 'required|array|min:1',
-        ]);
-
-        $recipeData = [
-            'name' => $this->name,
-            'description' => $this->description,
-            'instructions' => $this->recipeInstructions,
-            'preparation_time' => 10,
-            'type' => 'juice',
-            'is_featured' => false,
-            'nutritional_info' => [],
-        ];
-
-        if ($this->recipeId) {
-            $recipe = Recipe::find($this->recipeId);
-            $recipe->update($recipeData);
-        } else {
-            $recipe = Recipe::create($recipeData);
-            $product = $this->editingProductId;
-            $product->recipe()->associate($recipe);
-            $product->save();
-        }
-
-        $this->reset();
-        $this->showRecipeForm = false;
-        session()->flash('success', __('Recipe saved successfully.'));
-    }
 
     public function addProduct(): void
     {
@@ -320,17 +212,6 @@ class ProductManagement extends Component
                 'unit' => $ingredient->pivot->unit ?? 'g',
             ];
         })->toArray();
-
-        // Load recipe instructions if exists
-        if ($product->recipe) {
-            $this->recipeInstructions = collect($product->recipe->instructions)
-                ->map(function ($instruction, $index) {
-                    return [
-                        'step' => $index + 1,
-                        'instruction' => $instruction
-                    ];
-                })->toArray();
-        }
     }
 
     public function updatedShowForm($value): void
@@ -346,31 +227,9 @@ class ProductManagement extends Component
         session()->flash('success', __('Product deleted successfully.'));
     }
 
-    public function updateProductAvailability(): void
-    {
-        $products = Product::with('ingredients')->get();
-        foreach ($products as $product) {
-            $isAvailable = $product->isProductAvailable(1);
-            if ($product->status !== $isAvailable) {
-                $product->update(['status' => $isAvailable]);
-            }
-        }
-    }
-
     public function render()
     {
         return view('livewire.admin.product-management');
-    }
-
-    public function updateProductStock(Product $product, $quantity, $reason = 'Manual Update'): void
-    {
-        try {
-            $product->consumeIngredients($quantity);
-            $this->dispatch('stock-updated');
-            session()->flash('success', __('Stock updated successfully'));
-        } catch (Exception $e) {
-            session()->flash('error', __('Error updating stock'));
-        }
     }
 
     public function addIngredientField(): void

@@ -22,22 +22,32 @@ class CategoryManagement extends Component
     public $name;
 
     public $categoryId;
+    public string $search = '';
 
     #[Computed]
     public function categories()
     {
-        return Category::query()->orderBy('name')->get();
+        return Category::query()
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%');
+            })
+            ->paginate(10);
     }
 
-    public function saveCategory(): void
+    public function saveCategory()
     {
         $this->validate();
 
         Category::updateOrCreate(
             ['id' => $this->categoryId],
-            ['name' => $this->name]
+            [
+                'name' => $this->name,
+                // 'description' => $this->description,
+                'status' => $this->status,
+            ]
         );
 
+        session()->flash('message', $this->categoryId ? __('Category updated successfully.') : __('Category added successfully.'));
         $this->resetForm();
     }
 
@@ -51,6 +61,17 @@ class CategoryManagement extends Component
     public function deleteCategory($id): void
     {
         Category::findOrFail($id)->delete();
+        session()->flash('message', __('Category deleted successfully.'));
+    }
+
+
+    public function toggleStatus(int $id)
+    {
+        $category = Category::findOrFail($id);
+        $category->status = !$category->status;
+        $category->save();
+
+        session()->flash('message', __('Category status updated successfully.'));
     }
 
     public function resetForm(): void

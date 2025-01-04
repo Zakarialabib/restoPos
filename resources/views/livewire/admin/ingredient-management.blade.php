@@ -12,27 +12,144 @@
             </x-alert>
         @endif
 
+        <!-- Header with Analytics -->
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">{{ __('Ingredient Management') }}</h2>
                 <p class="text-sm text-gray-600">{{ __('Manage your ingredient inventory') }}</p>
             </div>
-            <div class="flex gap-4">
-                <x-input type="text" wire:model.live="search" class="w-full rounded border-gray-300"
-                    placeholder="{{ __('Search ingredients...') }}" />
-                <select wire:model.live="category_id" class="rounded border-gray-300">
-                    <option value="">{{ __('All categories') }}</option>
-                    @foreach ($this->categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
+            <div class="flex space-x-3">
+                <x-button wire:click="addIngredient" color="primary">
+                    <span class="material-icons">add</span>
+                    {{ __('Add Ingredient') }}
+                </x-button>
+                <x-button wire:click="$toggle('showAnalytics')" color="success">
+                    <span class="material-icons">bar_chart</span>
+                    {{ $showAnalytics ? __('Hide Analytics') : __('Show Analytics') }}
+                </x-button>
             </div>
-
-            <x-button wire:click="addIngredient" color="primary">
-                <span class="material-icons">add</span>
-                {{ __('Add Ingredient') }}
-            </x-button>
         </div>
+        <div class="w-full">
+            <div class="py-2 grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Search') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-icons">search</span>
+                        </div>
+                        <x-input type="text" wire:model.live="search" class="pl-10 "
+                            placeholder="{{ __('Search ingredients...') }}" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Category') }}</label>
+                    <select wire:model.live="selectedCategory"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="">{{ __('All Categories') }}</option>
+                        @foreach ($this->categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Date Range') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-icons">calendar_month</span>
+                        </div>
+                        <x-input type="text" wire:model="dateRange" x-data x-init="flatpickr($el, { mode: 'range' })" class="pl-10 "
+                            placeholder="{{ __('Select date range') }}" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Time Filter') }}</label>
+                    <select wire:model.live="timeFilter"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="all">{{ __('All Time') }}</option>
+                        <option value="today">{{ __('Today') }}</option>
+                        <option value="yesterday">{{ __('Yesterday') }}</option>
+                        <option value="this_week">{{ __('This Week') }}</option>
+                        <option value="this_month">{{ __('This Month') }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        @if ($showAnalytics)
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div
+                    class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">{{ __('Total Ingredients') }}</h3>
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            {{ __('Today') }}
+                        </span>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {{ number_format($this->ingredientAnalytics['total_ingredients'], 0) }}</p>
+                </div>
+
+                <div
+                    class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">{{ __('Total Stock') }}</h3>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            {{ __('This Month') }}
+                        </span>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {{ number_format($this->ingredientAnalytics['total_stock'], 0) }}</p>
+                </div>
+
+                <div
+                    class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">{{ __('Average Price') }}</h3>
+                        <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            {{ __('Last 30 Days') }}
+                        </span>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {{ number_format($this->ingredientAnalytics['average_price'], 2) }} DH</p>
+                </div>
+
+                <div
+                    class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">{{ __('Total Categories') }}</h3>
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            {{ __('This Week') }}
+                        </span>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900">{{ $this->ingredientAnalytics['category_count'] }}</p>
+                </div>
+            </div>
+        @endif
+
+        <!-- Bulk Actions Panel -->
+        @if (count($selectedIngredients) > 0)
+            <div class="bg-white p-4 rounded-lg shadow-sm mb-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">
+                        {{ __(':count ingredients selected', ['count' => count($selectedIngredients)]) }}
+                    </span>
+                    <div class="flex space-x-3">
+                        <x-button wire:click="bulkUpdateCategory('new_category')" color="success">
+                            <span class="material-icons">category</span>
+                            {{ __('Update Category') }}
+                        </x-button>
+                        <x-button wire:click="bulkDeleteIngredients" color="danger">
+                            <span class="material-icons">delete</span>
+                            {{ __('Delete') }}
+                        </x-button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
 
         <!-- Ingredient Form -->
         @if ($showForm)
@@ -93,7 +210,7 @@
                                         <option value="">{{ __('Unit') }}</option>
                                         @foreach ($this->units as $unit)
                                             <option @selected($unit->value === $this->unit) value="{{ $unit->value }}">
-                                                {{ $unit     }}
+                                                {{ $unit }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -130,8 +247,8 @@
 
                         <div>
                             <x-input-label for="conversionRate" :value="__('Conversion Rate')" />
-                            <x-input type="number" wire:model="conversionRate" id="conversionRate" class="w-full mt-1"
-                                step="0.01" placeholder="1.00" />
+                            <x-input type="number" wire:model="conversionRate" id="conversionRate"
+                                class="w-full mt-1" step="0.01" placeholder="1.00" />
                             <p class="text-sm text-gray-500 mt-1">
                                 {{ __('Rate for converting between different units') }}
                             </p>
@@ -144,13 +261,13 @@
                             <x-input-label :value="__('Nutritional Information (per 100g)')" class="mb-2" />
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <x-input type="number" wire:model="nutritionalInfo.calories" placeholder="Calories"
-                                        class="w-full" step="0.1" />
+                                    <x-input type="number" wire:model="nutritionalInfo.calories"
+                                        placeholder="Calories" class="w-full" step="0.1" />
                                     <span class="text-sm text-gray-500">{{ __('Calories') }}</span>
                                 </div>
                                 <div>
-                                    <x-input type="number" wire:model="nutritionalInfo.protein" placeholder="Protein"
-                                        class="w-full" step="0.1" />
+                                    <x-input type="number" wire:model="nutritionalInfo.protein"
+                                        placeholder="Protein" class="w-full" step="0.1" />
                                     <span class="text-sm text-gray-500">{{ __('Protein (g)') }}</span>
                                 </div>
                                 <div>
@@ -215,16 +332,16 @@
                                 {{ $ingredient->category->name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {{ $ingredient->stock }} {{ $ingredient->unit }}
+                                {{ $ingredient->stock_quantity }} {{ $ingredient->unit }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col gap-1">
                                     <span @class([
                                         'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                        'bg-green-100 text-green-800' => $ingredient->stock > 0,
-                                        'bg-red-100 text-red-800' => $ingredient->stock <= 0,
+                                        'bg-green-100 text-green-800' => $ingredient->stock_quantity > 0,
+                                        'bg-red-100 text-red-800' => $ingredient->stock_quantity <= 0,
                                     ])>
-                                        {{ $ingredient->stock > 0 ? __('In Stock') : __('Out of Stock') }}
+                                        {{ $ingredient->stock_quantity > 0 ? __('In Stock') : __('Out of Stock') }}
                                     </span>
                                     @if ($ingredient->expiry_date)
                                         <span @class([
@@ -239,8 +356,8 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm">
-                                    <div>{{ __('Cost:') }} {{ $ingredient->cost }}</div>
-                                    <div>{{ __('Price:') }} {{ $ingredient->price }}</div>
+                                    <div>{{ __('Cost:') }} {{ $ingredient->getCurrentPrice()?->cost }}</div>
+                                    <div>{{ __('Price:') }} {{ $ingredient->getCurrentPrice()?->price }}</div>
                                     {{-- <td class="px-6 py-4 whitespace-nowrap">
                                 <span @class([
                                     'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
