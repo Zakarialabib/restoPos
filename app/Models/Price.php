@@ -11,20 +11,24 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Price extends Model
 {
     protected $fillable = [
-        'priceable_type',
-        'priceable_id',
+        'amount',
         'cost',
-        'price',
+        'previous_amount',
         'effective_date',
-        'notes',
-        'is_current'
+        'is_current',
+        'reason',
+        'metadata',
+        'priceable_type',
+        'priceable_id'
     ];
 
     protected $casts = [
-        'cost' => 'float',
-        'price' => 'float',
-        'effective_date' => 'date',
-        'is_current' => 'boolean'
+        'amount' => 'decimal:2',
+        'cost' => 'decimal:2',
+        'previous_amount' => 'decimal:2',
+        'is_current' => 'boolean',
+        'effective_date' => 'datetime',
+        'metadata' => 'array'
     ];
 
     public function priceable(): MorphTo

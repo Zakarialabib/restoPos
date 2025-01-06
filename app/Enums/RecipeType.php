@@ -6,6 +6,10 @@ namespace App\Enums;
 
 enum RecipeType: string
 {
+    case Main = 'main';
+    case Side = 'side';
+    case Beverage = 'beverage';
+    case Dessert = 'dessert';
     case Juice = 'juice';
     case Smoothie = 'smoothie';
     case Cocktail = 'cocktail';

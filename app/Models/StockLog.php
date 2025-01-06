@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -24,6 +25,7 @@ class StockLog extends Model
         'adjustment' => 'float',
         'previous_quantity' => 'float',
         'new_quantity' => 'float',
+        'reason' => NotificationType::class,
     ];
 
     public function stockable(): MorphTo
