@@ -15,19 +15,37 @@
             </div>
         </x-card>
 
-        <x-card class="bg-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600">{{ __('Product Categories') }}</p>
-                    <p class="text-2xl font-semibold">{{ $this->categoryAnalytics['product_categories'] }}</p>
+        @foreach (\App\Enums\CategoryType::cases() as $type)
+            <x-card class="bg-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">{{ $type->label() }}</p>
+                        <p class="text-2xl font-semibold">{{ $this->categoryAnalytics[$type->value]['total'] ?? 0 }}</p>
+                    </div>
+                    <span class="material-symbols">
+                        @if ($type === \App\Enums\CategoryType::PRODUCT)
+                            cart
+                        @elseif($type === \App\Enums\CategoryType::INGREDIENT)
+                            beaker
+                        @elseif($type === \App\Enums\CategoryType::COMPOSABLE)
+                            puzzle
+                        @endif
+                    </span>
                 </div>
-                <span class="material-symbols">cart</span>
-            </div>
-            <div class="mt-4 flex justify-between text-sm">
-                <span class="text-gray-600">{{ __('Total Products:') }}
-                    {{ $this->categoryAnalytics['total_products'] }}</span>
-            </div>
-        </x-card>
+                @if ($type === \App\Enums\CategoryType::PRODUCT)
+                    <div class="mt-4 flex justify-between text-sm">
+                        <span class="text-gray-600">{{ __('Total Products:') }}
+                            {{ $this->categoryAnalytics['total_products'] }}</span>
+                    </div>
+                @elseif($type === \App\Enums\CategoryType::INGREDIENT)
+                    <div class="mt-4 flex justify-between text-sm">
+                        <span class="text-gray-600">{{ __('Total Ingredients:') }}
+                            {{ $this->categoryAnalytics['total_ingredients'] }}</span>
+                    </div>
+                @endif
+            </x-card>
+        @endforeach
+
 
         <x-card class="bg-white">
             <div class="flex items-center justify-between">
@@ -62,9 +80,9 @@
 
             <select wire:model.live="type_filter" class="max-w-xs">
                 <option value="">{{ __('All Types') }}</option>
-                <option value="product">{{ __('Product Categories') }}</option>
-                <option value="ingredient">{{ __('Ingredient Categories') }}</option>
-                <option value="composable">{{ __('Composable Categories') }}</option>
+                @foreach ($categoryTypes as $type)
+                    <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                @endforeach
             </select>
 
             <select wire:model.live="parent_filter" class="max-w-xs">
@@ -121,10 +139,8 @@
                             @endif
                         </td>
                         <td class="whitespace-nowrap px-6 py-4">
-                            <x-badge :color="$category->isProductCategory() ? 'success' : 'info'" :title="$category->isProductCategory()
-                                ? __('Product Category')
-                                : __('Ingredient Category')">
-                                {{ $category->isProductCategory() ? __('Product') : __('Ingredient') }}
+                            <x-badge :color="$category->type->color()" :title="$category->type->label()">
+                                {{ $category->type->label() }}
                             </x-badge>
                             @if ($category->is_composable)
                                 <x-badge color="alert" class="ml-2" :title="__('Composable Category')">
@@ -134,7 +150,7 @@
                         </td>
                         <td class="whitespace-nowrap px-6 py-4">
                             @if ($category->parent)
-                                <span class="text-sm">{{ $category->parent->name }}</span>
+                                <span class="text-sm">Child of {{ $category->parent->name }}</span>
                             @else
                                 <x-badge color="secondary">{{ __('Root') }}</x-badge>
                             @endif
@@ -179,12 +195,12 @@
                 </div>
 
                 <div>
-                    <select wire:model="type" label="{{ __('Category Type') }}" required>
-                        <option value="">{{ __('Select Type') }}</option>
-                        <option value="{{ \App\Models\Product::class }}">{{ __('Product Category') }}</option>
-                        <option value="{{ \App\Models\Ingredient::class }}">{{ __('Ingredient Category') }}
-                        </option>
-                    </select>
+                    <x-select wire:model="type" label="{{ __('Category Type') }}" required>
+                        <x-option label="{{ __('Select Type') }}" value="" />
+                        @foreach ($categoryTypes as $type)
+                            <x-option label="{{ $type->label() }}" value="{{ $type->value }}" />
+                        @endforeach
+                    </x-select>
                 </div>
 
                 <div>

@@ -70,26 +70,26 @@ class Category extends Model
         return $query->whereNull('parent_id');
     }
 
-    public function scopeForType(Builder $query, string $type): Builder
+    public function scopeForType(Builder $query, CategoryType $type): Builder
     {
         return $query->where('type', $type);
     }
 
     public function scopeForProducts(Builder $query): Builder
     {
-        return $query->forType(Product::class);
+        return $query->forType(CategoryType::PRODUCT);
     }
 
     public function scopeForIngredients(Builder $query): Builder
     {
-        return $query->forType(Ingredient::class);
+        return $query->forType(CategoryType::INGREDIENT);
     }
 
     public function scopeComposable(Builder $query): Builder
     {
         return $query->where('is_composable', true);
     }
-
+    
     public function getItemsCountAttribute(): int
     {
         return match ($this->type) {

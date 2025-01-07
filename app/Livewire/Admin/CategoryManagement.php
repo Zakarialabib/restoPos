@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Enums\CategoryType;
 use App\Livewire\Utils\Datatable;
 use App\Models\Category;
 use App\Models\Product;
@@ -108,24 +109,34 @@ class CategoryManagement extends Component
     }
 
     #[Computed]
+    public function categoryTypes()
+    {
+        return CategoryType::cases();
+    }
+
+    #[Computed]
     public function categoryAnalytics()
     {
-        $categories = Category::all();
-
-        $productCategories = $categories->where('type', Product::class);
-        $ingredientCategories = $categories->where('type', Ingredient::class);
+        $analytics = [];
+        foreach (CategoryType::cases() as $type) {
+            $query = Category::query()->where('type', $type);
+            $analytics[$type->value] = [
+                'total' => $query->count(),
+                'active' => $query->where('status', true)->count(),
+            ];
+        }
 
         $totalProducts = Product::count();
         $totalIngredients = Ingredient::count();
 
         return [
-            'total_categories' => $categories->count(),
-            'product_categories' => $productCategories->count(),
-            'ingredient_categories' => $ingredientCategories->count(),
-            'composable_categories' => $categories->where('is_composable', true)->count(),
+            'total_categories' => array_sum(array_column($analytics, 'total')),
+            'product_categories' => $analytics[CategoryType::PRODUCT->value]['total'] ?? 0,
+            'ingredient_categories' => $analytics[CategoryType::INGREDIENT->value]['total'] ?? 0,
+            'composable_categories' => $analytics[CategoryType::COMPOSABLE->value]['total'] ?? 0,
             'total_products' => $totalProducts,
             'total_ingredients' => $totalIngredients,
-            'active_categories' => $categories->where('status', true)->count(),
+            'active_categories' => array_sum(array_column($analytics, 'active')),
         ];
     }
 
@@ -168,7 +179,7 @@ class CategoryManagement extends Component
         $this->description = $category->description;
         $this->status = $category->status;
         $this->is_composable = $category->is_composable;
-        $this->type = $category->type;
+        $this->type = $category->type->value;
         $this->parent_id = $category->parent_id;
         $this->showForm = true;
     }
