@@ -31,7 +31,6 @@ class OrderCreated implements ShouldBroadcast
         return [
             'id' => $this->order->id,
             'total' => $this->order->total_amount,
-            // 'items_count' => $this->order->items_count,
             'created_at' => $this->order->created_at->toISOString(),
             'customer_name' => $this->order->customer_name,
         ];

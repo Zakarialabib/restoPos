@@ -4,22 +4,38 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\CategoryType;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use App\Support\HasAdvancedFilter;
 
 class Category extends Model
 {
     use HasFactory;
     use HasSlug;
-    // use SoftDeletes;
+    use SoftDeletes;
+    use HasAdvancedFilter;
+
+
+    protected const ATTRIBUTES = [
+        'id',
+        'name',
+        'slug',
+        'status',
+        'is_composable',
+        'parent_id',
+        'type', 
+    ];
+
+    public $orderable = self::ATTRIBUTES;
+
+    public $filterable = self::ATTRIBUTES;
 
     protected $fillable = [
         'name',
@@ -34,11 +50,7 @@ class Category extends Model
     protected $casts = [
         'status' => 'boolean',
         'is_composable' => 'boolean',
-    ];
-
-    protected $appends = [
-        'full_hierarchy',
-        'items_count',
+        'type' => CategoryType::class,
     ];
 
     // Relationships
@@ -78,35 +90,9 @@ class Category extends Model
         return $query->where('is_composable', true);
     }
 
-    public function scopeWithFullHierarchy(Builder $query): Builder
-    {
-        return $query->with(['parent']);
-    }
-
-
-    public function getParentHierarchy(): Collection
-    {
-        return Cache::remember("category_{$this->id}_parents", 3600, function () {
-            $hierarchy = collect();
-            $category = $this;
-
-            while ($category->parent) {
-                $hierarchy->prepend($category->parent);
-                $category = $category->parent;
-            }
-
-            return $hierarchy;
-        });
-    }
-
-    public function getFullHierarchyAttribute(): string
-    {
-        return $this->getParentHierarchy()->pluck('name')->push($this->name)->implode(' > ');
-    }
-
     public function getItemsCountAttribute(): int
     {
-        return match($this->type) {
+        return match ($this->type) {
             Product::class => Product::where('category_id', $this->id)->count(),
             Ingredient::class => Ingredient::where('category_id', $this->id)->count(),
             default => 0
@@ -130,9 +116,8 @@ class Category extends Model
 
     public function canBeDeleted(): bool
     {
-        return !$this->hasChildren && $this->items_count === 0;
+        return !$this->hasChildren;
     }
-
 
     // Analytics Methods
     public function getProductStats(): array
@@ -187,10 +172,9 @@ class Category extends Model
                 'active_ingredients' => $ingredients->where('status', true)->count(),
                 'low_stock_ingredients' => $ingredients->filter->isLowStock()->count(),
                 'expiring_soon' => $ingredients->filter->isExpiringSoon()->count(),
-                'total_cost' => $ingredients->sum(fn($i) => $i->cost_per_unit * $i->stock_quantity),
+                'total_cost' => $ingredients->sum(fn($i) => $i->cost * $i->stock_quantity),
                 'avg_usage' => $ingredients->avg('average_daily_usage'),
             ];
         });
     }
-
 }

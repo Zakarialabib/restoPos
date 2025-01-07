@@ -15,9 +15,14 @@ return new class () extends Migration {
         Schema::create('categories', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->boolean('status')->default(true);
+            $table->boolean('is_composable')->default(false);
+            $table->string('type')->nullable();
+            $table->foreignId('parent_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
