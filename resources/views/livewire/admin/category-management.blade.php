@@ -1,237 +1,208 @@
 <div>
-    {{-- Analytics Section --}}
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" x-show="$wire.showAnalytics">
-        <x-card class="bg-white">
+    <div x-data="{ showAnalytics: false, showForm: false }" class="bg-white w-full rounded-lg shadow-md">
+        {{-- Analytics Cards --}}
+        <div class="grid grid-cols-1 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 bg-gray-100 rounded-lg shadow-md"
+            x-show="$wire.showAnalytics" x-transition>
+            {{-- Total Categories Card --}}
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600">{{ __('Total Categories') }}</p>
-                    <p class="text-2xl font-semibold">{{ $this->categoryAnalytics['total_categories'] }}</p>
+                    <h3 class="text-lg font-semibold text-purple-900">{{ __('Categories') }}</h3>
+                    <p class="mt-2 text-3xl font-bold text-purple-700">{{ $this->analytics['total'] }}</p>
+                    <p class="mt-1 text-sm text-purple-600">
+                        {{ $this->analytics['active'] }} {{ __('active') }}
+                    </p>
                 </div>
-                <span class="material-symbols">folder</span>
+                <div class="rounded-full bg-purple-200 p-3">
+                    <span class="material-symbols text-purple-700">category</span>
+                </div>
             </div>
-            <div class="mt-4 flex justify-between text-sm">
-                <span class="text-gray-600">{{ __('Active:') }}
-                    {{ $this->categoryAnalytics['active_categories'] }}</span>
-            </div>
-        </x-card>
 
-        @foreach (\App\Enums\CategoryType::cases() as $type)
-            <x-card class="bg-white">
+            {{-- Type-specific Cards --}}
+            @foreach ($this->analytics['types'] as $type => $stats)
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">{{ $type->label() }}</p>
-                        <p class="text-2xl font-semibold">{{ $this->categoryAnalytics[$type->value]['total'] ?? 0 }}</p>
+                        <h3 class="text-lg font-semibold text-{{ $stats['color']['text'] }}">
+                            {{ $stats['label'] }}
+                        </h3>
+                        <p class="mt-2 text-3xl font-bold text-{{ $stats['color']['text'] }}">
+                            {{ $stats['total'] }}
+                        </p>
+                        <p class="mt-1 text-sm text-{{ $stats['color']['text'] }}">
+                            {{ $stats['active'] }} {{ __('active') }}
+                        </p>
                     </div>
-                    <span class="material-symbols">
-                        @if ($type === \App\Enums\CategoryType::PRODUCT)
-                            cart
-                        @elseif($type === \App\Enums\CategoryType::INGREDIENT)
-                            beaker
-                        @elseif($type === \App\Enums\CategoryType::COMPOSABLE)
-                            puzzle
-                        @endif
-                    </span>
-                </div>
-                @if ($type === \App\Enums\CategoryType::PRODUCT)
-                    <div class="mt-4 flex justify-between text-sm">
-                        <span class="text-gray-600">{{ __('Total Products:') }}
-                            {{ $this->categoryAnalytics['total_products'] }}</span>
+                    <div class="rounded-full bg-{{ $stats['color']['bg'] }} p-3">
+                        <span class="material-symbols text-{{ $stats['color']['text'] }}">
+                            {{-- {{ $stats['icon'] }} --}}
+                        </span>
                     </div>
-                @elseif($type === \App\Enums\CategoryType::INGREDIENT)
-                    <div class="mt-4 flex justify-between text-sm">
-                        <span class="text-gray-600">{{ __('Total Ingredients:') }}
-                            {{ $this->categoryAnalytics['total_ingredients'] }}</span>
-                    </div>
-                @endif
-            </x-card>
-        @endforeach
-
-
-        <x-card class="bg-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600">{{ __('Ingredient Categories') }}</p>
-                    <p class="text-2xl font-semibold">{{ $this->categoryAnalytics['ingredient_categories'] }}</p>
                 </div>
-                <span class="material-symbols">beaker</span>
-            </div>
-            <div class="mt-4 flex justify-between text-sm">
-                <span class="text-gray-600">{{ __('Total Ingredients:') }}
-                    {{ $this->categoryAnalytics['total_ingredients'] }}</span>
-            </div>
-        </x-card>
-
-        <x-card class="bg-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600">{{ __('Composable Categories') }}</p>
-                    <p class="text-2xl font-semibold">{{ $this->categoryAnalytics['composable_categories'] }}</p>
-                </div>
-                <span class="material-symbols">puzzle</span>
-            </div>
-        </x-card>
-    </div>
-
-    {{-- Filters Section --}}
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div class="flex flex-1 flex-wrap items-center gap-4">
-            <x-input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search categories...') }}"
-                class="max-w-xs" />
-
-            <select wire:model.live="type_filter" class="max-w-xs">
-                <option value="">{{ __('All Types') }}</option>
-                @foreach ($categoryTypes as $type)
-                    <option value="{{ $type->value }}">{{ $type->label() }}</option>
-                @endforeach
-            </select>
-
-            <select wire:model.live="parent_filter" class="max-w-xs">
-                <option value="">{{ __('Root Categories') }}</option>
-                @foreach ($this->parentCategories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                @endforeach
-            </select>
+            @endforeach
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-button wire:click="$toggle('showAnalytics')" type="button" primary class="gap-2">
-                {{ __('Analytics') }}
-            </x-button>
+        {{-- Search and Filters --}}
+        <div class="flex flex-wrap items-center gap-4 bg-white p-4 rounded-lg shadow-sm">
+            <div class="flex-1 min-w-[200px]">
+                <x-input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search categories...') }}"
+                    icon="search" class="w-full border border-gray-300 rounded-md" />
+            </div>
 
-            <x-button wire:click="$toggle('showForm')" type="button" primary class="gap-2">
-                {{ __('Add Category') }}
-            </x-button>
+            <div class="flex gap-4 flex-wrap">
+                <x-select wire:model.live="type_filter" :options="$this->categoryTypes" placeholder="{{ __('All Types') }}"
+                    class="w-full border border-gray-300 rounded-md" />
+
+                <x-select wire:model.live="parent_filter" :options="$this->parentCategories->pluck('name', 'id')" placeholder="{{ __('Root Categories') }}"
+                    class="w-full border border-gray-300 rounded-md" />
+            </div>
+
+            <div class="flex gap-2">
+                <x-button wire:click="$toggle('showAnalytics')" color="secondary" type="button">
+                    {{ __('Show Analytics') }}
+                </x-button>
+                <x-button wire:click="$toggle('showForm')" color="primary" type="button">
+                    <span class="material-symbols">add</span>
+                    {{ __('Add Category') }}
+                </x-button>
+            </div>
         </div>
-    </div>
 
-    @if (session()->has('success'))
-        <x-alert type="success" :dismissal="false" :showIcon="true">
-            {{ session('success') }}
-        </x-alert>
-    @endif
+        @if (session()->has('success'))
+            <x-alert type="success" :dismissal="false" :showIcon="true">
+                {{ session('success') }}
+            </x-alert>
+        @endif
 
-    @if (session()->has('error'))
-        <x-alert type="error" :dismissal="false" :showIcon="true">
-            {{ session('error') }}
-        </x-alert>
-    @endif
-    {{-- Categories Table --}}
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <x-table.heading sortable wire:click="sortBy('name')" :direction="$sortField === 'name' ? $sortDirection : null">
-                        {{ __('Name') }}
-                    </x-table.heading>
-                    <x-table.heading>{{ __('Type') }}</x-table.heading>
-                    <x-table.heading>{{ __('Items') }}</x-table.heading>
-                    <x-table.heading>{{ __('Status') }}</x-table.heading>
-                    <x-table.heading>{{ __('Actions') }}</x-table.heading>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
-                @forelse($this->categories as $category)
-                    <tr wire:key="category-{{ $category->id }}">
-                        <td class="whitespace-nowrap px-6 py-4">
-                            <span class="font-medium">{{ $category->name }}</span>
-                            @if ($category->description)
-                                <p class="mt-1 text-sm text-gray-500">{{ $category->description }}</p>
-                            @endif
-                        </td>
-                        <td class="whitespace-nowrap px-6 py-4">
-                            <x-badge :color="$category->type->color()" :title="$category->type->label()">
-                                {{ $category->type->label() }}
-                            </x-badge>
-                            @if ($category->is_composable)
-                                <x-badge color="alert" class="ml-2" :title="__('Composable Category')">
-                                    {{ __('Composable') }}
-                                </x-badge>
-                            @endif
-                        </td>
-                        <td class="whitespace-nowrap px-6 py-4">
-                            @if ($category->parent)
-                                <span class="text-sm">Child of {{ $category->parent->name }}</span>
-                            @else
-                                <x-badge color="secondary">{{ __('Root') }}</x-badge>
-                            @endif
-                        </td>
-                        <td class="whitespace-nowrap px-6 py-4">
-                            <x-toggle wire:click="toggleStatus({{ $category->id }})" :value="$category->status" />
-                        </td>
-                        <td class="whitespace-nowrap px-6 py-4">
-                            <div class="flex items-center gap-4">
-                                <x-button wire:click="editCategory({{ $category->id }})" primary type="button"
-                                    class="gap-2">
-                                    <span class="material-symbols">edit</span>
-                                </x-button>
-                                <x-button wire:click="deleteCategory({{ $category->id }})" negative type="button"
-                                    class="gap-2">
-                                    <span class="material-symbols">delete</span>
-                                </x-button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
+        @if (session()->has('error'))
+            <x-alert type="error" :dismissal="false" :showIcon="true">
+                {{ session('error') }}
+            </x-alert>
+        @endif
+
+        {{-- Category Form --}}
+        <div x-show="$wire.showForm" class="mt-4" x-cloak x-transition>
+            <form wire:submit="saveCategory" class="bg-white p-6 rounded-lg shadow-md">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="sm:col-span-2">
+                        <x-input wire:model="name" label="{{ __('Name') }}" required
+                            class="w-full border border-gray-300 rounded-md" />
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <x-textarea wire:model="description" label="{{ __('Description') }}"
+                            class="w-full border border-gray-300 rounded-md" />
+                    </div>
+
+                    <div>
+                        <select wire:model="type" label="{{ __('Category Type') }}" required
+                            class="w-full border border-gray-300 rounded-md">
+                            <option value="">{{ __('Select Type') }}</option>
+
+                            @foreach ($this->categoryTypes as $key => $type)
+                                <option value="{{ $key }}" {{ $key == $type ? 'selected' : '' }}>
+                                    {{ $type }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <select wire:model="parent_id" label="{{ __('Parent Category') }}"
+                            class="w-full border border-gray-300 rounded-md">
+                            <option value="">{{ __('No Parent') }}</option>
+                            @foreach ($this->parentCategories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <x-toggle wire:model="status" label="{{ __('Active') }}" />
+                        <x-toggle wire:model="is_composable" label="{{ __('Composable') }}" />
+                    </div>
+                </div>
+
+                <x-slot name="footer">
+                    <div class="flex justify-end gap-4">
+                        <x-button warning wire:click="$set('showForm', false)"
+                            class="bg-yellow-500 hover:bg-yellow-600">
+                            {{ __('Cancel') }}
+                        </x-button>
+                        <x-button type="submit" primary class="bg-green-500 hover:bg-green-600">
+                            {{ __('Save Category') }}
+                        </x-button>
+                    </div>
+                </x-slot>
+            </form>
+        </div>
+
+        {{-- Categories Table --}}
+        <div class="overflow-x-auto bg-white p-4 rounded-lg shadow-md">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                            {{ __('No categories found.') }}
-                        </td>
+                        <x-table.heading sortable wire:click="sortBy('name')" :direction="$sortField === 'name' ? $sortDirection : null">
+                            {{ __('Name') }}
+                        </x-table.heading>
+                        <x-table.heading>{{ __('Type') }}</x-table.heading>
+                        <x-table.heading>{{ __('Items') }}</x-table.heading>
+                        <x-table.heading>{{ __('Status') }}</x-table.heading>
+                        <x-table.heading>{{ __('Actions') }}</x-table.heading>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    @forelse($this->categories as $category)
+                        <tr wire:key="category-{{ $category->id }}">
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <span class="font-medium">{{ $category->name }}</span>
+                                @if ($category->description)
+                                    <p class="mt-1 text-sm text-gray-500">{{ $category->description }}</p>
+                                @endif
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                {{ $category->type ? $category->type->label() : __('Undefined Type') }}
+                                @if ($category->is_composable)
+                                    <x-badge color="alert" class="ml-2" :title="__('Composable Category')">
+                                        {{ __('Composable') }}
+                                    </x-badge>
+                                @endif
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                @if ($category->parent)
+                                    <span class="text-sm">Child of {{ $category->parent->name }}</span>
+                                @else
+                                    <x-badge color="secondary">{{ __('Root') }}</x-badge>
+                                @endif
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <x-toggle wire:click="toggleStatus({{ $category->id }})" :value="$category->status" />
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="flex items-center gap-4">
+                                    <x-button wire:click="editCategory('{{ $category->id }}')" primary type="button"
+                                        class="gap-2 bg-blue-500 hover:bg-blue-600">
+                                        <span class="material-symbols">edit</span>
+                                    </x-button>
+                                    <x-button wire:click="deleteCategory('{{ $category->id }}')" negative
+                                        type="button" class="gap-2 bg-red-500 hover:bg-red-600">
+                                        <span class="material-symbols">delete</span>
+                                    </x-button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                {{ __('No categories found.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-    {{-- Category Form Modal --}}
-    <x-modal wire:model="showForm" name="showForm" max-width="2xl">
-        <form wire:submit="saveCategory">
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div class="sm:col-span-2">
-                    <x-input wire:model="name" label="{{ __('Name') }}" required />
-                </div>
 
-                <div class="sm:col-span-2">
-                    <x-textarea wire:model="description" label="{{ __('Description') }}" />
-                </div>
 
-                <div>
-                    <x-select wire:model="type" label="{{ __('Category Type') }}" required>
-                        <x-option label="{{ __('Select Type') }}" value="" />
-                        @foreach ($categoryTypes as $type)
-                            <x-option label="{{ $type->label() }}" value="{{ $type->value }}" />
-                        @endforeach
-                    </x-select>
-                </div>
-
-                <div>
-                    <select wire:model="parent_id" label="{{ __('Parent Category') }}">
-                        <option value="">{{ __('No Parent') }}</option>
-                        @foreach ($this->parentCategories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <x-toggle wire:model="status" label="{{ __('Active') }}" />
-                    <x-toggle wire:model="is_composable" label="{{ __('Composable') }}" />
-                </div>
-            </div>
-
-            <x-slot name="footer">
-                <div class="flex justify-end gap-4">
-                    <x-button warning wire:click="$set('showForm', false)">
-                        {{ __('Cancel') }}
-                    </x-button>
-                    <x-button type="submit" primary>
-                        {{ __('Save Category') }}
-                    </x-button>
-                </div>
-            </x-slot>
-        </form>
-    </x-modal>
-
-    <div class="mt-4">
-        {{ $this->categories->links() }}
+        <div class="mt-4">
+            {{ $this->categories->links() }}
+        </div>
     </div>
 </div>

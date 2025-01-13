@@ -26,23 +26,28 @@ class CategoryManagement extends Component
     use WithPagination;
     use Datatable;
 
+    // Form Properties
+    #[Validate('required|string|max:255')]
+    public $name = '';
+
+    #[Validate('nullable|string')]
+    public $description = '';
+
+    public $status = true;
+    public $is_composable = false;
+    public $type = null;
+    public $parent_id = null;
+
+    // Filters
     public $type_filter = '';
     public $parent_filter = '';
 
     // UI States
     public $showForm = false;
-    public $showAnalytics = false;
+    public $showAnalytics = true;
     public $editingId = null;
     public $showDeleteModal = false;
     public $targetCategoryId = null;
-
-    #[Validate('required|string|max:255')]
-    public $name = '';
-    public $description = '';
-    public $status = true;
-    public $is_composable = false;
-    public $type = null;
-    public $parent_id = null;
 
     public $model = Category::class;
 
@@ -56,49 +61,75 @@ class CategoryManagement extends Component
 
     ];
 
+    public function queryString()
+    {
+        return [
+            'type_filter' => ['except' => ''],
+            'parent_filter' => ['except' => ''],
+        ];
+    }
+
     #[Computed]
     public function categories()
     {
-        return Category::query()
+        return Category::query()->advancedFilter([
+            's'               => $this->search ?: null,
+            'order_column'    => $this->sortBy,
+            'order_direction' => $this->sortDirection,
+        ])
             ->with(['parent'])
-            ->advancedFilter([
-                's'               => $this->search ?: null,
-                'order_column'    => $this->sortBy,
-                'order_direction' => $this->sortDirection,
-            ])
             ->when(
-                $this->type_filter === 'product',
-                fn($query) =>
-                $query->forProducts()
-            )
-            ->when(
-                $this->type_filter === 'ingredient',
-                fn($query) =>
-                $query->forIngredients()
-            )
-            ->when(
-                $this->type_filter === 'composable',
-                fn($query) =>
-                $query->composable()
+                $this->type_filter,
+                fn($query, $type) =>
+                $query->where('type', $type)
             )
             ->when(
                 $this->parent_filter,
-                fn($query) =>
-                $query->where('parent_id', $this->parent_filter)
+                fn($query, $parentId) =>
+                $query->where('parent_id', $parentId)
             )
-            ->when(
-                !$this->parent_filter,
-                fn($query) =>
-                $query->whereNull('parent_id')
-            )->paginate(10);
+            ->paginate(10);
+    }
+
+    #[Computed]
+    public function analytics()
+    {
+        return cache()->remember('category_analytics', now()->addMinutes(5), function () {
+            $stats = collect(CategoryType::cases())->mapWithKeys(function ($type) {
+                $query = Category::where('type', $type->value);
+                return [
+                    $type->value => [
+                        'total' => $query->count(),
+                        'active' => $query->where('status', true)->count(),
+                        'label' => $type->label(),
+                        'color' => $type->color(),
+                        'icon' => $type->icon(),
+                    ]
+                ];
+            });
+
+            return [
+                'types' => $stats,
+                'total' => Category::count(),
+                'active' => Category::where('status', true)->count(),
+                'products' => Product::count(),
+                'ingredients' => Ingredient::count(),
+            ];
+        });
+    }
+
+    #[Computed]
+    public function categoryTypes()
+    {
+        return CategoryType::forSelect();
     }
 
     #[Computed]
     public function parentCategories()
     {
         return Category::query()
-            ->parentCategories()
-            ->active()
+            ->whereNull('parent_id')
+            ->where('status', true)
             ->when(
                 $this->editingId,
                 fn($query) =>
@@ -108,36 +139,19 @@ class CategoryManagement extends Component
             ->get();
     }
 
-    #[Computed]
-    public function categoryTypes()
+    public function label(CategoryType $type): string
     {
-        return CategoryType::cases();
+        return $type->label();
     }
 
-    #[Computed]
-    public function categoryAnalytics()
+    public function color(CategoryType $type)
     {
-        $analytics = [];
-        foreach (CategoryType::cases() as $type) {
-            $query = Category::query()->where('type', $type);
-            $analytics[$type->value] = [
-                'total' => $query->count(),
-                'active' => $query->where('status', true)->count(),
-            ];
-        }
+        return $type->color();
+    }
 
-        $totalProducts = Product::count();
-        $totalIngredients = Ingredient::count();
-
-        return [
-            'total_categories' => array_sum(array_column($analytics, 'total')),
-            'product_categories' => $analytics[CategoryType::PRODUCT->value]['total'] ?? 0,
-            'ingredient_categories' => $analytics[CategoryType::INGREDIENT->value]['total'] ?? 0,
-            'composable_categories' => $analytics[CategoryType::COMPOSABLE->value]['total'] ?? 0,
-            'total_products' => $totalProducts,
-            'total_ingredients' => $totalIngredients,
-            'active_categories' => array_sum(array_column($analytics, 'active')),
-        ];
+    public function icon(CategoryType $type)
+    {
+        return $type->icon();
     }
 
     public function saveCategory(): void
@@ -179,7 +193,7 @@ class CategoryManagement extends Component
         $this->description = $category->description;
         $this->status = $category->status;
         $this->is_composable = $category->is_composable;
-        $this->type = $category->type->value;
+        $this->type = $category->type;
         $this->parent_id = $category->parent_id;
         $this->showForm = true;
     }

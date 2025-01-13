@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -19,7 +21,7 @@ class Category extends Model
 {
     use HasFactory;
     use HasSlug;
-    use SoftDeletes;
+    // use SoftDeletes;
     use HasAdvancedFilter;
 
 
@@ -80,9 +82,13 @@ class Category extends Model
         return $query->forType(CategoryType::PRODUCT);
     }
 
-    public function scopeForIngredients(Builder $query): Builder
+    public function scopeForIngredients(Builder $query)
     {
-        return $query->forType(CategoryType::INGREDIENT);
+        return $query->whereIn('type', [
+            CategoryType::INGREDIENT->value,
+            CategoryType::BASE->value,
+            CategoryType::FRUIT->value
+        ]);
     }
 
     public function scopeComposable(Builder $query): Builder
@@ -176,5 +182,35 @@ class Category extends Model
                 'avg_usage' => $ingredients->avg('average_daily_usage'),
             ];
         });
+    }
+
+    public function getIngredientsStats(): array
+    {
+        return Cache::remember("category_{$this->id}_stats", 3600, function() {
+            $ingredients = $this->ingredients;
+            
+            return [
+                'total' => $ingredients->count(),
+                'active' => $ingredients->where('status', true)->count(),
+                'low_stock' => $ingredients->filter->isLowStock()->count(),
+                'out_of_stock' => $ingredients->where('stock_quantity', 0)->count(),
+                'total_value' => $ingredients->sum(fn($i) => $i->stock_quantity * $i->cost)
+            ];
+        });
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function ingredients(): HasMany
+    {
+        return $this->hasMany(Ingredient::class);
+    }
+
+    public function composableConfiguration(): HasOne
+    {
+        return $this->hasOne(ComposableConfiguration::class);
     }
 }

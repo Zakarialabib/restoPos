@@ -4,116 +4,150 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\CategoryType;
 use App\Models\Category;
+use App\Models\Product;
+use App\Models\Ingredient;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
     public function run(): void
     {
         $categories = [
+            // Main product categories from previous implementation
             [
                 'name' => 'Fruits',
                 'description' => 'Fresh fruits for juices and smoothies',
-                'status' => 1
-            ],
-            [
-                'name' => 'Juices',
-                'description' => 'Fresh juices',
-                'status' => 1
-            ],
-            [
-                'name' => 'Salade',
-                'description' => 'Various salade and preparations',
-                'status' => 1
-            ],
-            [
-                'name' => 'Dried Fruits',
-                'description' => 'Selection of dried and preserved fruits',
-                'status' => 1
+                'status' => true,
+                'is_composable' => true,
+                'type' => CategoryType::FRUIT->value,
             ],
             [
                 'name' => 'Base',
-                'description' => 'Base ingredients',
-                'status' => 1
+                'description' => 'Base ingredients for juices and smoothies',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::BASE->value,
             ],
             [
-                'name' => 'Topping',
-                'description' => 'Topping ingredients',
-                'status' => 1
+                'name' => 'Vegetables',
+                'description' => 'Fresh vegetables for salads and soups',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
             ],
             [
-                'name' => 'Liquid',
-                'description' => 'Liquid ingredients',
-                'status' => 1
+                'name' => 'Breads',
+                'description' => 'Various types of bread for sandwiches',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
             ],
             [
-                'name' => 'Sweetener',
-                'description' => 'Sweetener ingredients',
-                'status' => 1
-            ],
-            [
-                'name' => 'Ice',
-                'description' => 'Ice ingredients',
-                'status' => 1
-            ],
-            [
-                'name' => 'Nuts',
-                'description' => 'Nuts ingredients',
-                'status' => 1
-            ],
-            [
-                'name' => 'Seeds',
-                'description' => 'Seeds ingredients',
-                'status' => 1
+                'name' => 'Proteins',
+                'description' => 'Meats, fish, and plant-based proteins',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
             ],
             [
                 'name' => 'Dairy',
-                'description' => 'Dairy ingredients',
-                'status' => 1
+                'description' => 'Dairy products and alternatives',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
+            ],
+            [
+                'name' => 'Condiments',
+                'description' => 'Sauces, dressings, and seasonings',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
+            ],
+            [
+                'name' => 'Soup Bases',
+                'description' => 'Broths and soup bases',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
+            ],
+            [
+                'name' => 'Toppings',
+                'description' => 'Additional toppings and garnishes',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
+            ],
+            [
+                'name' => 'Nuts',
+                'description' => 'Various nuts and seeds for toppings',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
             ],
             [
                 'name' => 'Herbs',
-                'description' => 'Herbs ingredients',
-                'status' => 1
+                'description' => 'Fresh and dried herbs and spices',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
             ],
             [
                 'name' => 'Spices',
-                'description' => 'Spices ingredients',
-                'status' => 1
+                'description' => 'Spices for cooking and seasoning',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
             ],
             [
-                'name' => 'Moroccan Sandwiches - ساندويتشات مغربية',
-                'description' => 'Traditional Moroccan sandwiches with fresh ingredients',
-                'status' => 1
-
+                'name' => 'Oils',
+                'description' => 'Oils for cooking and seasoning',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
             ],
             [
-                'name' => 'Salades Marocaines - سلطات مغربية',
-                'description' => 'Fresh Moroccan-style salads',
-                'status' => 1
-
+                'name' => 'Grains',
+                'description' => 'Grains for cooking and seasoning',
+                'status' => true,
+                'is_composable' => false,
+                'type' => CategoryType::INGREDIENT->value,
+            ],
+            // Composable product categories
+            [
+                'name' => 'Salad',
+                'description' => 'Fresh and customizable salads',
+                'status' => true,
+                'is_composable' => true,
+                'type' => CategoryType::COMPOSABLE->value,
             ],
             [
-                'name' => 'Smoothies & Jus - عصائر و سموذي',
-                'description' => 'Fresh fruit smoothies and juices',
-                'status' => 1
-
+                'name' => 'Sandwiches',
+                'description' => 'Custom sandwiches and wraps',
+                'status' => true,
+                'is_composable' => true,
+                'type' => CategoryType::COMPOSABLE->value,
             ],
             [
-                'name' => 'Bols Santé - أطباق صحية',
-                'description' => 'Healthy bowls with Moroccan flavors',
-                'status' => 1
+                'name' => 'Soups',
+                'description' => 'Hot and cold soups',
+                'status' => true,
+                'is_composable' => true,
+                'type' => CategoryType::COMPOSABLE->value,
             ],
             [
-                'name' => 'Fruits Secs - فواكه جافة',
-                'description' => 'Dried fruits and nuts',
-                'status' => 1
-            ]
+                'name' => 'Chocolate',
+                'description' => 'Chocolate and chocolate-related products',
+                'status' => true,
+                'is_composable' => true,
+                'type' => CategoryType::COMPOSABLE->value,
+            ],
         ];
 
-        foreach ($categories as $category) {
-            Category::create($category);
+        foreach ($categories as $categoryData) {
+            Category::create($categoryData);
         }
     }
 }
