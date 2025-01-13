@@ -27,18 +27,6 @@ class ProductFactory extends Factory
             'is_featured' => false,
             'is_composable' => false,
             'min_stock' => $this->faker->numberBetween(5, 20),
-            'nutritional_info' => [
-                'calories' => $this->faker->numberBetween(50, 500),
-                'protein' => $this->faker->numberBetween(0, 30),
-                'carbs' => $this->faker->numberBetween(0, 50),
-                'fat' => $this->faker->numberBetween(0, 20),
-                'fiber' => $this->faker->numberBetween(0, 10),
-                'vitamins' => [
-                    'A' => $this->faker->numberBetween(0, 100),
-                    'C' => $this->faker->numberBetween(0, 100),
-                    'D' => $this->faker->numberBetween(0, 100),
-                ],
-            ],
             'preparation_time' => $this->faker->numberBetween(5, 30),
             'allergens' => $this->faker->randomElements(['nuts', 'dairy', 'soy', 'gluten'], $this->faker->numberBetween(0, 2)),
         ];
@@ -46,14 +34,14 @@ class ProductFactory extends Factory
 
     public function unavailable(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => false,
         ]);
     }
 
     public function featured(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'is_featured' => true,
             'status' => true,
         ]);
@@ -61,7 +49,7 @@ class ProductFactory extends Factory
 
     public function composable(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'is_composable' => true,
             'status' => true,
         ]);
@@ -69,7 +57,7 @@ class ProductFactory extends Factory
 
     public function lowStock(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'min_stock' => 10,
         ])->afterCreating(function (Product $product): void {
             $product->adjustStock(5, 'Initial stock');

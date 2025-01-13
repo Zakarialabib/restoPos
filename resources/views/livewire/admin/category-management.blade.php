@@ -1,68 +1,73 @@
 <div>
-    <div x-data="{ showAnalytics: false, showForm: false }" class="bg-white w-full rounded-lg shadow-md">
-        {{-- Analytics Cards --}}
-        <div class="grid grid-cols-1 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 bg-gray-100 rounded-lg shadow-md"
-            x-show="$wire.showAnalytics" x-transition>
-            {{-- Total Categories Card --}}
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-lg font-semibold text-purple-900">{{ __('Categories') }}</h3>
-                    <p class="mt-2 text-3xl font-bold text-purple-700">{{ $this->analytics['total'] }}</p>
-                    <p class="mt-1 text-sm text-purple-600">
-                        {{ $this->analytics['active'] }} {{ __('active') }}
-                    </p>
+    <div class="px-4 mx-auto rounded-lg shadow-md">
+        <div class="bg-gray-100 rounded-lg shadow-lg px-6 py-2 my-4">
+
+            <div class="flex flex-col md:flex-row justify-between items-center mb-2">
+                <h2 class="text-3xl font-bold mb-4 md:mb-0 text-black">{{ __('Category Management') }}</h2>
+                <div class="flex space-x-4">
+                    <x-button wire:click="$wire.showAnalytics = true" color="secondary" type="button">
+                        {{ __('Show Analytics') }}
+                    </x-button>
+                    <x-button wire:click="$wire.showForm = true" color="primary" type="button">
+                        <span class="material-symbols">add</span>
+                        {{ __('Add Category') }}
+                    </x-button>
                 </div>
-                <div class="rounded-full bg-purple-200 p-3">
-                    <span class="material-symbols text-purple-700">category</span>
+            </div>
+            {{-- Search and Filters --}}
+            <div class="flex flex-wrap items-center gap-x-4">
+                <div class="flex-1 min-w-[200px]">
+                    <x-input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search categories...') }}"
+                        icon="search" class="w-full border border-gray-300 rounded-md" />
+                </div>
+
+                <div class="flex gap-x-4 flex-wrap">
+                    <x-select wire:model.live="type_filter" :options="$this->categoryTypes" placeholder="{{ __('All Types') }}"
+                        class="w-full border border-gray-300 rounded-md" />
+
+                    <x-select wire:model.live="parent_filter" :options="$this->parentCategories->pluck('name', 'id')"
+                        placeholder="{{ __('Root Categories') }}" class="w-full border border-gray-300 rounded-md" />
                 </div>
             </div>
 
-            {{-- Type-specific Cards --}}
-            @foreach ($this->analytics['types'] as $type => $stats)
+            {{-- Analytics Cards --}}
+            <div class="grid grid-cols-1 gap-x-6 sm:grid-cols-2 lg:grid-cols-4" x-show="$wire.showAnalytics"
+                x-transition>
+                {{-- Total Categories Card --}}
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-lg font-semibold text-{{ $stats['color']['text'] }}">
-                            {{ $stats['label'] }}
-                        </h3>
-                        <p class="mt-2 text-3xl font-bold text-{{ $stats['color']['text'] }}">
-                            {{ $stats['total'] }}
-                        </p>
-                        <p class="mt-1 text-sm text-{{ $stats['color']['text'] }}">
-                            {{ $stats['active'] }} {{ __('active') }}
+                        <h3 class="text-lg font-semibold text-purple-900">{{ __('Categories') }}</h3>
+                        <p class="mt-2 text-3xl font-bold text-purple-700">{{ $this->analytics['total'] }}</p>
+                        <p class="mt-1 text-sm text-purple-600">
+                            {{ $this->analytics['active'] }} {{ __('active') }}
                         </p>
                     </div>
-                    <div class="rounded-full bg-{{ $stats['color']['bg'] }} p-3">
-                        <span class="material-symbols text-{{ $stats['color']['text'] }}">
-                            {{-- {{ $stats['icon'] }} --}}
-                        </span>
+                    <div class="rounded-full bg-purple-200 p-3">
+                        <span class="material-symbols text-purple-700">category</span>
                     </div>
                 </div>
-            @endforeach
-        </div>
 
-        {{-- Search and Filters --}}
-        <div class="flex flex-wrap items-center gap-4 bg-white p-4 rounded-lg shadow-sm">
-            <div class="flex-1 min-w-[200px]">
-                <x-input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search categories...') }}"
-                    icon="search" class="w-full border border-gray-300 rounded-md" />
-            </div>
-
-            <div class="flex gap-4 flex-wrap">
-                <x-select wire:model.live="type_filter" :options="$this->categoryTypes" placeholder="{{ __('All Types') }}"
-                    class="w-full border border-gray-300 rounded-md" />
-
-                <x-select wire:model.live="parent_filter" :options="$this->parentCategories->pluck('name', 'id')" placeholder="{{ __('Root Categories') }}"
-                    class="w-full border border-gray-300 rounded-md" />
-            </div>
-
-            <div class="flex gap-2">
-                <x-button wire:click="$toggle('showAnalytics')" color="secondary" type="button">
-                    {{ __('Show Analytics') }}
-                </x-button>
-                <x-button wire:click="$toggle('showForm')" color="primary" type="button">
-                    <span class="material-symbols">add</span>
-                    {{ __('Add Category') }}
-                </x-button>
+                {{-- Type-specific Cards --}}
+                @foreach ($this->analytics['types'] as $type => $stats)
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-{{ $stats['color']['text'] }}">
+                                {{ $stats['label'] }}
+                            </h3>
+                            <p class="mt-2 text-3xl font-bold text-{{ $stats['color']['text'] }}">
+                                {{ $stats['total'] }}
+                            </p>
+                            <p class="mt-1 text-sm text-{{ $stats['color']['text'] }}">
+                                {{ $stats['active'] }} {{ __('active') }}
+                            </p>
+                        </div>
+                        <div class="rounded-full bg-{{ $stats['color']['bg'] }} p-3">
+                            <span class="material-symbols text-{{ $stats['color']['text'] }}">
+                                {{-- {{ $stats['icon'] }} --}}
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
 
@@ -134,8 +139,9 @@
             </form>
         </div>
 
+
         {{-- Categories Table --}}
-        <div class="overflow-x-auto bg-white p-4 rounded-lg shadow-md">
+        <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -198,8 +204,6 @@
                 </tbody>
             </table>
         </div>
-
-
 
         <div class="mt-4">
             {{ $this->categories->links() }}

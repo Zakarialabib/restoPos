@@ -4,276 +4,369 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use App\Enums\UnitType;
+use App\Livewire\Utils\Datatable;
 use App\Models\Category;
 use App\Models\Ingredient;
-use App\Models\Price;
-use Exception;
-use Illuminate\Support\Facades\DB;
+use App\Services\CostManagementService;
+use App\Services\IngredientService;
+use App\Services\IngredientStockService;
+use App\Services\IngredientAnalyticsService;
+use App\Services\IngredientCategoryService;
+use App\Enums\CategoryType;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use App\Enums\ItemType;
 
 #[Layout('layouts.admin')]
 #[Title('Ingredient Management')]
 class IngredientManagement extends Component
 {
+    use WithFileUploads;
     use WithPagination;
+    use Datatable;
 
-    public $search = '';
-    public $category_id = '';
-    public $showForm = false;
-    public $editingId = null;
+    #[Validate('string|nullable')]
+    public $category_filter = '';
 
-    #[Validate('required|string|max:255')]
-    public $name = '';
-    #[Validate('required')]
-    public $unit;
-    #[Validate('required|numeric|min:0')]
-    public $conversionRate = 1;
-    #[Validate('required|numeric|min:0')]
-    public $stock = 0;
-    #[Validate('nullable|date')]
-    public $expiryDate = '';
-    #[Validate('nullable|array')]
-    public $supplierInfo = [];
-    #[Validate('nullable|array')]
-    public $instructions = [];
-    #[Validate('nullable|array')]
-    public $storageConditions = [];
-    #[Validate('required|exists:categories,id')]
-    public $categoryId = '';
-    #[Validate('required|numeric|min:0')]
-    public $cost = 0;
-    #[Validate('required|numeric|min:0')]
-    public $price = 0;
-    #[Validate('nullable|array')]
-    public $nutritionalInfo = [];
+    #[Validate('string|nullable')]
+    public $status_filter = '';
 
-    public $showPriceHistory = false;
-    public $selectedIngredientId;
+    #[Validate('string|nullable')]
+    public $dateRange = '';
 
-    public $date = '';
+    public $startDate;
+    public $endDate;
 
-    public $newPrice = [
-        'cost' => 0,
-        'price' => 0,
-        'date' => '',
-        'notes' => '',
-    ];
-
-    public bool $showAnalytics = false;
-    public string $selectedCategory = '';
-    public string $sortField = 'created_at';
-    public string $sortDirection = 'desc';
-    public array $selectAll = [];
+    #[Validate('array')]
     public array $selectedIngredients = [];
 
-    public $dateRange = '';
-    
+    public $showBulkActions = false;
 
-    protected $rules = [
-        'newPrice.cost' => 'required|numeric|min:0',
-        'newPrice.price' => 'required|numeric|min:0',
-        'newPrice.notes' => 'nullable|string|max:255',
+    // UI States
+    public $showForm = false;
+    public $showCostHistory = false;
+    public $showStockHistory = false;
+    public $editingIngredientId = null;
+
+    // Form Properties
+    #[Validate('required|string|max:255')]
+    public $name = '';
+
+    #[Validate('required|string')]
+    public $description = '';
+
+    #[Validate('required|exists:categories,id')]
+    public $category_id = '';
+
+    #[Validate('required|numeric|min:0')]
+    public $cost = 0;
+
+    #[Validate('required|numeric|min:0')]
+    public $stock = 0;
+
+    #[Validate('required|numeric|min:0')]
+    public $reorder_point = 0;
+
+    #[Validate('required|string')]
+    public $unit = 'g';
+
+    #[Validate('required|boolean')]
+    public $status = true;
+
+    #[Validate('nullable|date')]
+    public $expiry_date = null;
+
+    #[Validate('nullable|string')]
+    public $storage_location = null;
+
+    #[Validate('nullable|array')]
+    public $supplier_info = [];
+
+    #[Validate('nullable|image|max:2048|mimes:jpg,jpeg,png,webp')]
+    public $image;
+
+    public $selectAll = false;
+    public $showPriceHistory = false;
+    public $selectedIngredientId = null;
+    public $priceHistory = [];
+
+    // Stock Adjustment
+    #[Validate('numeric|min:0')]
+    public $adjustmentQuantity = 0;
+
+    #[Validate('string|max:255')]
+    public $adjustmentReason = '';
+
+    // Cost Management
+    public $newCost = [
+        'cost' => 0,
+        'notes' => ''
     ];
+
+    // Analytics Filters
+    public $analyticsStartDate = null;
+    public $analyticsEndDate = null;
+    public $selectedAnalyticsPeriod = '30';
+    public $selectedAnalyticsType = 'cost';
+
+    // Services
+    protected IngredientService $ingredientService;
+    protected IngredientStockService $stockService;
+    protected IngredientAnalyticsService $analyticsService;
+    protected CostManagementService $costService;
+    protected IngredientCategoryService $ingredientCategoryService;
+
+    public $model = Ingredient::class;
+
+    public function boot(
+        IngredientService $ingredientService,
+        IngredientStockService $stockService,
+        IngredientAnalyticsService $analyticsService,
+        CostManagementService $costService
+    ): void {
+        $this->ingredientService = $ingredientService;
+        $this->stockService = $stockService;
+        $this->analyticsService = $analyticsService;
+        $this->costService = $costService;
+    }
+
+    public $availableCategories;
+
+    public function mount(): void
+    {
+        $this->ingredientCategoryService = app(IngredientCategoryService::class);
+        $this->availableCategories = Category::whereIn('type', [
+            CategoryType::INGREDIENT,
+            CategoryType::BASE,
+            CategoryType::FRUIT
+        ])->get();
+    }
+
+    public function changeCategory(string $ingredientId, string $categoryId): void
+    {
+        $ingredient = Ingredient::findOrFail($ingredientId);
+        $category = Category::findOrFail($categoryId);
+
+        try {
+            $this->ingredientCategoryService->reassignCategory($ingredient, $category);
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => __('Category updated successfully')
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
 
     #[Computed]
     public function ingredients()
     {
-        return Ingredient::query()
-            ->with('category')
+        $query = Ingredient::with(['category', 'prices', 'stockLogs'])
+            ->advancedFilter([
+                's'               => $this->search ?: null,
+                'order_column'    => $this->sortBy,
+                'order_direction' => $this->sortDirection,
+            ])
             ->when(
-                $this->search,
-                fn ($query) =>
-                $query->where('name', 'like', '%' . $this->search . '%')
+                $this->category_filter,
+                fn($query) =>
+                $query->where('category_id', $this->category_filter)
             )
             ->when(
-                $this->category_id,
-                fn ($query) =>
-                $query->where('category_id', $this->category_id)
+                $this->startDate && $this->endDate,
+                fn($query) =>
+                $query->whereBetween('created_at', [$this->startDate, $this->endDate])
             )
-            ->latest()
-            ->paginate(10);
+            ->when($this->status_filter, function ($query) {
+                return match ($this->status_filter) {
+                    'low_stock' => $query->lowStock(),
+                    'out_of_stock' => $query->outOfStock(),
+                    'active' => $query->where('status', true),
+                    'inactive' => $query->where('status', false),
+                    default => $query
+                };
+            });
+
+        return  $query->paginate($this->perPage);
     }
 
     #[Computed]
     public function categories()
     {
-        return Category::query()->active()->get();
+        return $this->ingredientCategoryService->getCategoriesByType(ItemType::INGREDIENT);
     }
 
     #[Computed]
-    public function units()
+    public function ingredientAnalytics()
     {
-        return UnitType::cases();
+        return $this->analyticsService->getIngredientAnalytics(Carbon::parse($this->startDate), Carbon::parse($this->endDate));
+    }
+
+    #[Computed]
+    public function wastageAnalytics()
+    {
+        return $this->analyticsService->getWastageAnalytics(Carbon::parse($this->startDate), Carbon::parse($this->endDate));
+    }
+
+    #[Computed]
+    public function costAnalytics()
+    {
+        return $this->analyticsService->getCostAnalytics(Carbon::parse($this->startDate), Carbon::parse($this->endDate));
+    }
+
+    #[Computed]
+    public function turnoverAnalytics()
+    {
+        return $this->analyticsService->getTurnoverAnalytics(Carbon::parse($this->startDate), Carbon::parse($this->endDate));
+    }
+
+    public function bulkUpdateStatus(bool $status): void
+    {
+        $this->ingredientService->bulkUpdateStatus($this->selectedIngredients, $status);
+        $this->showBulkActions = false;
+        session()->flash('message', 'Status updated successfully.');
+    }
+
+    #[Computed]
+    public function seasonalityAnalytics()
+    {
+        return $this->analyticsService->getSeasonalityAnalytics();
     }
 
     public function saveIngredient(): void
     {
         $this->validate();
 
-        DB::beginTransaction();
         try {
+            // Handle image upload
+            if ($this->image && !is_string($this->image)) {
+                $fileName = Str::slug($this->name) . '-' . time() . '.' . $this->image->getClientOriginalExtension();
+                $imagePath = $this->image->storeAs('ingredients', $fileName, 'public');
+            }
+
             $ingredientData = [
                 'name' => $this->name,
-                'unit' => $this->unit,
-                'conversion_rate' => $this->conversionRate,
+                'description' => $this->description,
+                'category_id' => $this->category_id,
+                'status' => $this->status,
                 'stock' => $this->stock,
-                'expiry_date' => $this->expiryDate,
-                'supplier_info' => $this->supplierInfo,
-                'instructions' => $this->instructions,
-                'storage_conditions' => $this->storageConditions,
-                'category_id' => $this->categoryId,
-                'nutritional_info' => $this->nutritionalInfo,
+                'reorder_point' => $this->reorder_point,
+                'unit' => $this->unit,
+                'cost' => $this->cost,
+                'expiry_date' => $this->expiry_date,
+                'storage_location' => $this->storage_location,
+                'supplier_info' => $this->supplier_info,
+                'image' => $imagePath ?? null,
             ];
 
-            if ($this->editingId) {
-                $ingredient = Ingredient::findOrFail($this->editingId);
-                $ingredient->update($ingredientData);
+            if ($this->editingIngredientId) {
+                $ingredient = Ingredient::findOrFail($this->editingIngredientId);
+                $this->ingredientService->updateIngredient($ingredient, $ingredientData);
+                $message = __('Ingredient updated successfully.');
             } else {
-                $ingredient = Ingredient::create($ingredientData);
+                $this->ingredientService->createIngredient($ingredientData);
+                $message = __('Ingredient created successfully.');
             }
 
-            // Add initial price record
-            if ($this->cost > 0 || $this->price > 0) {
-                $ingredient->addPrice($this->cost, $this->price, $this->date, 'Initial price');
-            }
-
-            DB::commit();
             $this->reset();
-            $this->showForm = false;
-            session()->flash('success', __('Ingredient saved successfully.'));
+            $this->dispatch('ingredient-saved');
+            session()->flash('message', $message);
         } catch (Exception $e) {
-            DB::rollBack();
-            session()->flash('error', __('Error saving ingredient: ') . $e->getMessage());
+            session()->flash('message', __('Error saving ingredient: ') . $e->getMessage());
         }
-    }
-
-    public function addIngredient(): void
-    {
-        $this->reset();
-        $this->showForm = true;
     }
 
     public function editIngredient(Ingredient $ingredient): void
     {
-        $this->editingId = $ingredient->id;
+        $this->editingIngredientId = $ingredient->id;
         $this->name = $ingredient->name;
-        $this->unit = $ingredient->unit;
-        $this->conversionRate = $ingredient->conversion_rate;
+        $this->description = $ingredient->description;
+        $this->category_id = $ingredient->category_id;
+        $this->status = $ingredient->status;
         $this->stock = $ingredient->stock_quantity;
-        $this->expiryDate = $ingredient->expiry_date;
-        $this->categoryId = $ingredient->category_id;
-        $this->supplierInfo = $ingredient->supplier_info;
-        $this->instructions = $ingredient->instructions;
-        $this->storageConditions = $ingredient->storage_conditions;
-        $this->cost = $ingredient->getCurrentPrice()?->cost ?? 0;
-        $this->price = $ingredient->getCurrentPrice()?->price ?? 0;
-        $this->nutritionalInfo = $ingredient->nutritional_info;
-
+        $this->reorder_point = $ingredient->reorder_point;
+        $this->unit = $ingredient->unit;
+        $this->cost = $ingredient->cost;
+        $this->expiry_date = $ingredient->expiry_date?->format('Y-m-d');
+        $this->storage_location = $ingredient->storage_location;
+        $this->supplier_info = $ingredient->supplier_info;
+        $this->image = $ingredient->image;
         $this->showForm = true;
     }
 
     public function deleteIngredient(Ingredient $ingredient): void
     {
-        if ($ingredient->products()->exists()) {
-            session()->flash('error', __('Cannot delete ingredient used in products.'));
-            return;
-        }
-
-        $ingredient->delete();
-        session()->flash('success', __('Ingredient deleted successfully.'));
-    }
-
-    public function updateStock(Ingredient $ingredient, int $quantity, string $reason = 'Manual Update'): void
-    {
         try {
-            $ingredient->updateStock($quantity, $reason);
-            session()->flash('success', __('Stock updated successfully.'));
+            $this->ingredientService->deleteIngredient($ingredient);
+            $this->dispatch('ingredient-deleted');
+            session()->flash('message', __('Ingredient deleted successfully.'));
         } catch (Exception $e) {
-            session()->flash('error', __('Error updating stock: ') . $e->getMessage());
+            session()->flash('message', __('Error deleting ingredient: ') . $e->getMessage());
         }
     }
 
-    public function showPriceHistoryModal(int $ingredientId): void
-    {
-        $this->selectedIngredientId = $ingredientId;
-        $this->showPriceHistory = true;
-    }
-
-    public function addNewPrice(Ingredient $ingredient): void
+    public function adjustStock(Ingredient $ingredient): void
     {
         $this->validate([
-            'newPrice.cost' => 'required|numeric|min:0',
-            'newPrice.price' => 'required|numeric|min:0',
+            'adjustmentQuantity' => 'required|numeric',
+            'adjustmentReason' => 'required|string|max:255'
         ]);
 
         try {
-            $ingredient->addPrice(
-                $this->newPrice['cost'],
-                $this->newPrice['price'],
-                $this->newPrice['notes']
+            $this->stockService->adjustStock(
+                $ingredient,
+                $this->adjustmentQuantity,
+                $this->adjustmentReason
             );
-
-            $this->reset('newPrice');
-            session()->flash('success', __('Price updated successfully.'));
+            $this->dispatch('stock-adjusted');
+            session()->flash('message', __('Stock adjusted successfully.'));
         } catch (Exception $e) {
-            session()->flash('error', __('Error updating price: ') . $e->getMessage());
+            session()->flash('message', __('Error adjusting stock: ') . $e->getMessage());
         }
     }
 
-    #[Computed]
-    public function priceHistory()
+    public function toggleStatus(Ingredient $ingredient): void
     {
-        if ( ! $this->selectedIngredientId) {
-            return collect();
+        try {
+            $this->ingredientService->toggleStatus($ingredient);
+            $this->dispatch('status-toggled');
+            session()->flash('message', __('Ingredient status updated successfully.'));
+        } catch (Exception $e) {
+            session()->flash('message', __('Error updating ingredient status: ') . $e->getMessage());
         }
-
-        return Ingredient::findOrFail($this->selectedIngredientId)
-            ->getPriceHistory()
-            ->map(function ($price) {
-                return [
-                    'date' => $price->date->format('Y-m-d'),
-                    'cost' => $price->cost,
-                    'price' => $price->price,
-                    'notes' => $price->notes,
-                ];
-            });
     }
 
-    #[Computed]
-    public function ingredientAnalytics()
+    public function updateCost(int $ingredientId): void
     {
-        $query = Ingredient::query();
+        $this->validate([
+            'newCost.cost' => 'required|numeric|min:0',
+            'newCost.notes' => 'nullable|string|max:255'
+        ]);
 
-        if ($this->dateRange) {
-            [$start, $end] = explode(' - ', $this->dateRange);
-            $query->whereBetween('created_at', [$start, $end . ' 23:59:59']);
-        }
-
-        $ingredients = $query->get();
-        $totalStock = $ingredients->sum('stock');
-        $averagePrice = $ingredients->avg('currentPrice.amount');
-
-        return [
-            'total_ingredients' => $ingredients->count(),
-            'total_stock' => $totalStock,
-            'average_price' => $averagePrice,
-            'category_count' => $ingredients->groupBy('category_id')->count(),
-        ];
-    }
-
-    public function sortBy(string $field): void
-    {
-        if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortField = $field;
-            $this->sortDirection = 'asc';
+        try {
+            $ingredient = Ingredient::findOrFail($ingredientId);
+            $this->costService->updateCost(
+                $ingredient,
+                $this->newCost['cost'],
+                $this->newCost['notes']
+            );
+            $this->dispatch('cost-updated');
+            session()->flash('message', __('Cost updated successfully.'));
+        } catch (Exception $e) {
+            session()->flash('message', __('Error updating cost: ') . $e->getMessage());
         }
     }
 
@@ -286,34 +379,29 @@ class IngredientManagement extends Component
         }
     }
 
-    public function bulkUpdateCategory(string $category): void
+    public function openStockHistory($ingredientId): void
     {
-        if (empty($this->selectedIngredients)) {
-            $this->addError('bulk', 'Please select ingredients to update');
-            return;
-        }
-
-        Ingredient::whereIn('id', $this->selectedIngredients)->update(['category_id' => $category]);
-        $this->selectedIngredients = [];
-        $this->selectAll = [];
-        session()->flash('success', 'Ingredients updated successfully');
+        $this->selectedIngredientId = $ingredientId;
+        $this->showStockHistory = true;
     }
 
-    public function bulkDeleteIngredients(): void
+    public function priceHistoryModal($ingredientId): void
     {
-        if (empty($this->selectedIngredients)) {
-            $this->addError('bulk', 'Please select ingredients to delete');
-            return;
-        }
-
-        Ingredient::whereIn('id', $this->selectedIngredients)->delete();
-        $this->selectedIngredients = [];
-        $this->selectAll = [];
-        session()->flash('success', 'Ingredients deleted successfully');
+        $this->selectedIngredientId = $ingredientId;
+        $this->showPriceHistory = true;
     }
 
     public function render()
     {
         return view('livewire.admin.ingredient-management');
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', Rule::enum(ItemType::class)],
+            'category_id' => ['required', 'exists:categories,id'],
+        ];
     }
 }

@@ -20,16 +20,10 @@ class IngredientFactory extends Factory
             'category_id' => Category::factory(),
             'stock_quantity' => $this->faker->randomFloat(2, 0, 1000),
             'unit' => $this->faker->randomElement(['kg', 'g', 'ml', 'l', 'piece']),
-            'cost_per_unit' => $this->faker->randomFloat(2, 1, 100),
+            'cost' => $this->faker->randomFloat(2, 1, 100),
             'reorder_point' => $this->faker->randomFloat(2, 10, 50),
             'status' => $this->faker->boolean(80),
             'is_seasonal' => $this->faker->boolean(20),
-            'nutritional_info' => [
-                'calories' => $this->faker->randomFloat(2, 0, 500),
-                'protein' => $this->faker->randomFloat(2, 0, 50),
-                'carbs' => $this->faker->randomFloat(2, 0, 100),
-                'fat' => $this->faker->randomFloat(2, 0, 50)
-            ]
         ];
     }
 

@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Utils\Datatable;
 use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\Product;
+use App\Services\ProductService;
+use App\Services\ProductStockService;
+use App\Services\PriceManagementService;
+use App\Services\ProductAnalyticsService;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -15,6 +21,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Exception;
 
 #[Layout('layouts.admin')]
 #[Title('Product Management')]
@@ -22,260 +29,309 @@ class ProductManagement extends Component
 {
     use WithFileUploads;
     use WithPagination;
+    use Datatable;
 
-    public $search = '';
-    #[Validate('required|max:255')]
+    #[Validate('string|nullable')]
+    public $category_filter = '';
+
+    #[Validate('string|nullable')]
+    public $status_filter = '';
+
+    #[Validate('string|nullable')]
+    public $dateRange = '';
+
+    public $startDate = null;
+    public $endDate = null;
+
+    #[Validate('array')]
+    public array $selectedProducts = [];
+
+    public $showBulkActions = false;
+
+    // UI States
+    public $showForm = false;
+    public $showIngredientModal = false;
+    public $showPriceHistory = false;
+    public $showStockHistory = false;
+    public $editingProductId = null;
+
+    // Form Properties
+    #[Validate('required|string|max:255')]
     public $name = '';
+
     #[Validate('required|string')]
     public $description = '';
-    #[Validate('required|numeric|min:0')]
-    public $price = '';
+
     #[Validate('required|exists:categories,id')]
     public $category_id = '';
+
+    #[Validate('required|numeric|min:0')]
+    public $price = 0;
+
+    #[Validate('required|numeric|min:0')]
+    public $cost = 0;
+
+    #[Validate('required|numeric|min:0')]
+    public $stock = 0;
+
+    #[Validate('required|numeric|min:0')]
+    public $reorder_point = 0;
+
     #[Validate('required|boolean')]
     public $status = true;
 
-    #[Validate('image')]
-    public $image;
-
     #[Validate('required|boolean')]
     public $is_featured = false;
-    public $editingProductId = null;
+
+    #[Validate('required|boolean')]
+    public $is_composable = false;
+
+    #[Validate('nullable|image|max:2048|mimes:jpg,jpeg,png,webp')]
+    public $image;
+
+    // Size-based Pricing
     #[Validate('array')]
-    public $selectedIngredients = [];
-    public $category_filter = '';
-    public $status_filter = '';
-    public $showForm = false;
-    public $showAnalytics = false;
-    public $totalProducts = 0;
-    public $activeCategories = 0;
-    public $selectedSize;
-    public $selectedUnit;
     public $sizePrices = [];
 
-    public $prices = []; // Added to hold price data
+    public $selectedSize;
+    public $selectedUnit;
 
-    public $isCustomizable = false;
+    // Ingredient Management
+    #[Validate('array')]
+    public $selectedIngredients = [];
+
+    public $searchIngredient = '';
     public $allowedIngredients = [];
     public $basePrice = 0.00;
 
-    public string $searchIngredient = '';
-    public bool $showIngredientModal = false;
+    // Stock Adjustment
+    #[Validate('numeric|min:0')]
+    public $adjustmentQuantity = 0;
 
-    protected $rules = [
-        'selectedIngredients.*.id' => 'exists:ingredients,id',
-        'selectedIngredients.*.quantity' => 'required|numeric|min:0',
-        'prices.*.price' => 'required|numeric|min:0',
-        'isCustomizable' => 'boolean',
-        'allowedIngredients' => 'array',
-        'basePrice' => 'required_if:isCustomizable,true|numeric|min:0',
-        // 'image' => 'nullable|image|max:2048|mimes:jpg,jpeg,png,webp',
-    ];
+    #[Validate('string|max:255')]
+    public $adjustmentReason = '';
 
+    // Services
+    protected ProductService $productService;
+    protected ProductStockService $stockService;
+    protected PriceManagementService $priceService;
+    protected ProductAnalyticsService $analyticsService;
+
+    public $model = Product::class;
+
+    public function boot(
+        ProductService $productService,
+        ProductStockService $stockService,
+        PriceManagementService $priceService,
+        ProductAnalyticsService $analyticsService
+    ): void {
+        $this->productService = $productService;
+        $this->stockService = $stockService;
+        $this->priceService = $priceService;
+        $this->analyticsService = $analyticsService;
+    }
 
     #[Computed]
     public function products()
     {
         return Product::query()
+            ->with(['category', 'prices', 'ingredients'])
+            ->advancedFilter([
+                's'               => $this->search ?: null,
+                'order_column'    => $this->sortBy,
+                'order_direction' => $this->sortDirection,
+            ])
             ->when(
-                $this->search,
+                $this->category_filter,
                 fn($query) =>
-                $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('description', 'like', '%' . $this->search . '%')
+                $query->where('category_id', $this->category_filter)
             )
             ->when(
-                $this->category_id,
+                $this->status_filter === 'available',
                 fn($query) =>
-                $query->where('category_id', $this->category_id)
+                $query->available()
             )
-            ->with(['category', 'ingredients'])
+            ->when(
+                $this->status_filter === 'unavailable',
+                fn($query) =>
+                $query->where('status', false)
+            )
+            ->when(
+                $this->status_filter === 'low_stock',
+                fn($query) =>
+                $query->lowStock()
+            )
+            ->when(
+                $this->status_filter === 'featured',
+                fn($query) =>
+                $query->featured()
+            )
+            ->when($this->dateRange, function ($query) {
+                [$start, $end] = explode(' to ', $this->dateRange);
+                $this->startDate = Carbon::parse($start)->startOfDay();
+                $this->endDate = Carbon::parse($end)->endOfDay();
+                return $query->whereBetween('created_at', [$this->startDate, $this->endDate]);
+            })
             ->paginate(10);
     }
 
     #[Computed]
     public function categories()
     {
-        return Category::all();
+        return Category::query()
+            ->where('status', true)
+            ->orderBy('name')
+            ->get();
     }
 
     #[Computed]
     public function ingredients()
     {
-        return Ingredient::all();
-    }
-
-    public function saveProduct(): void
-    {
-        // $this->validate();
-
-        // Handle image upload
-        if ($this->image && !is_string($this->image)) {
-            $fileName = Str::slug($this->name) . '-' . time() . '.' . $this->image->getClientOriginalExtension();
-            $image = $this->image->storeAs('products', $fileName, 'public');
-        }
-
-        $productData = [
-            'name' => $this->name,
-            'description' => $this->description,
-            'slug' => Str::slug($this->name),
-            'category_id' => $this->category_id,
-            'status' => $this->status,
-            'is_featured' => $this->is_featured,
-            'is_customizable' => $this->isCustomizable,
-            'base_price' => $this->basePrice,
-            'image' => $image,
-        ];
-
-        // Create or update product
-        if ($this->editingProductId) {
-            $product = $this->editingProductId;
-            $product->update($productData);
-        } else {
-            $product = Product::create($productData);
-        }
-
-        // Save size-based prices
-        if (! empty($this->sizePrices)) {
-            foreach ($this->sizePrices as $sizePrice) {
-                $product->addSizePrice(
-                    $sizePrice['size'],
-                    $sizePrice['unit'],
-                    $sizePrice['cost'],
-                    $sizePrice['price']
-                );
-            }
-        }
-
-        // Save ingredients
-        if (! empty($this->selectedIngredients)) {
-            $ingredientData = collect($this->selectedIngredients)
-                ->filter(fn($ingredient) => ! empty($ingredient['id']))
-                ->mapWithKeys(function ($ingredient) {
-                    return [$ingredient['id'] => [
-                        'quantity' => $ingredient['quantity'],
-                        'unit' => $ingredient['unit'] ?? 'g'
-                    ]];
-                })->toArray();
-
-            $product->ingredients()->sync($ingredientData);
-        }
-
-        // If product is customizable, save allowed ingredients
-        if ($this->isCustomizable && ! empty($this->allowedIngredients)) {
-            $product->allowedIngredients()->sync($this->allowedIngredients);
-        }
-
-        if ($this->selectedIngredients) {
-            $this->ingredientService->attachIngredientsToProduct(
-                $this->editingProductId ?? $product,
-                $this->selectedIngredients
-            );
-        }
-
-        $this->reset();
-        session()->flash('success', __('Product saved successfully.'));
-    }
-
-
-    public function addProduct(): void
-    {
-        $this->reset();
-        $this->showForm = true;
-    }
-
-    public function editProduct(Product $product): void
-    {
-        $this->showForm = true;
-        $this->editingProductId = $product;
-        $this->name = $product->name;
-        $this->description = $product->description;
-        $this->category_id = $product->category_id;
-        $this->status = $product->status;
-        $this->is_featured = $product->is_featured;
-        $this->image = $product->image; // Store existing image path
-
-        // Load size-based prices
-        $this->sizePrices = $product->prices->map(function ($price) {
-            return [
-                'size' => $price->metadata['size'] ?? '',
-                'unit' => $price->metadata['unit'] ?? '',
-                'cost' => $price->cost,
-                'price' => $price->price,
-            ];
-        })->toArray();
-
-        // Load ingredients with proper structure
-        $this->selectedIngredients = $product->ingredients->map(function ($ingredient) {
-            return [
-                'id' => $ingredient->id,
-                'quantity' => $ingredient->pivot->quantity,
-                'unit' => $ingredient->pivot->unit ?? 'g',
-            ];
-        })->toArray();
-    }
-
-    public function updatedShowForm($value): void
-    {
-        if (! $value) {
-            $this->reset();
-        }
-    }
-
-    public function deleteProduct(Product $product): void
-    {
-        $product->delete();
-        session()->flash('success', __('Product deleted successfully.'));
-    }
-
-    public function render()
-    {
-        return view('livewire.admin.product-management');
-    }
-
-    public function addIngredientField(): void
-    {
-        $this->selectedIngredients[] = ['id' => null, 'quantity' => null, 'unit' => null];
-    }
-
-    public function calculateProductCost(Product $product): float
-    {
-        return $product->calculateCost();
-    }
-
-    public function updateProductNutritionalInfo(Product $product): void
-    {
-        $product->update([
-            'nutritional_info' => $product->calculateNutritionalInfo()
-        ]);
-    }
-
-    #[Computed]
-    public function lowStockProducts()
-    {
-        return Product::whereHas('ingredients', fn($query) => $query->where('stock_quantity', '<', 10))->get();
+        return Ingredient::query()
+            ->when(
+                $this->searchIngredient,
+                fn($query) =>
+                $query->where('name', 'like', '%' . $this->searchIngredient . '%')
+            )
+            ->where('status', true)
+            ->orderBy('name')
+            ->get();
     }
 
     #[Computed]
     public function productAnalytics()
     {
-        return [
-            'total_products' => Product::count(),
-            // total_value
-            // 'total_value' => Product::sum('price'),
-            // active_categories
-            'active_categories' => Category::where('status', true)->count(),
-            'low_stock_count' => '',
-        ];
+        $startDate = $this->startDate ? Carbon::parse($this->startDate) : Carbon::now()->startOfMonth();
+        $endDate = $this->endDate ? Carbon::parse($this->endDate) : Carbon::now()->endOfMonth();
+
+        return $this->productService->getProductAnalytics($startDate, $endDate);
     }
 
-    public function updatedSelectedSize($size): void
+    #[Computed]
+    public function stockAlerts()
     {
-        $this->updatePrice();
+        return $this->stockService->getStockAlerts($this->category_filter);
     }
 
-    public function updatedSelectedUnit($unit): void
+    public function saveProduct(): void
     {
-        $this->updatePrice();
+        $this->validate();
+
+        try {
+            // Handle image upload
+            if ($this->image && !is_string($this->image)) {
+                $fileName = Str::slug($this->name) . '-' . time() . '.' . $this->image->getClientOriginalExtension();
+                $imagePath = $this->image->storeAs('products', $fileName, 'public');
+            }
+
+            $productData = [
+                'name' => $this->name,
+                'description' => $this->description,
+                'category_id' => $this->category_id,
+                'status' => $this->status,
+                'is_featured' => $this->is_featured,
+                'is_composable' => $this->is_composable,
+                'stock' => $this->stock,
+                'reorder_point' => $this->reorder_point,
+                'cost' => $this->cost,
+                'price' => $this->price,
+                'image' => $imagePath ?? null,
+            ];
+
+            if ($this->editingProductId) {
+                $product = Product::findOrFail($this->editingProductId);
+                $this->productService->updateProduct(
+                    $product,
+                    $productData,
+                    $this->sizePrices,
+                    $this->selectedIngredients
+                );
+                $message = __('Product updated successfully.');
+            } else {
+                $this->productService->createProduct(
+                    $productData,
+                    $this->sizePrices,
+                    $this->selectedIngredients
+                );
+                $message = __('Product created successfully.');
+            }
+
+            $this->reset();
+
+            session()->flash('success', $message);
+        } catch (Exception $e) {
+            session()->flash('error', __('Error saving product: ') . $e->getMessage());
+        }
+    }
+
+    public function editProduct(Product $product): void
+    {
+        $this->editingProductId = $product->id;
+        $this->name = $product->name;
+        $this->description = $product->description;
+        $this->category_id = $product->category_id;
+        $this->status = $product->status;
+        $this->is_featured = $product->is_featured;
+        $this->is_composable = $product->is_composable;
+        $this->stock = $product->stock_quantity;
+        $this->reorder_point = $product->reorder_point;
+        $this->cost = $product->cost;
+        $this->price = $product->price;
+        $this->image = $product->image;
+        $this->sizePrices = $product->getSizePrices();
+        $this->selectedIngredients = $product->getRequiredIngredients();
+        $this->showForm = true;
+    }
+
+    public function deleteProduct(Product $product): void
+    {
+        try {
+            $this->productService->deleteProduct($product);
+
+            session()->flash('success', __('Product deleted successfully.'));
+        } catch (Exception $e) {
+            session()->flash('error', __('Error deleting product: ') . $e->getMessage());
+        }
+    }
+
+    public function adjustStock(Product $product): void
+    {
+        $this->validate([
+            'adjustmentQuantity' => 'required|numeric',
+            'adjustmentReason' => 'required|string|max:255'
+        ]);
+
+        try {
+            $this->stockService->adjustStock(
+                $product,
+                $this->adjustmentQuantity,
+                $this->adjustmentReason
+            );
+
+            session()->flash('success', __('Stock adjusted successfully.'));
+        } catch (Exception $e) {
+            session()->flash('error',  __('Error adjusting stock: ') . $e->getMessage());
+        }
+    }
+
+    public function toggleStatus(Product $product): void
+    {
+        try {
+            $this->productService->toggleStatus($product);
+            session()->flash('success', __('Product status updated successfully.'));
+        } catch (Exception $e) {
+            session()->flash('error',  __('Error adjusting stock: ') . $e->getMessage());
+        }
+    }
+
+    public function toggleFeatured(Product $product): void
+    {
+        try {
+            $this->productService->toggleFeatured($product);
+            session()->flash('success', __('Product featured status updated successfully.'));
+        } catch (Exception $e) {
+            session()->flash('error',  __('Error updating product featured status: ') . $e->getMessage());
+        }
     }
 
     public function addSizePrice(): void
@@ -283,118 +339,34 @@ class ProductManagement extends Component
         $this->sizePrices[] = [
             'size' => '',
             'unit' => 'g',
-            'cost' => 0.00,
-            'price' => 0.00
+            'cost' => 0,
+            'price' => 0
         ];
     }
 
-    public function removeSizePrice($index): void
+    public function removeSizePrice(int $index): void
     {
         unset($this->sizePrices[$index]);
         $this->sizePrices = array_values($this->sizePrices);
     }
 
-    #[Computed]
-    public function sizePrice()
+    public function addIngredient(): void
     {
-        if ($this->editingProductId) {
-            return $this->editingProductId->sizePrice;
-        }
-        return collect($this->sizePrices);
+        $this->selectedIngredients[] = [
+            'id' => '',
+            'quantity' => 0,
+            'unit' => 'g'
+        ];
     }
 
-    //toggleAvailability
-    public function toggleAvailability($productId): void
+    public function removeIngredient(int $index): void
     {
-        $product = Product::find($productId);
-        $product->status = ! $product->status;
-        $product->save();
+        unset($this->selectedIngredients[$index]);
+        $this->selectedIngredients = array_values($this->selectedIngredients);
     }
 
-    // toggleFeatured
-    public function toggleFeatured($productId): void
+    public function render()
     {
-        $product = Product::find($productId);
-        $product->is_featured = ! $product->is_featured;
-        $product->save();
-    }
-
-    // New method to calculate and return the nutritional information for the product
-    public function getNutritionalInfo(): array
-    {
-        if ($this->editingProductId) {
-            $product = $this->editingProductId;
-            return $product->calculateNutritionalInfo();
-        }
-        return [];
-    }
-
-    // New method to get the total cost of ingredients for the product
-    public function getTotalCost(): float
-    {
-        if ($this->editingProductId) {
-            $product = $this->editingProductId;
-            return $product->calculateCost();
-        }
-        return 0.0;
-    }
-
-    #[Computed]
-    public function priceHistory()
-    {
-        if ($this->editingProductId) {
-            return $this->editingProductId->prices()
-                ->orderBy('date', 'desc')
-                ->take(5)
-                ->get();
-        }
-        return collect();
-    }
-
-    public function addIngredient($ingredientId): void
-    {
-        if (! isset($this->selectedIngredients[$ingredientId])) {
-            $this->selectedIngredients[$ingredientId] = [
-                'id' => $ingredientId,
-                'quantity' => 1,
-                'unit' => 'g',
-                'sort_order' => count($this->selectedIngredients)
-            ];
-        }
-    }
-
-    public function updateIngredientQuantity($ingredientId, $quantity): void
-    {
-        if (isset($this->selectedIngredients[$ingredientId])) {
-            $this->selectedIngredients[$ingredientId]['quantity'] = $quantity;
-        }
-    }
-
-    public function removeIngredient($ingredientId): void
-    {
-        unset($this->selectedIngredients[$ingredientId]);
-    }
-
-    #[Computed]
-    public function availableIngredients()
-    {
-        return Ingredient::query()
-            ->when(
-                $this->searchIngredient,
-                fn($query) =>
-                $query->where('name', 'like', "%{$this->searchIngredient}%")
-            )
-            ->where('status', true)
-            ->orderBy('name')
-            ->get();
-    }
-
-    protected function updatePrice(): void
-    {
-        if ($this->selectedSize && $this->selectedUnit) {
-            $price = $this->editingProductId
-                ->getPriceForSizeAndUnit($this->selectedSize, $this->selectedUnit);
-            $this->price = $price ? $price->price : null;
-        }
+        return view('livewire.admin.product-management');
     }
 }

@@ -4,64 +4,83 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\UnitType;
-use App\Traits\HasPrices;
-use Carbon\Carbon;
-use Exception;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Traits\HasInventory;
+use App\Models\Traits\HasPricing;
+use App\Support\HasAdvancedFilter;
+use App\Traits\HasExpiry;
+use App\Enums\IngredientType;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Carbon\Carbon;
 
 class Ingredient extends Model
 {
-    use HasFactory;
-    use HasPrices;
-  //  use SoftDeletes;
+    use HasInventory;
+    use HasPricing;
+    use SoftDeletes;
+    use HasUuids;
+    use HasAdvancedFilter;
+    use HasExpiry;
+
+    protected const ATTRIBUTES = [
+        'id',
+        'sku',
+        'name',
+        'category_id',
+        'type',
+    ];
+
+    public $orderable = self::ATTRIBUTES;
+    public $filterable = self::ATTRIBUTES;
 
     protected $fillable = [
-        'name',
         'sku',
+        'name',
+        'slug',
+        'description',
         'category_id',
-        'stock_quantity',
-        'unit',
-        'cost_per_unit',
-        'reorder_point',
-        'status',
-        'is_seasonal',
+        'type',
         'image',
-        'nutritional_info',
+        'status',
+        'stock_quantity',
+        'reorder_point',
+        'unit',
+        'cost',
+        'expiry_date',
+        'storage_location',
+        'supplier_info',
+        'is_seasonal',
         'is_composable',
-        'popularity',
-        'portion_size',
-        'portion_unit'
+        'allergens',
+        'nutritional_info',
+        'preparation_instructions',
+        'minimum_order_quantity',
+        'lead_time_days',
+        'stock_status'
     ];
 
     protected $casts = [
-        'cost' => 'decimal:2',
-        'min_stock' => 'decimal:2',
-        'stock_quantity' => 'decimal:2',
-        'reorder_point' => 'decimal:2',
-        'nutritional_info' => 'array',
-        'popularity' => 'integer',
-        'is_composable' => 'boolean',
-        'is_seasonal' => 'boolean',
-        'portion_size' => 'decimal:2',
         'status' => 'boolean',
+        'stock_quantity' => 'float',
+        'reorder_point' => 'float',
+        'cost' => 'float',
         'expiry_date' => 'datetime',
-        'storage_conditions' => 'array',
+        'entry_date' => 'datetime',
         'supplier_info' => 'array',
-        'minimum_order_quantity' => 'decimal:2',
-        'lead_time_days' => 'integer',
+        'deleted_at' => 'datetime',
+        'is_seasonal' => 'boolean',
+        'is_composable' => 'boolean',
         'allergens' => 'array',
-        'unit' => UnitType::class,
+        'nutritional_info' => 'array',
+        'preparation_instructions' => 'array',
+        'minimum_order_quantity' => 'float',
+        'lead_time_days' => 'integer',
+        'type' => IngredientType::class,
     ];
 
     // Relationships
@@ -77,307 +96,186 @@ class Ingredient extends Model
             ->withTimestamps();
     }
 
-    public function recipes(): BelongsToMany
+    // Scopes
+    public function scopeLowStock($query)
     {
-        return $this->belongsToMany(Recipe::class)
-            ->withPivot(['quantity', 'unit'])
-            ->withTimestamps();
+        return $query->where('stock_quantity', '>', 0)
+            ->where('stock_quantity', '<=', DB::raw('reorder_point'));
     }
 
-    public function stockLogs(): MorphMany
+    public function scopeOutOfStock($query)
     {
-        return $this->morphMany(StockLog::class, 'stockable');
+        return $query->where('stock_quantity', '<=', 0);
     }
 
-    public function prices(): MorphMany
+    public function scopeExpiringSoon($query)
     {
-        return $this->morphMany(Price::class, 'priceable');
+        return $query->whereNotNull('expiry_date')
+            ->where('expiry_date', '<=', now()->addDays(30));
     }
 
-    // Stock Management Methods
-    public function adjustStock(float $quantity, string $reason = 'Manual Adjustment'): void
+    public function scopeAvailable($query)
     {
-        DB::transaction(function () use ($quantity, $reason) {
-            $oldQuantity = $this->stock_quantity;
-            $this->stock_quantity = max(0, $this->stock_quantity + $quantity);
-            $this->save();
-
-            $this->stockLogs()->create([
-                'adjustment' => $quantity,
-                'reason' => $reason,
-                'previous_quantity' => $oldQuantity,
-                'new_quantity' => $this->stock_quantity,
-            ]);
-
-            if ($this->isLowStock()) {
-                Log::warning("Ingredient {$this->name} is running low on stock. Current quantity: {$this->stock_quantity}");
-            }
-        });
+        return $query->where('status', true)
+            ->where('stock_quantity', '>', 0)
+            ->where(function ($query) {
+                $query->whereNull('expiry_date')
+                    ->orWhere('expiry_date', '>', now());
+            });
     }
 
-    public function setStockLevel(float $newQuantity, string $reason = null): void
+    // Helper Methods
+    public function isAvailable(): bool
     {
-        $adjustment = $newQuantity - $this->stock_quantity;
-        $this->adjustStock($adjustment, $reason ?? 'Stock Level Adjustment');
+        if (!$this->status || $this->stock_quantity <= 0) {
+            return false;
+        }
+
+        if ($this->expiry_date && $this->expiry_date <= now()) {
+            return false;
+        }
+
+        return true;
     }
 
-    public function isLowStock(): bool
-    {
-        return $this->stock_quantity <= $this->reorder_point;
-    }
-
-    public function isOutOfStock(): bool
-    {
-        return $this->stock_quantity <= 0;
-    }
-
-    public function isExpiringSoon(int $daysThreshold = 30): bool
+    public function isExpiringSoon(int $days = 30): bool
     {
         if (!$this->expiry_date) {
             return false;
         }
 
-        return $this->expiry_date->diffInDays(now()) <= $daysThreshold;
+        return $this->expiry_date->isBetween(now(), now()->addDays($days));
     }
 
-    public function hasExpired(): bool
+    public function isExpired(): bool
     {
         if (!$this->expiry_date) {
             return false;
         }
 
-        return $this->expiry_date->isPast();
+        return $this->expiry_date <= now();
     }
 
-    public function needsReorder(): bool
+    public function lowStock()
     {
-        return $this->isLowStock() && $this->status;
+        return $this->where('stock_quantity', '<=', DB::raw('reorder_point'));
     }
 
-    // Price Management Methods
-    public function updateCost(float $newCost, ?string $reason = null): void
+    public function calculateWastage(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
     {
-        DB::transaction(function () use ($newCost, $reason) {
-            $oldCost = $this->cost_per_unit;
-            $this->cost_per_unit = $newCost;
-            $this->save();
-
-            $this->prices()->create([
-                'amount' => $newCost,
-                'previous_amount' => $oldCost,
-                'reason' => $reason,
-                'cost' => true,
-                'effective_date' => now(),
-            ]);
-
-            Log::info("Cost updated for ingredient {$this->name} from {$oldCost} to {$newCost}");
-        });
+        return $this->stockLogs()
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->where('reason', 'like', '%waste%')
+            ->sum('adjustment');
     }
 
-    public function addPrice(float $cost, float $price, ?string $notes = null): void
+    public function calculateWastagePercentage(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
     {
-        DB::transaction(function () use ($cost, $price, $notes) {
-            $this->updateCost($cost);
-            
-            $this->prices()->create([
-                'amount' => $price,
-                'previous_amount' => $this->getCurrentPrice()?->amount,
-                'notes' => $notes,
-                'effective_date' => now(),
-            ]);
-        });
+        $totalStock = $this->stockLogs()
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->where('adjustment', '>', 0)
+            ->sum('adjustment');
+
+        if ($totalStock <= 0) {
+            return 0;
+        }
+
+        $wastage = $this->calculateWastage($startDate, $endDate);
+        return abs($wastage / $totalStock) * 100;
     }
 
-    public function getCurrentPrice(): ?Price
+    public function calculateTurnoverRate(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
     {
-        return $this->prices()
-            ->where('is_current', true)
-            // ->latest('effective_date')
-            ->first();
-    }
+        // Get the total usage (negative adjustments excluding waste)
+        $totalUsage = abs($this->stockLogs()
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->where('adjustment', '<', 0)
+            ->where('reason', 'not like', '%waste%')
+            ->sum('adjustment'));
 
-    // Analytics Methods
-    public function getUsageStats(Carbon $startDate, Carbon $endDate): array
-    {
-        $usage = DB::table('order_items')
-            ->join('product_ingredients', 'order_items.product_id', '=', 'product_ingredients.product_id')
-            ->where('product_ingredients.ingredient_id', $this->id)
-            ->whereBetween('order_items.created_at', [$startDate, $endDate])
-            ->select(
-                DB::raw('SUM(order_items.quantity * product_ingredients.quantity) as total_quantity_used'),
-                DB::raw('COUNT(DISTINCT order_items.order_id) as total_orders'),
-                DB::raw('AVG(order_items.quantity * product_ingredients.quantity) as average_usage_per_order')
-            )
-            ->first();
-
-        return [
-            'total_quantity_used' => $usage->total_quantity_used ?? 0,
-            'total_orders' => $usage->total_orders ?? 0,
-            'average_usage_per_order' => $usage->average_usage_per_order ?? 0,
-            'stock_turnover_rate' => $this->calculateStockTurnoverRate($startDate, $endDate),
-        ];
-    }
-
-    public function calculateStockTurnoverRate(Carbon $startDate, Carbon $endDate): float
-    {
-        $averageInventory = $this->stockLogs()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->avg('new_quantity') ?? $this->stock_quantity;
+        // Get the average inventory for the period
+        $averageInventory = $this->calculateAverageInventory($startDate, $endDate);
 
         if ($averageInventory <= 0) {
             return 0;
         }
 
-        $totalUsed = DB::table('order_items')
-            ->join('product_ingredients', 'order_items.product_id', '=', 'product_ingredients.product_id')
-            ->where('product_ingredients.ingredient_id', $this->id)
-            ->whereBetween('order_items.created_at', [$startDate, $endDate])
-            ->sum(DB::raw('order_items.quantity * product_ingredients.quantity')) ?? 0;
-
-        return $totalUsed / $averageInventory;
+        // Calculate turnover rate (total usage / average inventory)
+        return $totalUsage / $averageInventory;
     }
 
-    public function getPriceHistory(int $limit = 10): Collection
+    public function calculateAverageInventory(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
     {
-        return $this->prices()
-            ->where('cost', false)
-                // ->latest('effective_date')
-            ->limit($limit)
-            ->get();
-    }
+        $query = $this->stockLogs();
 
-    public function getCostHistory(int $limit = 10): Collection
-    {
-        return $this->prices()
-            ->where('cost', true)
-                // ->latest('effective_date')
-            ->limit($limit)
-            ->get();
-    }
-
-    public function getStockHistory(int $limit = 10): Collection
-    {
-        return $this->stockLogs()
-            ->with('user')
-            ->latest()
-            ->limit($limit)
-            ->get();
-    }
-
-    // Scopes
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->where('status', true);
-    }
-
-    public function scopeLowStock(Builder $query): Builder
-    {
-        return $query->where('stock_quantity', '<=', DB::raw('reorder_point'));
-    }
-
-    public function scopeOutOfStock(Builder $query): Builder
-    {
-        return $query->where('stock_quantity', '<=', 0);
-    }
-
-    public function scopeExpiringSoon(Builder $query, int $daysThreshold = 30): Builder
-    {
-        return $query->whereNotNull('expiry_date')
-            ->where('expiry_date', '<=', now()->addDays($daysThreshold))
-            ->where('expiry_date', '>', now());
-    }
-
-    public function scopeExpired(Builder $query): Builder
-    {
-        return $query->whereNotNull('expiry_date')
-            ->where('expiry_date', '<', now());
-    }
-
-    public function scopeNeedsReorder(Builder $query): Builder
-    {
-        return $query->where('status', true)
-            ->where('stock_quantity', '<=', DB::raw('reorder_point'));
-    }
-
-    public function scopeByCategory(Builder $query, $categoryId): Builder
-    {
-        return $query->where('category_id', $categoryId);
-    }
-
-    public function scopePopular(Builder $query): Builder
-    {
-        return $query->orderByDesc('popularity');
-    }
-
-    public function scopeSeasonal(Builder $query): Builder
-    {
-        return $query->where('is_seasonal', true);
-    }
-
-    // Helper Methods
-    public function getImageUrlAttribute(): ?string
-    {
-        return $this->image ? Storage::url($this->image) : null;
-    }
-
-    public function calculateNutrition(float $quantity): array
-    {
-        if (!$this->nutritional_info) {
-            return [];
+        if ($startDate && $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        $ratio = $quantity / $this->portion_size;
-        return collect($this->nutritional_info)
-            ->map(fn($value) => $value * $ratio)
-            ->toArray();
+        $stockLevels = $query->orderBy('created_at')
+            ->get(['new_quantity', 'created_at']);
+
+        if ($stockLevels->isEmpty()) {
+            return $this->stock_quantity;
+        }
+
+        $totalStock = 0;
+        $previousQuantity = $stockLevels->first()->new_quantity;
+        $previousDate = $stockLevels->first()->created_at;
+
+        foreach ($stockLevels as $log) {
+            $daysBetween = $previousDate->diffInDays($log->created_at);
+            $totalStock += $previousQuantity * $daysBetween;
+            
+            $previousQuantity = $log->new_quantity;
+            $previousDate = $log->created_at;
+        }
+
+        $totalDays = $startDate && $endDate
+            ? Carbon::parse($startDate)->diffInDays(Carbon::parse($endDate))
+            : $stockLevels->first()->created_at->diffInDays($stockLevels->last()->created_at);
+
+        return $totalDays > 0 ? $totalStock / $totalDays : $previousQuantity;
     }
 
-    public function incrementPopularity(): void
+    public function calculateUsageRate(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
     {
-        $this->increment('popularity');
+        $query = $this->stockLogs();
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+        $totalUsage = abs($query->where('adjustment', '<', 0)
+            ->where('reason', 'not like', '%waste%')
+            ->sum('adjustment'));
+
+        $days = $startDate && $endDate
+            ? Carbon::parse($startDate)->diffInDays(Carbon::parse($endDate))
+            : 30; // Default to 30 days if no date range specified
+
+        return $days > 0 ? $totalUsage / $days : 0;
     }
 
-    public function getStandardizedPortion(): array
+    public function calculateStockEfficiency(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
     {
-        return [
-            'size' => $this->portion_size,
-            'unit' => $this->portion_unit,
-            'nutrition' => $this->nutritional_info,
-        ];
-    }
-
-    public function isStockSufficientForProduct(Product $product, int $quantity): bool
-    {
-        $requiredQuantity = $product->ingredients()
-            ->where('ingredient_id', $this->id)
-            ->first()
-            ->pivot
-            ->quantity * $quantity;
-
-        return $this->stock_quantity >= $requiredQuantity;
-    }
-
-    public function convertUnit(float $quantity, UnitType $fromUnit, UnitType $toUnit): float
-    {
-        return $fromUnit->convertTo($toUnit, $quantity);
-    }
-
-    public function getReorderQuantitySuggestion(): float
-    {
-        $averageDailyUsage = $this->calculateAverageDailyUsage();
-        $suggestedQuantity = $averageDailyUsage * ($this->lead_time_days + 7); // 7 days buffer
-        return max($suggestedQuantity, $this->minimum_order_quantity);
-    }
-
-    private function calculateAverageDailyUsage(): float
-    {
-        $thirtyDaysAgo = now()->subDays(30);
-        $totalUsed = DB::table('order_items')
-            ->join('product_ingredients', 'order_items.product_id', '=', 'product_ingredients.product_id')
-            ->where('product_ingredients.ingredient_id', $this->id)
-            ->where('order_items.created_at', '>=', $thirtyDaysAgo)
-            ->sum(DB::raw('order_items.quantity * product_ingredients.quantity')) ?? 0;
-
-        return $totalUsed / 30;
+        $turnoverRate = $this->calculateTurnoverRate($startDate, $endDate);
+        $wastagePercentage = $this->calculateWastagePercentage($startDate, $endDate);
+        
+        // Higher turnover and lower wastage = better efficiency
+        // Normalize turnover rate (assuming 12 is a good annual turnover rate)
+        $normalizedTurnover = min(1, $turnoverRate / 12);
+        
+        // Normalize wastage (0% wastage = 1, 100% wastage = 0)
+        $normalizedWastage = 1 - ($wastagePercentage / 100);
+        
+        // Calculate efficiency score (50% weight to each factor)
+        return (($normalizedTurnover * 0.5) + ($normalizedWastage * 0.5)) * 100;
     }
 }
