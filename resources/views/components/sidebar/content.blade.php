@@ -19,12 +19,14 @@
     </x-sidebar.dropdown>
 
     {{-- Operations Section --}}
-    <x-sidebar.dropdown title="{{ __('Operations') }}" :active="request()->routeIs(['admin.orders', 'admin.inventory'])">
+    <x-sidebar.dropdown title="{{ __('Operations') }}" :active="request()->routeIs(['admin.orders', 'admin.cash-register', 'admin.expense', 'admin.expense-categories'])">
         <x-slot name="icon">
             <span class="material-icons text-2xl">shopping_cart</span>
         </x-slot>
         <x-sidebar.sublink title="{{ __('Orders') }}" href="{{ route('admin.orders') }}" :active="request()->routeIs('admin.orders')" />
-        <x-sidebar.sublink title="{{ __('Inventory') }}" href="{{ route('admin.inventory') }}" :active="request()->routeIs('admin.inventory')" />
+        <x-sidebar.sublink title="{{ __('Cash Register') }}" href="{{ route('admin.cash-register') }}" :active="request()->routeIs('admin.cash-register')" />
+        <x-sidebar.sublink title="{{ __('Expense') }}" href="{{ route('admin.expense') }}" :active="request()->routeIs('admin.expense')" />
+        <x-sidebar.sublink title="{{ __('Expense Categories') }}" href="{{ route('admin.expense-categories') }}" :active="request()->routeIs('admin.expense-categories')" />
     </x-sidebar.dropdown>
 
     {{-- Profile Link --}}

@@ -10,7 +10,8 @@
 ])
 
 @php
-    $class = $class . 
+    $class =
+        $class .
         ($striped ? ' table-striped' : '') .
         ($divided ? ' table-divided' : '') .
         ($divider === 'thin' ? ' divider-thin' : '') .
@@ -20,9 +21,10 @@
 @endphp
 
 <div class="my-5 p-5 bg-white text-black text-base rounded-lg overflow-x-auto overflow-y-auto relative">
-    <table {{ $attributes->merge(['class' => 'border-collapse table-auto w-full whitespace-no-wrap relative ' . $class]) }}>
-        <x-table.thead class="text-black">
-            {{ $header }}
+    <table
+        {{ $attributes->merge(['class' => 'border-collapse table-auto w-full whitespace-no-wrap relative ' . $class]) }}>
+        <x-table.thead>
+            {{ $thead }}
         </x-table.thead>
 
         {{ $slot }}

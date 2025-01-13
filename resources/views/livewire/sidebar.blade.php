@@ -24,7 +24,7 @@ use Livewire\Volt\Component;
         x-transition:enter-end="translate-x-0"
         x-transition:leave="transform transition-transform duration-200"
         x-transition:leave-start="translate-x-0"
-        x-transition:leave-end="-translate-x-full">
+        x-transition:leave-end="-translate-x-full" x-cloak>
 
         <x-sidebar.header />
 

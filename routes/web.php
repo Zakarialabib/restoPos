@@ -6,14 +6,17 @@ use App\Livewire\Admin\{
     CategoryManagement,
     Dashboard,
     IngredientManagement,
-    InventoryManagement,
     OrderManagement,
     ProductManagement,
     RecipeManagement,
 };
+use App\Livewire\Admin\CashRegister\Index as CashRegisterIndex;
+use App\Livewire\Admin\Expense\Index as ExpenseIndex;
+use App\Livewire\Admin\ExpenseCategories\Index as ExpenseCategoriesIndex;
 use App\Livewire\{
     ComposableDriedFruitsIndex,
     ComposableJuicesIndex,
+    ComposableProductIndex,
     ComposableSaladeIndex,
 };
 use Illuminate\Support\Facades\Route;
@@ -32,8 +35,12 @@ Route::get('/menu/tv', [MenuController::class, 'tvMenu'])->name('menu.tv');
 Route::prefix('compose')->name('compose.')->group(function (): void {
     Route::get('/juices', ComposableJuicesIndex::class)->name('juices');
     Route::get('/salade', ComposableSaladeIndex::class)->name('salade');
-    Route::get('/dried-fruits', ComposableDriedFruitsIndex::class)->name('dried-fruits');
+    Route::get('/product', ComposableProductIndex::class)->name('product');
 });
+
+// Composable Product Routes
+Route::get('/composable/{productType}', App\Livewire\ComposableProductIndex::class)
+    ->name('composable.product');
 
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'verified'])->name('admin.')->group(function (): void {
@@ -46,10 +53,11 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->name('admin.')->group(
     Route::get('/categories', CategoryManagement::class)->name('categories');
     Route::get('/ingredients', IngredientManagement::class)->name('ingredients');
     Route::get('/recipes', RecipeManagement::class)->name('recipes');
-
+    Route::get('/cash-register', CashRegisterIndex::class)->name('cash-register');
+    Route::get('/expense', ExpenseIndex::class)->name('expense');
+    Route::get('/expense-categories', ExpenseCategoriesIndex::class)->name('expense-categories');
     // Operations Management
     Route::get('/orders', OrderManagement::class)->name('orders');
-    Route::get('/inventory', InventoryManagement::class)->name('inventory');
 });
 
 // Profile routes

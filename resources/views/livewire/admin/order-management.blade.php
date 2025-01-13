@@ -1,21 +1,16 @@
 <div>
-    <div class="w-full">
+    <div class="px-4 mx-auto rounded-lg shadow-md">
+        <div class="bg-gray-100 rounded-lg shadow-lg px-6 py-2 my-4">
 
-        @error('order')
-            <x-alert type="error" :dismissal="false" :showIcon="true">
-                {{ $message }}
-            </x-alert>
-        @enderror
-        <!-- Header with Analytics -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">{{ __('Order Management') }}</h2>
-                    <p class="text-sm text-gray-600">{{ __('Manage and track orders') }}</p>
-                </div>
-                <div class="flex space-x-3">
-                    <x-button wire:click="$toggle('showAnalytics')" color="success">
-                        <span class="material-icons">bar_chart</span>
+            <!-- Header with Analytics -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-2">
+                <h2 class="text-3xl font-bold mb-4 md:mb-0 text-black">{{ __('Order Management') }} -
+                    <span class="text-sm text-gray-700">
+                        {{ __(':count orders selected', ['count' => count($selectedOrders)]) }}
+                    </span>
+                </h2>
+                <div class="flex space-x-4">
+                    <x-button wire:click="$toggle('showAnalytics')" color="secondary" type="button">
                         {{ $showAnalytics ? __('Hide Analytics') : __('Show Analytics') }}
                     </x-button>
                     @if (count($selectedOrders) > 0)
@@ -24,6 +19,62 @@
                             {{ __('Bulk Actions') }}
                         </x-button>
                     @endif
+                    <!-- Bulk Actions Panel -->
+                    @if ($showBulkActions && count($selectedOrders) > 0)
+                        <x-button wire:click="bulkUpdateStatus('completed')" color="success">
+                            <span class="material-icons">check</span>
+                            {{ __('Mark Completed') }}
+                        </x-button>
+                        <x-button wire:click="bulkMarkAsPaid" color="warning">
+                            <span class="material-icons">paid</span>
+                            {{ __('Mark Paid') }}
+                        </x-button>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap items-center gap-x-4">
+                <div class="flex-1 min-w-[200px]">
+                    <x-input wire:model.live="search" placeholder="{{ __('Search orders...') }}" class="w-full">
+                        <x-slot name="leadingIcon">
+                            <span class="material-icons">search</span>
+                        </x-slot>
+                    </x-input>
+                </div>
+
+                <div class="flex gap-x-4 flex-wrap">
+
+                    <select wire:model.live="status" class="w-full">
+                        <option value="">{{ __('All Statuses') }}</option>
+                        @foreach (App\Enums\OrderStatus::cases() as $status)
+                            <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                        @endforeach
+                    </select>
+
+                    <select wire:model.live="paymentStatus" class="w-full">
+                        <option value="">{{ __('All Payment Statuses') }}</option>
+                        @foreach ($this->paymentStatuses as $status)
+                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                        @endforeach
+                    </select>
+
+                    <select wire:model.live="timeFilter"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="all">{{ __('All Time') }}</option>
+                        <option value="today">{{ __('Today') }}</option>
+                        <option value="yesterday">{{ __('Yesterday') }}</option>
+                        <option value="this_week">{{ __('This Week') }}</option>
+                        <option value="this_month">{{ __('This Month') }}</option>
+                    </select>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Payment Status') }}</label>
+                        <div class="flex items-center mt-2">
+                            <input type="checkbox" wire:model.live="onlyUnpaid"
+                                class="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <span class="ml-2 text-sm text-gray-600">{{ __('Show only unpaid orders') }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -76,7 +127,6 @@
                             <span>{{ __('3% decrease') }}</span>
                         </div>
                     </div>
-
                     <div
                         class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
                         <div class="flex items-center justify-between mb-2">
@@ -91,94 +141,91 @@
                             <span>{{ __('15% increase') }}</span>
                         </div>
                     </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">{{ __('Total Customers') }}</h4>
+                        <p class="text-2xl font-bold">{{ $this->customerInsights['total_customers'] }}</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">{{ __('Repeat Customers') }}</h4>
+                        <p class="text-2xl font-bold">{{ $this->customerInsights['repeat_customers'] }}</p>
+                    </div>
+                </div>
+                <!-- Order Trends Section -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">{{ __('Order Trends') }}</h3>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="grid grid-cols-1 gap-4">
+                            @foreach ($this->orderTrends['daily_orders'] as $date => $count)
+                                <div class="flex justify-between items-center border-b py-2">
+                                    <span class="text-sm text-gray-600">{{ $date }}</span>
+                                    <div class="flex space-x-4">
+                                        <span class="text-sm">{{ $count }} {{ __('orders') }}</span>
+                                        <span
+                                            class="text-sm text-green-600">{{ number_format($this->orderTrends['daily_revenue'][$date], 2) }}
+                                            DH</span>
+                                        <span
+                                            class="text-sm text-blue-600">{{ number_format($this->orderTrends['daily_profit'][$date], 2) }}
+                                            DH</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Insights Section -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">{{ __('Customer Insights') }}</h3>
+                    <!-- Top Customers Table -->
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        {{ __('Customer') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        {{ __('Orders') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        {{ __('Total Spent') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        {{ __('Avg Order Value') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach ($this->customerInsights['top_customers'] as $customer)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $customer['customer_name'] }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $customer['total_orders'] }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {{ number_format($customer['total_spent'], 2) }}
+                                            DH</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {{ number_format($customer['average_order_value'], 2) }} DH</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             @endif
+
         </div>
 
-        <!-- Filters Panel -->
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-6 border border-gray-100">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Search') }}</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="material-icons">search</span>
-                        </div>
-                        <x-input type="text" wire:model.live="search" class="pl-10 "
-                            placeholder="{{ __('Search orders...') }}" />
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Status') }}</label>
-                    <select wire:model.live="selectedStatus"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                        <option value="">{{ __('All Statuses') }}</option>
-                        @foreach (App\Enums\OrderStatus::cases() as $status)
-                            <option value="{{ $status->value }}">{{ $status->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Date Range') }}</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="material-icons">calendar_month</span>
-                        </div>
-                        <x-input type="text" wire:model="dateRange" x-data x-init="flatpickr($el, { mode: 'range' })" class="pl-10 "
-                            placeholder="{{ __('Select date range') }}" />
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Time Filter') }}</label>
-                    <select wire:model.live="timeFilter"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-                        <option value="all">{{ __('All Time') }}</option>
-                        <option value="today">{{ __('Today') }}</option>
-                        <option value="yesterday">{{ __('Yesterday') }}</option>
-                        <option value="this_week">{{ __('This Week') }}</option>
-                        <option value="this_month">{{ __('This Month') }}</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Payment Status') }}</label>
-                    <div class="flex items-center mt-2">
-                        <input type="checkbox" wire:model.live="onlyUnpaid"
-                            class="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                        <span class="ml-2 text-sm text-gray-600">{{ __('Show only unpaid orders') }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bulk Actions Panel -->
-        @if ($showBulkActions && count($selectedOrders) > 0)
-            <div class="bg-white p-4 rounded-lg shadow-sm mb-6 border border-gray-100">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-700">
-                        {{ __(':count orders selected', ['count' => count($selectedOrders)]) }}
-                    </span>
-                    <div class="flex space-x-3">
-                        <x-button wire:click="bulkUpdateStatus('completed')" color="success">
-                            <span class="material-icons">check</span>
-                            {{ __('Mark Completed') }}
-                        </x-button>
-                        <x-button wire:click="bulkMarkAsPaid" color="warning">
-                            <span class="material-icons">paid</span>
-                            {{ __('Mark Paid') }}
-                        </x-button>
-                    </div>
-                </div>
-            </div>
+        @if (session()->has('success'))
+            <x-alert type="success" :dismissal="false" :showIcon="true">
+                {{ session('success') }}
+            </x-alert>
         @endif
 
+        @if (session()->has('error'))
+            <x-alert type="error" :dismissal="false" :showIcon="true">
+                {{ session('error') }}
+            </x-alert>
+        @endif
         <!-- Orders Table -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
             <x-table>
-                <x-slot name="header">
+                <x-slot name="thead">
                     <tr>
                         <x-table.th class="w-8">
                             <input type="checkbox" wire:model.live="selectAll"
@@ -239,9 +286,11 @@
                                             </span>
                                         </div>
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $order->customer_name }}
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ $order->customer_name }}
                                             </div>
-                                            <div class="text-sm text-gray-500">{{ $order->customer_phone }}</div>
+                                            <div class="text-sm text-gray-500">{{ $order->customer_phone }}
+                                            </div>
                                         </div>
                                     </div>
                                 @else
@@ -277,8 +326,10 @@
                                 </select>
                             </x-table.td>
                             <x-table.td>
-                                <div class="text-sm text-gray-900">{{ $order->created_at->format('M d, Y') }}</div>
-                                <div class="text-xs text-gray-500">{{ $order->created_at->format('H:i') }}</div>
+                                <div class="text-sm text-gray-900">{{ $order->created_at->format('M d, Y') }}
+                                </div>
+                                <div class="text-xs text-gray-500">{{ $order->created_at->format('H:i') }}
+                                </div>
                             </x-table.td>
                             <x-table.td>
                                 <div class="flex items-center space-x-2">
@@ -304,7 +355,8 @@
                             <x-table.td colspan="7">
                                 <div class="flex flex-col items-center justify-center py-12">
                                     <span class="material-icons">emoji_sad</span>
-                                    <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('No orders found') }}
+                                    <h3 class="mt-2 text-sm font-medium text-gray-900">
+                                        {{ __('No orders found') }}
                                     </h3>
                                     <p class="mt-1 text-sm text-gray-500">
                                         {{ __('No orders match your current filters.') }}</p>
@@ -347,9 +399,11 @@
                                             <h4 class="text-sm font-medium text-gray-500">
                                                 {{ __('Customer Information') }}</h4>
                                             <div class="mt-2 space-y-1">
-                                                <p class="text-sm text-gray-900">{{ $selectedOrder->customer_name }}
+                                                <p class="text-sm text-gray-900">
+                                                    {{ $selectedOrder->customer_name }}
                                                 </p>
-                                                <p class="text-sm text-gray-500">{{ $selectedOrder->customer_phone }}
+                                                <p class="text-sm text-gray-500">
+                                                    {{ $selectedOrder->customer_phone }}
                                                 </p>
                                                 @if ($selectedOrder->customer_email)
                                                     <p class="text-sm text-gray-500">
@@ -405,7 +459,8 @@
                                                     <p class="text-sm font-medium text-gray-900">
                                                         {{ $item->product->name }}</p>
                                                     <p class="text-sm text-gray-500">
-                                                        {{ $item->quantity }} x {{ number_format($item->price, 2) }}
+                                                        {{ $item->quantity }} x
+                                                        {{ number_format($item->price, 2) }}
                                                         DH
                                                     </p>
                                                 </div>
@@ -431,7 +486,8 @@
                                         </p>
                                     </div>
                                     <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-                                        <p class="text-base font-medium text-gray-900">{{ __('Total') }}</p>
+                                        <p class="text-base font-medium text-gray-900">{{ __('Total') }}
+                                        </p>
                                         <p class="text-base font-medium text-gray-900">
                                             {{ number_format($selectedOrder->total_amount, 2) }} DH
                                         </p>
@@ -443,5 +499,6 @@
                 </div>
             </div>
         @endif
+
     </div>
 </div>

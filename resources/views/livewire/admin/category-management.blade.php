@@ -6,10 +6,9 @@
                 <h2 class="text-3xl font-bold mb-4 md:mb-0 text-black">{{ __('Category Management') }}</h2>
                 <div class="flex space-x-4">
                     <x-button wire:click="$wire.showAnalytics = true" color="secondary" type="button">
-                        {{ __('Show Analytics') }}
+                        {{ $showAnalytics ? __('Hide Analytics') : __('Show Analytics') }}
                     </x-button>
                     <x-button wire:click="$wire.showForm = true" color="primary" type="button">
-                        <span class="material-symbols">add</span>
                         {{ __('Add Category') }}
                     </x-button>
                 </div>

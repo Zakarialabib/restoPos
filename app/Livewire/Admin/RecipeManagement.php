@@ -41,7 +41,7 @@ class RecipeManagement extends Component
     #[Validate('array|min:1')]
     public array $selectedIngredients = [];
 
-    public ?int $editingRecipeId = null;
+    public $editingRecipeId = null;
     public string $searchIngredient = '';
     public string $selectedCategory = '';
     public bool $showForm = false;
@@ -101,7 +101,6 @@ class RecipeManagement extends Component
                         'type' => $this->type,
                         'is_featured' => $this->is_featured,
                         'instructions' => $this->instructions,
-                        'nutritional_info' => $this->calculateNutritionalInfo(),
                     ]
                 );
 
@@ -120,7 +119,7 @@ class RecipeManagement extends Component
                     [
                         'name' => $recipe->name,
                         'description' => $recipe->description,
-                        'is_available' => true,
+                        'status' => true,
                         'category_id' => 1,
                     ]
                 );
@@ -209,8 +208,9 @@ class RecipeManagement extends Component
     }
 
     #[Computed]
-    public function recipeTypes(): array
+    public function recipeTypes()
     {
+        // dd(RecipeType::cases());
         return RecipeType::cases();
     }
 
