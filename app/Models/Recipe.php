@@ -6,30 +6,54 @@ namespace App\Models;
 
 use App\Enums\RecipeType;
 use App\Enums\UnitType;
+use App\Support\HasAdvancedFilter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class Recipe extends Model
 {
+    use HasAdvancedFilter;
     use HasFactory;
-    // use SoftDeletes;
+    use HasUuids;
+    use Prunable;
+    use SoftDeletes;
+
+    protected const ATTRIBUTES = [
+        'id',
+        'name',
+        'slug',
+        'type',
+        'status',
+        'estimated_cost',
+        'popularity_score',
+    ];
+
+    public $orderable = self::ATTRIBUTES;
+
+    public $filterable = self::ATTRIBUTES;
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'instructions',
+        'preparation_steps',
+        'preparation_notes',
         'preparation_time',
+        'cooking_instructions',
+        'equipment_needed',
+        'difficulty_level',
         'type',
         'is_featured',
-        'nutritional_info',
         'estimated_cost',
         'last_cost_update',
         'difficulty_level',
@@ -41,11 +65,15 @@ class Recipe extends Model
         'video_url',
         'status',
         'popularity_score',
+        'chef_notes',
+        'allergens',
+        'calories_per_serving',
+        'is_published',
+        'published_at',
     ];
 
     protected $casts = [
         'instructions' => 'array',
-        'nutritional_info' => 'array',
         'is_featured' => 'boolean',
         'estimated_cost' => 'decimal:2',
         'last_cost_update' => 'datetime',
@@ -56,7 +84,43 @@ class Recipe extends Model
         'type' => RecipeType::class,
         'status' => 'boolean',
         'popularity_score' => 'integer',
+        'allergens' => 'array',
+        'calories_per_serving' => 'integer',
+        'is_published' => 'boolean',
+        'published_at' => 'datetime',
+        'deleted_at' => 'datetime',
+        'preparation_steps' => 'array',
     ];
+
+    protected $hidden = [
+        'deleted_at'
+    ];
+
+    // New method to validate recipe completeness
+    public function validateRecipe(): array
+    {
+        $errors = [];
+
+        if (empty($this->ingredients()->count())) {
+            $errors[] = 'Recipe must have at least one ingredient';
+        }
+
+        if (empty($this->preparation_steps) && empty($this->instructions)) {
+            $errors[] = 'Recipe must have preparation steps or cooking instructions';
+        }
+
+        if (empty($this->preparation_time)) {
+            $errors[] = 'Preparation time is required';
+        }
+
+        return $errors;
+    }
+
+    public function prunable(): Builder
+    {
+        return static::where('created_at', '<=', now()->subYears(2))
+            ->whereDoesntHave('product');
+    }
 
     // Relationships
     public function ingredients(): BelongsToMany
@@ -77,18 +141,21 @@ class Recipe extends Model
         $totalCost = $this->ingredients->sum(function ($ingredient) {
             $quantity = $ingredient->pivot->quantity;
             $unit = UnitType::from($ingredient->pivot->unit);
-            
+
             // Convert quantity to ingredient's base unit if necessary
             if ($unit !== $ingredient->unit) {
                 $quantity = $unit->convertTo($ingredient->unit, $quantity);
             }
-            
-            return $quantity * $ingredient->cost_per_unit;
+
+            return $quantity * $ingredient->cost;
         });
 
-        $this->estimated_cost = $totalCost;
-        $this->last_cost_update = now();
-        $this->save();
+        // Only update and save if the model exists to prevent validation errors
+        if ($this->exists) {
+            $this->estimated_cost = $totalCost;
+            $this->last_cost_update = now();
+            $this->save();
+        }
 
         return $totalCost;
     }
@@ -137,11 +204,11 @@ class Recipe extends Model
         return $this->ingredients->every(function ($ingredient) {
             $quantity = $ingredient->pivot->quantity;
             $unit = UnitType::from($ingredient->pivot->unit);
-            
+
             if ($unit !== $ingredient->unit) {
                 $quantity = $unit->convertTo($ingredient->unit, $quantity);
             }
-            
+
             return $ingredient->stock_quantity >= $quantity;
         });
     }
@@ -152,32 +219,24 @@ class Recipe extends Model
         return $this->ingredients->reduce(function (array $total, Ingredient $ingredient) {
             $quantity = $ingredient->pivot->quantity;
             $unit = UnitType::from($ingredient->pivot->unit);
-            
+
             if ($unit !== $ingredient->unit) {
                 $quantity = $unit->convertTo($ingredient->unit, $quantity);
             }
 
             $nutrition = $ingredient->calculateNutrition($quantity);
 
-            return array_map(function ($value, $ingredientValue) {
-                return ($value ?? 0) + ($ingredientValue ?? 0);
-            }, $total, $nutrition);
+            return array_map(fn ($value, $ingredientValue) => ($value ?? 0) + ($ingredientValue ?? 0), $total, $nutrition);
         }, []);
-    }
-
-    public function updateNutritionalInfo(): void
-    {
-        $this->nutritional_info = $this->calculateNutritionalInfo();
-        $this->save();
     }
 
     // Performance Tracking Methods
     public function updatePopularityScore(): void
     {
         $thirtyDaysAgo = now()->subDays(30);
-        
+
         $score = $this->product()
-            ->withCount(['orderItems' => function ($query) use ($thirtyDaysAgo) {
+            ->withCount(['orderItems' => function ($query) use ($thirtyDaysAgo): void {
                 $query->where('created_at', '>=', $thirtyDaysAgo);
             }])
             ->first()
@@ -190,12 +249,12 @@ class Recipe extends Model
     public function getPerformanceMetrics(Carbon $startDate, Carbon $endDate): array
     {
         $metrics = $this->product()
-            ->with(['orderItems' => function ($query) use ($startDate, $endDate) {
+            ->with(['orderItems' => function ($query) use ($startDate, $endDate): void {
                 $query->whereBetween('created_at', [$startDate, $endDate]);
             }])
             ->first();
 
-        if (!$metrics) {
+        if ( ! $metrics) {
             return [
                 'total_orders' => 0,
                 'total_quantity' => 0,
@@ -207,8 +266,8 @@ class Recipe extends Model
         }
 
         $totalQuantity = $metrics->orderItems->sum('quantity');
-        $totalRevenue = $metrics->orderItems->sum(fn($item) => $item->quantity * $item->price);
-        $totalCost = $metrics->orderItems->sum(fn($item) => $item->quantity * $item->cost);
+        $totalRevenue = $metrics->orderItems->sum(fn ($item) => $item->quantity * $item->price);
+        $totalCost = $metrics->orderItems->sum(fn ($item) => $item->quantity * $item->cost);
         $profit = $totalRevenue - $totalCost;
 
         return [
@@ -244,14 +303,14 @@ class Recipe extends Model
 
     public function scopeWithIngredient(Builder $query, int|array $ingredientIds): Builder
     {
-        return $query->whereHas('ingredients', function ($query) use ($ingredientIds) {
+        return $query->whereHas('ingredients', function ($query) use ($ingredientIds): void {
             $query->whereIn('ingredients.id', (array) $ingredientIds);
         });
     }
 
     public function scopeNeedsCostUpdate(Builder $query, int $daysThreshold = 7): Builder
     {
-        return $query->where(function ($query) use ($daysThreshold) {
+        return $query->where(function ($query) use ($daysThreshold): void {
             $query->whereNull('last_cost_update')
                 ->orWhere('last_cost_update', '<=', now()->subDays($daysThreshold));
         });
@@ -271,14 +330,14 @@ class Recipe extends Model
     public function getIngredientQuantity(Ingredient $ingredient, ?UnitType $targetUnit = null): ?float
     {
         $pivotIngredient = $this->ingredients->find($ingredient->id);
-        
-        if (!$pivotIngredient) {
+
+        if ( ! $pivotIngredient) {
             return null;
         }
 
         $quantity = $pivotIngredient->pivot->quantity;
         $sourceUnit = UnitType::from($pivotIngredient->pivot->unit);
-        
+
         if ($targetUnit && $sourceUnit !== $targetUnit) {
             return $sourceUnit->convertTo($targetUnit, $quantity);
         }
@@ -293,7 +352,7 @@ class Recipe extends Model
         $clone->save();
 
         // Clone ingredient relationships
-        $this->ingredients->each(function ($ingredient) use ($clone) {
+        $this->ingredients->each(function ($ingredient) use ($clone): void {
             $clone->ingredients()->attach($ingredient->id, [
                 'quantity' => $ingredient->pivot->quantity,
                 'unit' => $ingredient->pivot->unit,
@@ -302,5 +361,75 @@ class Recipe extends Model
         });
 
         return $clone;
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($recipe): void {
+            if ( ! $recipe->slug) {
+                $recipe->slug = str($recipe->name)->slug();
+            }
+        });
+
+        static::updating(function ($recipe): void {
+            if ($recipe->isDirty('name') && ! $recipe->isDirty('slug')) {
+                $recipe->slug = str($recipe->name)->slug();
+            }
+        });
+    }
+
+    // New computed property for complete recipe steps
+    protected function formattedSteps(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $steps = [];
+
+                // Add preparation steps
+                if ( ! empty($this->preparation_steps)) {
+                    foreach ($this->preparation_steps as $index => $step) {
+                        $steps[] = [
+                            'order' => $index + 1,
+                            'type' => 'preparation',
+                            'instruction' => $step,
+                            'time' => null
+                        ];
+                    }
+                }
+
+                // Add cooking instructions
+                if ( ! empty($this->instructions)) {
+                    foreach ($this->instructions as $index => $instruction) {
+                        $steps[] = [
+                            'order' => count($steps) + $index + 1,
+                            'type' => 'cooking',
+                            'instruction' => $instruction,
+                            'time' => null
+                        ];
+                    }
+                }
+
+                return collect($steps)->sortBy('order')->values()->all();
+            }
+        );
+    }
+
+    // Computed Properties
+    protected function totalTime(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => ($this->preparation_time ?? 0) + ($this->cooking_time ?? 0)
+        );
+    }
+
+    protected function isComplete(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->ingredients()->exists() &&
+                ! empty($this->instructions) &&
+                $this->preparation_time > 0
+        );
     }
 }

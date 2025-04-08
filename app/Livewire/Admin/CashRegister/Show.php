@@ -13,7 +13,6 @@ use Livewire\Component;
 
 class Show extends Component
 {
-
     public $showModal = false;
 
     public $cashRegister;

@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Traits\HasInventory;
-use App\Models\Traits\HasPricing;
+use App\Enums\IngredientType;
 use App\Support\HasAdvancedFilter;
 use App\Traits\HasExpiry;
-use App\Enums\IngredientType;
+use App\Traits\HasInventory;
+use App\Traits\HasPricing;
+use Carbon\Carbon;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Carbon\Carbon;
 
 class Ingredient extends Model
 {
-    use HasInventory;
-    use HasPricing;
-    use SoftDeletes;
-    use HasUuids;
     use HasAdvancedFilter;
     use HasExpiry;
+    use HasInventory;
+    use HasPricing;
+    use HasUuids;
+    use SoftDeletes;
 
     protected const ATTRIBUTES = [
         'id',
@@ -118,7 +118,7 @@ class Ingredient extends Model
     {
         return $query->where('status', true)
             ->where('stock_quantity', '>', 0)
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNull('expiry_date')
                     ->orWhere('expiry_date', '>', now());
             });
@@ -127,20 +127,20 @@ class Ingredient extends Model
     // Helper Methods
     public function isAvailable(): bool
     {
-        if (!$this->status || $this->stock_quantity <= 0) {
+        if ( ! $this->status || $this->stock_quantity <= 0) {
             return false;
         }
 
-        if ($this->expiry_date && $this->expiry_date <= now()) {
-            return false;
-        }
+        return ! ($this->expiry_date && $this->expiry_date <= now())
 
-        return true;
+
+
+        ;
     }
 
     public function isExpiringSoon(int $days = 30): bool
     {
-        if (!$this->expiry_date) {
+        if ( ! $this->expiry_date) {
             return false;
         }
 
@@ -149,7 +149,7 @@ class Ingredient extends Model
 
     public function isExpired(): bool
     {
-        if (!$this->expiry_date) {
+        if ( ! $this->expiry_date) {
             return false;
         }
 
@@ -161,20 +161,20 @@ class Ingredient extends Model
         return $this->where('stock_quantity', '<=', DB::raw('reorder_point'));
     }
 
-    public function calculateWastage(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
+    public function calculateWastage(?DateTimeInterface $startDate = null, ?DateTimeInterface $endDate = null): float
     {
         return $this->stockLogs()
-            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate): void {
                 $query->whereBetween('created_at', [$startDate, $endDate]);
             })
             ->where('reason', 'like', '%waste%')
             ->sum('adjustment');
     }
 
-    public function calculateWastagePercentage(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
+    public function calculateWastagePercentage(?DateTimeInterface $startDate = null, ?DateTimeInterface $endDate = null): float
     {
         $totalStock = $this->stockLogs()
-            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate): void {
                 $query->whereBetween('created_at', [$startDate, $endDate]);
             })
             ->where('adjustment', '>', 0)
@@ -188,11 +188,11 @@ class Ingredient extends Model
         return abs($wastage / $totalStock) * 100;
     }
 
-    public function calculateTurnoverRate(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
+    public function calculateTurnoverRate(?DateTimeInterface $startDate = null, ?DateTimeInterface $endDate = null): float
     {
         // Get the total usage (negative adjustments excluding waste)
         $totalUsage = abs($this->stockLogs()
-            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate): void {
                 $query->whereBetween('created_at', [$startDate, $endDate]);
             })
             ->where('adjustment', '<', 0)
@@ -210,7 +210,7 @@ class Ingredient extends Model
         return $totalUsage / $averageInventory;
     }
 
-    public function calculateAverageInventory(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
+    public function calculateAverageInventory(?DateTimeInterface $startDate = null, ?DateTimeInterface $endDate = null): float
     {
         $query = $this->stockLogs();
 
@@ -232,7 +232,7 @@ class Ingredient extends Model
         foreach ($stockLevels as $log) {
             $daysBetween = $previousDate->diffInDays($log->created_at);
             $totalStock += $previousQuantity * $daysBetween;
-            
+
             $previousQuantity = $log->new_quantity;
             $previousDate = $log->created_at;
         }
@@ -244,7 +244,7 @@ class Ingredient extends Model
         return $totalDays > 0 ? $totalStock / $totalDays : $previousQuantity;
     }
 
-    public function calculateUsageRate(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
+    public function calculateUsageRate(?DateTimeInterface $startDate = null, ?DateTimeInterface $endDate = null): float
     {
         $query = $this->stockLogs();
 
@@ -263,18 +263,18 @@ class Ingredient extends Model
         return $days > 0 ? $totalUsage / $days : 0;
     }
 
-    public function calculateStockEfficiency(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): float
+    public function calculateStockEfficiency(?DateTimeInterface $startDate = null, ?DateTimeInterface $endDate = null): float
     {
         $turnoverRate = $this->calculateTurnoverRate($startDate, $endDate);
         $wastagePercentage = $this->calculateWastagePercentage($startDate, $endDate);
-        
+
         // Higher turnover and lower wastage = better efficiency
         // Normalize turnover rate (assuming 12 is a good annual turnover rate)
         $normalizedTurnover = min(1, $turnoverRate / 12);
-        
+
         // Normalize wastage (0% wastage = 1, 100% wastage = 0)
         $normalizedWastage = 1 - ($wastagePercentage / 100);
-        
+
         // Calculate efficiency score (50% weight to each factor)
         return (($normalizedTurnover * 0.5) + ($normalizedWastage * 0.5)) * 100;
     }

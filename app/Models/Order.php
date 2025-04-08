@@ -7,23 +7,52 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
-use Exception;
+use App\Events\OrderCreated;
+use App\Events\OrderStatusChanged;
+use App\Support\HasAdvancedFilter;
+use App\Traits\HasOrders;
+use App\Traits\LogsActivity;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class Order extends Model
 {
+    use HasAdvancedFilter;
     use HasFactory;
+    use HasOrders;
+    use HasUuids;
+    use LogsActivity;
+    use Prunable;
     use SoftDeletes;
 
+    protected const ATTRIBUTES = [
+        'id',
+        'reference',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'total_amount',
+        'status',
+        'payment_status',
+        'payment_method',
+        'user_id'
+    ];
+
+    public $orderable = self::ATTRIBUTES;
+
+    public $filterable = self::ATTRIBUTES;
+
     protected $fillable = [
+        'id',
+        'reference',
         'customer_name',
         'customer_email',
         'customer_phone',
@@ -34,137 +63,45 @@ class Order extends Model
         'notes',
         'discount_amount',
         'tax_amount',
+        'refunded_amount',
+        'shipping_address',
+        'billing_address',
+        'delivery_date',
+        'preparation_notes',
+        'source',
+        'user_id',
+        'cash_register_id',
+        'guest_token',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'tax_amount' => 'decimal:2',
+        'refunded_amount' => 'decimal:2',
         'status' => OrderStatus::class,
         'payment_status' => PaymentStatus::class,
         'payment_method' => PaymentMethod::class,
+        'shipping_address' => 'array',
+        'billing_address' => 'array',
+        'delivery_date' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
-    // Analytics Methods
-    public function getTotalRevenueAttribute(): float
+    protected $hidden = [
+        'deleted_at'
+    ];
+
+    protected $dispatchesEvents = [
+        'created' => OrderCreated::class,
+    ];
+
+    public function prunable(): Builder
     {
-        return $this->items->sum(fn($item) => $item->price * $item->quantity);
-    }
-
-    public function getNetRevenueAttribute(): float
-    {
-        return $this->total_revenue - ($this->discount_amount + $this->refunded_amount);
-    }
-
-    public function getProfit(): float
-    {
-        $itemsProfit = $this->items->sum(fn($item) => ($item->price - $item->cost) * $item->quantity);
-        return $itemsProfit - ($this->discount_amount + $this->refunded_amount);
-    }
-
-    public function getProfitMargin(): float
-    {
-        if ($this->total_revenue <= 0) {
-            return 0;
-        }
-        return ($this->getProfit() / $this->total_revenue) * 100;
-    }
-
-    // Payment Methods
-    public function updatePaymentStatus(PaymentStatus $status): void
-    {
-        if (!$this->payment_status->canTransitionTo($status)) {
-            throw new Exception("Cannot transition from {$this->payment_status->value} to {$status->value}");
-        }
-
-        DB::transaction(function () use ($status) {
-            $this->payment_status = $status;
-            $this->save();
-
-            // Log the payment status change
-            Log::info("Order #{$this->id} payment status updated to {$status->value}");
-        });
-    }
-
-    public function processRefund(float $amount, string $reason = null): void
-    {
-        if ($amount > $this->total_amount - $this->refunded_amount) {
-            throw new Exception('Refund amount cannot exceed remaining order amount');
-        }
-
-        DB::transaction(function () use ($amount, $reason) {
-            $this->refunded_amount += $amount;
-            $this->payment_status = PaymentStatus::Refunded;
-            $this->save();
-
-            // Log the refund
-            Log::info("Order #{$this->id} refunded amount: {$amount}, reason: {$reason}");
-        });
-    }
-
-    public function applyDiscount(float $amount, string $reason = null): void
-    {
-        if ($amount > $this->total_amount) {
-            throw new Exception('Discount amount cannot exceed order total');
-        }
-
-        DB::transaction(function () use ($amount, $reason) {
-            $this->discount_amount = $amount;
-            $this->save();
-
-            // Log the discount
-            Log::info("Order #{$this->id} discount applied: {$amount}, reason: {$reason}");
-        });
-    }
-
-    // Payment Verification Methods
-    public function isPaymentVerificationRequired(): bool
-    {
-        return $this->payment_method?->requiresVerification() ?? false;
-    }
-
-    public function getEstimatedProcessingTime(): string
-    {
-        return $this->payment_method?->processingTime() ?? 'Unknown';
-    }
-
-    // Scopes
-    public function scopePaidOrders(Builder $query): Builder
-    {
-        return $query->where('payment_status', PaymentStatus::Completed->value);
-    }
-
-    public function scopePendingPayments(Builder $query): Builder
-    {
-        return $query->where('payment_status', PaymentStatus::Pending->value);
-    }
-
-    public function scopeByPaymentMethod(Builder $query, PaymentMethod $method): Builder
-    {
-        return $query->where('payment_method', $method->value);
-    }
-
-    public function scopeRevenueBetween(Builder $query, string $startDate, string $endDate): Builder
-    {
-        return $query->whereBetween('created_at', [
-                Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay()
-            ])
-            ->where('status', OrderStatus::Completed)
-            ->where('payment_status', PaymentStatus::Completed);
-    }
-
-    public function scopeProfitableOrders(Builder $query, float $minProfitMargin = 0): Builder
-    {
-        return $query->whereHas('items', function ($query) use ($minProfitMargin) {
-            $query->whereRaw('(price - cost) / price * 100 >= ?', [$minProfitMargin]);
-        });
-    }
-
-    public function scopeRefunded(Builder $query): Builder
-    {
-        return $query->where('payment_status', PaymentStatus::Refunded->value)
-            ->where('refunded_amount', '>', 0);
+        return static::where('created_at', '<=', now()->subYears(2))
+            ->where('status', OrderStatus::Completed);
     }
 
     // Relationships
@@ -178,121 +115,178 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Status Management
-    public function updateStatus(OrderStatus $status): void
+    public function cashRegister(): BelongsTo
     {
-        DB::transaction(function () use ($status) {
-            $this->status = $status;
-            $this->save();
-
-            // Log status change
-            Log::info("Order #{$this->id} status updated to {$status->value}");
-
-            // Notify relevant parties
-            // event(new OrderStatusChanged($this));
-        });
+        return $this->belongsTo(CashRegister::class, 'cash_register_id', 'id');
     }
 
-    // Inventory Management
-    public function processOrderIngredients(): bool
+    public function updateStatus(OrderStatus $newStatus): bool
     {
-        DB::beginTransaction();
-        try {
-            foreach ($this->items as $orderItem) {
-                $product = $orderItem->product;
-                if (!$this->checkIngredientAvailability($product, $orderItem->quantity)) {
-                    DB::rollBack();
-                    return false;
-                }
-            }
-
-            DB::commit();
-            return true;
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Order Processing Failed: ' . $e->getMessage());
+        if ( ! $this->status->canTransitionTo($newStatus)) {
             return false;
         }
-    }
 
-    private function checkIngredientAvailability(Product $product, int $quantity): bool
-    {
-        foreach ($product->ingredients as $ingredient) {
-            if (!$ingredient->isStockSufficientForProduct($product, $quantity)) {
-                return false;
-            }
-        }
+        $oldStatus = $this->status;
+        $this->status = $newStatus;
+        $this->save();
+
+        event(new OrderStatusChanged($this, $oldStatus, $newStatus));
+
         return true;
     }
 
-    // Order Item Management
-    public function addItem(array $itemData): void
+    public function cancel(): bool
     {
-        DB::transaction(function () use ($itemData): void {
-            $orderItem = $this->items()->create([
-                'product_id' => $itemData['product_id'],
-                'quantity' => $itemData['quantity'],
-                'price' => $itemData['price'],
-                'details' => $itemData['details'] ?? [],
-            ]);
+        if ( ! $this->updateStatus(OrderStatus::Cancelled)) {
+            return false;
+        }
 
-            $product = Product::findOrFail($itemData['product_id']);
-            $product->reduceStock($itemData['quantity']);
+        // Restore inventory for cancelled items
+        foreach ($this->items as $item) {
+            // Implement inventory restoration logic here
+            // This would depend on your inventory management system
+        }
 
-            $this->recalculateTotal();
-        });
+        return true;
     }
 
-    public function removeItem(int $orderItemId): void
+    public function refund(?float $amount = null): bool
     {
-        DB::transaction(function () use ($orderItemId): void {
-            $orderItem = $this->items()->findOrFail($orderItemId);
-            $product = Product::findOrFail($orderItem->product_id);
-            
-            $product->increaseStock($orderItem->quantity);
-            $orderItem->delete();
+        $refundAmount = $amount ?? ($this->total_amount - $this->refunded_amount);
 
-            $this->recalculateTotal();
-        });
+        if ($refundAmount <= 0 || $refundAmount > ($this->total_amount - $this->refunded_amount)) {
+            return false;
+        }
+
+        $this->refunded_amount += $refundAmount;
+
+        if ($this->refunded_amount >= $this->total_amount) {
+            $this->updateStatus(OrderStatus::Refunded);
+        }
+
+        return $this->save();
     }
 
-    public function updateItemQuantity(int $orderItemId, int $quantity): void
+    public function getSubtotalAttribute(): float
     {
-        DB::transaction(function () use ($orderItemId, $quantity): void {
-            $item = $this->items()->findOrFail($orderItemId);
-            $product = Product::findOrFail($item->product_id);
-
-            // Adjust stock
-            if ($quantity > $item->quantity) {
-                $product->reduceStock($quantity - $item->quantity);
-            } else {
-                $product->increaseStock($item->quantity - $quantity);
-            }
-
-            $item->quantity = $quantity;
-            $item->save();
-
-            $this->recalculateTotal();
-        });
+        return $this->items->sum(fn ($item) => $item->quantity * $item->unit_price);
     }
 
-    private function recalculateTotal(): void
+    public function getFinalTotalAttribute(): float
     {
-        $this->total_amount = $this->calculateTotal();
-        $this->save();
+        return $this->subtotal + $this->tax_amount - $this->total_discount;
     }
 
-    private function calculateTotal(): float
+    public function scopePending($query)
     {
-        $subtotal = $this->items->sum(fn(OrderItem $item) => $item->price * $item->quantity);
-        return $subtotal - $this->discount_amount + $this->tax_amount;
+        return $query->where('status', OrderStatus::Pending);
     }
 
-    public function canBeModified(): bool
+    public function scopeInProgress($query)
     {
-        return in_array($this->status, [
-            OrderStatus::Pending,
-            OrderStatus::Processing
+        return $query->whereIn('status', [
+            OrderStatus::Confirmed,
+            OrderStatus::Preparing,
+            OrderStatus::Ready,
+            OrderStatus::InDelivery,
         ]);
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', OrderStatus::Completed);
+    }
+
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', OrderStatus::Cancelled);
+    }
+
+    public function scopeRefunded($query)
+    {
+        return $query->where('status', OrderStatus::Refunded);
+    }
+
+    public function scopeOnHold($query)
+    {
+        return $query->where('status', OrderStatus::OnHold);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function activities(): MorphMany
+    {
+        return $this->morphMany(ActivityLog::class, 'subject');
+    }
+
+
+    public function scopeForPeriod(Builder $query, Carbon $startDate, Carbon $endDate): Builder
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($order): void {
+            if ( ! $order->reference) {
+                $order->reference = self::generateReference();
+            }
+        });
+    }
+
+    protected static function generateReference(): string
+    {
+        $prefix = 'ORD';
+        $date = now()->format('Ymd');
+        $lastOrder = self::whereDate('created_at', today())
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $sequence = $lastOrder ? (int) mb_substr($lastOrder->reference, -4) + 1 : 1;
+
+        return sprintf('%s%s%04d', $prefix, $date, $sequence);
+    }
+
+    protected static function getActivityDescription(string $action, Model $model): string
+    {
+        $modelName = class_basename($model);
+
+        return match ($action) {
+            'created' => "New order #{$model->reference} was created",
+            'updated' => "Order #{$model->reference} was updated",
+            'deleted' => "Order #{$model->reference} was deleted",
+            'status_changed' => "Order #{$model->reference} status changed",
+            'priority_changed' => "Order #{$model->reference} priority changed",
+            default => "Action {$action} performed on order #{$model->reference}",
+        };
+    }
+
+    protected static function getActivityProperties(Model $model): array
+    {
+        $properties = [
+            'model' => get_class($model),
+            'id' => $model->id,
+            'reference' => $model->reference,
+            'changes' => $model->getChanges(),
+        ];
+
+        if ($model->wasChanged('status')) {
+            $properties['status_change'] = [
+                'from' => $model->getOriginal('status'),
+                'to' => $model->status,
+            ];
+        }
+
+        return $properties;
     }
 }

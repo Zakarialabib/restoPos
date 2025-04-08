@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
-enum UserRole : string
+enum UserRole: string
 {
     case ADMIN = 'admin';
     case STAFF = 'staff';
@@ -17,16 +19,16 @@ enum UserRole : string
 
     public static function isAdmin(string $role): bool
     {
-        return $role === self::ADMIN;
+        return self::ADMIN === $role;
     }
 
     public static function isStaff(string $role): bool
     {
-        return $role === self::STAFF;
+        return self::STAFF === $role;
     }
 
     public static function isUser(string $role): bool
     {
-        return $role === self::USER;
+        return self::USER === $role;
     }
 }

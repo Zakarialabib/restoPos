@@ -1,4 +1,4 @@
-@props(['options' , 'name' => null, 'label' => null, 'placeholder' => 'Select an option', 'required' => false, 'disabled' => false, 'multiple' => false, 'error' => false])
+@props(['options', 'name' => null, 'label' => null, 'placeholder' => 'Select an option', 'required' => false, 'disabled' => false, 'multiple' => false, 'error' => null, 'value' => null])
 
 @php
     $id = Str::random(10);
@@ -6,7 +6,7 @@
 
 <div class="mb-4">
     <label for="{{ $id }}" class="block text-sm font-medium text-gray-700">
-       @if($label) {{ $label }} @endif
+        {{ $label ?? '' }}
         @if($required)
             <span class="text-red-500">*</span>
         @endif
@@ -22,17 +22,19 @@
         @if(!$multiple)
             <option value="">{{ $placeholder }}</option>
         @endif
-        @if(!is_array($options))
-            @foreach($options as $option)
-                <option value="{{ $option['value'] }}" @if($option['value'] == $value) selected @endif>{{ $option['label'] }}</option>
-            @endforeach
-        @else
-            @foreach($options as $index => $option)
-                <option value="{{ $option }}" @if($option == $value) selected @endif>{{ $option }}</option>
-            @endforeach
-        @endif
+        @foreach($options as $option)
+            @php
+                $optionValue = $option['value'] ?? $option;
+                $optionLabel = $option['label'] ?? (is_object($option) && method_exists($option, 'label') ? $option->label() : $option);
+                $isSelected = $value == $optionValue || 
+                    (is_object($value) && method_exists($value, 'value') && $value->value == $optionValue);
+            @endphp
+            <option value="{{ $optionValue }}" @if($isSelected) selected @endif>
+                {{ $optionLabel }}
+            </option>
+        @endforeach
     </select>
     @if($error)
-        <p class="mt-2 text-sm text-red-600" id="email-error">{{ $error }}</p>
+        <p class="mt-2 text-sm text-red-600" id="{{ $id }}-error">{{ $error }}</p>
     @endif
 </div>

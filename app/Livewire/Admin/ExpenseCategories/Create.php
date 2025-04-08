@@ -6,14 +6,12 @@ namespace App\Livewire\Admin\ExpenseCategories;
 
 use App\Models\ExpenseCategory;
 use Illuminate\Support\Facades\Gate;
-
-use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class Create extends Component
 {
-
     public bool $createModal = false;
 
     public ExpenseCategory $expenseCategory;

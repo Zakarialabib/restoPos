@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum Status: int
 {
-    case AVAILABLE = 1;
     case UNAVAILABLE = 0;
+    case AVAILABLE = 1;
     case INACTIVE = 2;
     case OUT_OF_STOCK = 3;
 
@@ -14,22 +16,29 @@ enum Status: int
         return [
             self::AVAILABLE,
             self::UNAVAILABLE,
-            self::INACTIVE
+            self::INACTIVE,
+            self::OUT_OF_STOCK
         ];
     }
 
     public static function isAvailable(int $status): bool
     {
-        return $status === self::AVAILABLE;
+        return self::AVAILABLE === $status;
     }
 
     public static function isUnavailable(int $status): bool
     {
-        return $status === self::UNAVAILABLE;
+        return self::UNAVAILABLE === $status;
     }
 
     public static function isInactive(int $status): bool
     {
-        return $status === self::INACTIVE;
+        return self::INACTIVE === $status;
     }
+
+    public static function isOutOfStock(int $status): bool
+    {
+        return self::OUT_OF_STOCK === $status;
+    }
+
 }

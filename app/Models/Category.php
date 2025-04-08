@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\CategoryType;
+use App\Support\HasAdvancedFilter;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,16 +14,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use App\Support\HasAdvancedFilter;
 
 class Category extends Model
 {
-    use HasFactory;
-    use HasSlug;
     // use SoftDeletes;
     use HasAdvancedFilter;
+    use HasFactory;
+    use HasSlug;
 
 
     protected const ATTRIBUTES = [
@@ -32,7 +31,7 @@ class Category extends Model
         'status',
         'is_composable',
         'parent_id',
-        'type', 
+        'type',
     ];
 
     public $orderable = self::ATTRIBUTES;
@@ -43,15 +42,14 @@ class Category extends Model
         'name',
         'slug',
         'description',
-        'status',
+        'image',
         'is_composable',
-        'parent_id',
-        'type',
+        'status',
     ];
 
     protected $casts = [
-        'status' => 'boolean',
         'is_composable' => 'boolean',
+        'status' => 'boolean',
         'type' => CategoryType::class,
     ];
 
@@ -95,7 +93,7 @@ class Category extends Model
     {
         return $query->where('is_composable', true);
     }
-    
+
     public function getItemsCountAttribute(): int
     {
         return match ($this->type) {
@@ -107,28 +105,28 @@ class Category extends Model
 
     public function isParentCategory(): bool
     {
-        return is_null($this->parent_id);
+        return null === $this->parent_id;
     }
 
     public function isProductCategory(): bool
     {
-        return $this->type === Product::class;
+        return Product::class === $this->type;
     }
 
     public function isIngredientCategory(): bool
     {
-        return $this->type === Ingredient::class;
+        return Ingredient::class === $this->type;
     }
 
     public function canBeDeleted(): bool
     {
-        return !$this->hasChildren;
+        return ! $this->hasChildren;
     }
 
     // Analytics Methods
     public function getProductStats(): array
     {
-        if (!$this->isProductCategory()) {
+        if ( ! $this->isProductCategory()) {
             return [
                 'total_products' => 0,
                 'active_products' => 0,
@@ -159,7 +157,7 @@ class Category extends Model
 
     public function getIngredientStats(): array
     {
-        if (!$this->isIngredientCategory()) {
+        if ( ! $this->isIngredientCategory()) {
             return [
                 'total_ingredients' => 0,
                 'active_ingredients' => 0,
@@ -178,7 +176,7 @@ class Category extends Model
                 'active_ingredients' => $ingredients->where('status', true)->count(),
                 'low_stock_ingredients' => $ingredients->filter->isLowStock()->count(),
                 'expiring_soon' => $ingredients->filter->isExpiringSoon()->count(),
-                'total_cost' => $ingredients->sum(fn($i) => $i->cost * $i->stock_quantity),
+                'total_cost' => $ingredients->sum(fn ($i) => $i->cost * $i->stock_quantity),
                 'avg_usage' => $ingredients->avg('average_daily_usage'),
             ];
         });
@@ -186,15 +184,15 @@ class Category extends Model
 
     public function getIngredientsStats(): array
     {
-        return Cache::remember("category_{$this->id}_stats", 3600, function() {
+        return Cache::remember("category_{$this->id}_stats", 3600, function () {
             $ingredients = $this->ingredients;
-            
+
             return [
                 'total' => $ingredients->count(),
                 'active' => $ingredients->where('status', true)->count(),
                 'low_stock' => $ingredients->filter->isLowStock()->count(),
                 'out_of_stock' => $ingredients->where('stock_quantity', 0)->count(),
-                'total_value' => $ingredients->sum(fn($i) => $i->stock_quantity * $i->cost)
+                'total_value' => $ingredients->sum(fn ($i) => $i->stock_quantity * $i->cost)
             ];
         });
     }
@@ -212,5 +210,56 @@ class Category extends Model
     public function composableConfiguration(): HasOne
     {
         return $this->hasOne(ComposableConfiguration::class);
+    }
+
+    public function portionConfiguration(): HasOne
+    {
+        return $this->hasOne(PortionConfiguration::class);
+    }
+
+    public function isComposable(): bool
+    {
+        return $this->is_composable && $this->composableConfiguration?->is_active;
+    }
+
+    public function getComposableFeatures(): array
+    {
+        if (!$this->composableConfiguration) {
+            return [];
+        }
+
+        $features = [];
+
+        if ($this->composableConfiguration->has_base) {
+            $features['base'] = $this->composableConfiguration->getAvailableBaseTypes();
+        }
+
+        if ($this->composableConfiguration->has_sugar) {
+            $features['sugar'] = $this->composableConfiguration->getAvailableSugarTypes();
+        }
+
+        if ($this->composableConfiguration->has_size) {
+            $features['size'] = $this->composableConfiguration->getAvailableSizes();
+        }
+
+        if ($this->composableConfiguration->has_addons) {
+            $features['addons'] = $this->composableConfiguration->getAvailableAddonTypes();
+        }
+
+        return $features;
+    }
+
+    public function getPortionOptions(): array
+    {
+        if (!$this->portionConfiguration) {
+            return [];
+        }
+
+        return [
+            'sizes' => $this->portionConfiguration->getAvailableSizes(),
+            'addons' => $this->portionConfiguration->getAvailableAddons(),
+            'sides' => $this->portionConfiguration->getAvailableSides(),
+            'upgrades' => $this->portionConfiguration->getAvailableUpgrades(),
+        ];
     }
 }

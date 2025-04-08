@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Support\HasAdvancedFilter;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CashRegister extends Model
 {
@@ -29,6 +29,30 @@ class CashRegister extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Scope a query to only include cash registers with a specific status.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  bool  $status
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope a query to only include cash registers with a specific user.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $userId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeUser($query, $userId)
+    {
+        return $query->where('user_id', $userId);
     }
 
     /**
@@ -55,29 +79,5 @@ class CashRegister extends Model
             get: fn ($value) => $value,
             set: fn ($value) => $value,
         );
-    }
-
-    /**
-     * Scope a query to only include cash registers with a specific status.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  bool  $status
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Scope a query to only include cash registers with a specific user.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  string  $userId
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeUser($query, $userId)
-    {
-        return $query->where('user_id', $userId);
     }
 }

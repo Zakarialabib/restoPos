@@ -5,13 +5,28 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\UnitType;
+use App\Support\HasAdvancedFilter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
 class Composable extends Model
 {
+    use HasAdvancedFilter;
+
+    protected const ATTRIBUTES = [
+        'id',
+        'name',
+        'status',
+        'category_id',
+    ];
+
+    public $orderable = self::ATTRIBUTES;
+
+    public $filterable = self::ATTRIBUTES;
+
     protected $fillable = [
         'name',
         'description',
@@ -22,14 +37,12 @@ class Composable extends Model
         'preparation_time',
         'portion_size',
         'portion_unit',
-        'nutritional_info',
         'allergens'
     ];
 
     protected $casts = [
         'status' => 'boolean',
         'preparation_instructions' => 'array',
-        'nutritional_info' => 'array',
         'allergens' => 'array',
         'portion_size' => 'float',
         'portion_unit' => UnitType::class
@@ -59,10 +72,10 @@ class Composable extends Model
             return $value;
         }
 
-        return match($fromUnit) {
+        return match ($fromUnit) {
             UnitType::Liter => $value * 1000,
             UnitType::Milliliter => $value,
-            default => throw new \InvalidArgumentException("Unsupported unit conversion")
+            default => throw new InvalidArgumentException("Unsupported unit conversion")
         };
     }
 
@@ -72,10 +85,10 @@ class Composable extends Model
             return $value;
         }
 
-        return match($toUnit) {
+        return match ($toUnit) {
             UnitType::Liter => $value / 1000,
             UnitType::Milliliter => $value,
-            default => throw new \InvalidArgumentException("Unsupported unit conversion")
+            default => throw new InvalidArgumentException("Unsupported unit conversion")
         };
     }
 
@@ -94,14 +107,6 @@ class Composable extends Model
         ];
     }
 
-    public function calculateNutritionForPortion(float $portion): array
-    {
-        $baseNutrition = $this->nutritional_info;
-        $ratio = $portion / $this->getPortionSize();
-        
-        return array_map(fn($value) => $value * $ratio, $baseNutrition);
-    }
-
     // Pricing Interface Implementation
     public function prices(): HasMany
     {
@@ -117,7 +122,7 @@ class Composable extends Model
     {
         $this->base_price = $price;
         $this->save();
-        
+
         // Record price history
         $this->prices()->create([
             'amount' => $price,
@@ -132,10 +137,8 @@ class Composable extends Model
 
     public function calculateProfit(): float
     {
-        $costPrice = $this->ingredients->sum(function ($ingredient) {
-            return $ingredient->pivot->quantity * $ingredient->price_per_ml;
-        });
-        
+        $costPrice = $this->ingredients->sum(fn ($ingredient) => $ingredient->pivot->quantity * $ingredient->price_per_ml);
+
         return $this->getCurrentPrice() - $costPrice;
     }
 
@@ -143,11 +146,16 @@ class Composable extends Model
     {
         $profit = $this->calculateProfit();
         $price = $this->getCurrentPrice();
-        
+
         return $price > 0 ? ($profit / $price) * 100 : 0;
     }
 
     // Existing Relationships
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function ingredients(): BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class)
@@ -155,4 +163,5 @@ class Composable extends Model
             ->withTimestamps();
     }
 
+   
 }

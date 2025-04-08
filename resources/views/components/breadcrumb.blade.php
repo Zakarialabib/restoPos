@@ -1,28 +1,41 @@
-@props(['title', 'breadcrumbs' => [], 'position' => 'top', 'inline' => false])
+@props(['title', 'breadcrumbs' => []])
 
-<div
-    {{ $attributes->merge(['class' => 'py-4 px-2 flex flex-wrap items-center justify-between font-bold text-white ']) }}>
-    @if ($position === 'top')
-        <h2 class="{{ $inline ? 'text-left text-2xl ' : 'w-full text-left text-2xl ' }}">
+<div class="bg-orange-50 border-b border-orange-100">
+    <div class="max-w-7xl mx-auto px-4 py-3">
+        <!-- Title -->
+        <h2 class="w-full md:w-auto text-left text-2xl font-bold text-orange-800 mb-2 md:mb-0">
             {{ $title }}
         </h2>
-    @endif
-    <div class="my-2 flex items-center">
-        @foreach ($breadcrumbs as $breadcrumb)
-            <a class="flex items-center text-sm no-underline" href="{{ $breadcrumb['url'] }}">
-                <i class="{{ $breadcrumb['icon'] }} mr-2"></i>
-                <span>{{ $breadcrumb['name'] }}</span>
+
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center text-sm">
+            <a href="/" class="flex items-center text-orange-600 hover:text-orange-800 no-underline transition">
+                <i class="fas fa-home mr-2"></i>
+                <span>Dashboard</span>
             </a>
-            @if (!$loop->last)
-                <span class="inline-block mx-4">
-                    <i class="fas fa-chevron-right"></i>
+
+            @foreach ($breadcrumbs as $breadcrumb)
+                <span class="mx-2 text-orange-400">
+                    <i class="fas fa-chevron-right text-xs"></i>
                 </span>
-            @endif
-        @endforeach
+
+                @if (!$loop->last)
+                    <a href="{{ $breadcrumb['url'] }}"
+                        class="flex items-center text-orange-600 hover:text-orange-800 no-underline transition">
+                        @if (isset($breadcrumb['icon']))
+                            <i class="{{ $breadcrumb['icon'] }} mr-2"></i>
+                        @endif
+                        <span>{{ $breadcrumb['name'] }}</span>
+                    </a>
+                @else
+                    <span class="flex items-center text-orange-800 font-medium">
+                        @if (isset($breadcrumb['icon']))
+                            <i class="{{ $breadcrumb['icon'] }} mr-2"></i>
+                        @endif
+                        <span>{{ $breadcrumb['name'] }}</span>
+                    </span>
+                @endif
+            @endforeach
+        </nav>
     </div>
-    @if ($position === 'bottom')
-        <h2 class="{{ $inline ? 'text-left text-2xl ' : 'w-full text-left text-2xl ' }}">
-            {{ $title }}
-        </h2>
-    @endif
 </div>

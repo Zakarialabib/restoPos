@@ -78,4 +78,4 @@ enum PaymentMethod: string
             self::MobileMoney, self::GCash, self::PayMaya => '5-15 minutes',
         };
     }
-} 
+}

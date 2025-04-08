@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\HasAdvancedFilter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,10 @@ class OrderItem extends Model
 {
     // use SoftDeletes;
 
-    protected $fillable = [
+    use HasAdvancedFilter;
+
+    protected const ATTRIBUTES = [
+        'id',
         'order_id',
         'product_id',
         'quantity',
@@ -23,62 +27,26 @@ class OrderItem extends Model
         'notes',
     ];
 
+    public $orderable = self::ATTRIBUTES;
+
+    public $filterable = self::ATTRIBUTES;
+
+    protected $fillable = [
+        'order_id',
+        'product_id',
+        'quantity',
+        'price',
+        // 'cost',
+        'notes',
+        'total_amount',
+        'details',
+    ];
+
     protected $casts = [
         'quantity' => 'integer',
         'price' => 'decimal:2',
         'cost' => 'decimal:2',
     ];
-
-    // Relationships
-    public function order(): BelongsTo
-    {
-        return $this->belongsTo(Order::class);
-    }
-
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    // Price History Methods
-    protected static function booted(): void
-    {
-        static::creating(function ($orderItem): void {
-            if (!$orderItem->price) {
-                $orderItem->price = $orderItem->product->price;
-            }
-            if (!$orderItem->cost) {
-                $orderItem->cost = $orderItem->product->cost;
-            }
-        });
-
-        static::created(function ($orderItem): void {
-            PriceHistory::create([
-                'product_id' => $orderItem->product_id,
-                'old_price' => $orderItem->product->price,
-                'new_price' => $orderItem->price,
-                'reason' => 'Order item creation',
-                'order_item_id' => $orderItem->id,
-            ]);
-        });
-    }
-
-    // Performance Metrics
-    public function getSubtotal(): float
-    {
-        return $this->quantity * $this->price;
-    }
-
-    public function getProfit(): float
-    {
-        return $this->quantity * ($this->price - $this->cost);
-    }
-
-    public function getProfitMargin(): float
-    {
-        $subtotal = $this->getSubtotal();
-        return $subtotal > 0 ? ($this->getProfit() / $subtotal) * 100 : 0;
-    }
 
     // Static Analysis Methods
     public static function getTopPerformers(Carbon $startDate, Carbon $endDate, int $limit = 10): Collection
@@ -104,6 +72,57 @@ class OrderItem extends Model
             ->groupBy('date')
             ->orderBy('date')
             ->get();
+    }
+
+    // Relationships
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    // Price History Methods
+    // protected static function booted(): void
+    // {
+    //     static::creating(function ($orderItem): void {
+    //         if (!$orderItem->price) {
+    //             $orderItem->price = $orderItem->product->price;
+    //         }
+    //         if (!$orderItem->cost) {
+    //             $orderItem->cost = $orderItem->product->cost;
+    //         }
+    //     });
+
+    //     static::created(function ($orderItem): void {
+    //         PriceHistory::create([
+    //             'product_id' => $orderItem->product_id,
+    //             'old_price' => $orderItem->product->price,
+    //             'new_price' => $orderItem->price,
+    //             'reason' => 'Order item creation',
+    //             'order_item_id' => $orderItem->id,
+    //         ]);
+    //     });
+    // }
+
+    // Performance Metrics
+    public function getSubtotal(): float
+    {
+        return $this->quantity * $this->price;
+    }
+
+    public function getProfit(): float
+    {
+        return $this->quantity * ($this->price - $this->cost);
+    }
+
+    public function getProfitMargin(): float
+    {
+        $subtotal = $this->getSubtotal();
+        return $subtotal > 0 ? ($this->getProfit() / $subtotal) * 100 : 0;
     }
 
     // Scopes

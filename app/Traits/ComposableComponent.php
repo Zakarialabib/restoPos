@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
-use App\Models\Composable;
-use App\Services\ComposablePriceCalculator;
 use Livewire\Attributes\Computed;
 
 trait ComposableComponent
@@ -18,8 +16,6 @@ trait ComposableComponent
     public $cart = [];
     public $search = '';
     public $showSuccess = false;
-
-    protected ComposablePriceCalculator $priceCalculator;
 
     public function nextStep(): void
     {
@@ -60,7 +56,7 @@ trait ComposableComponent
     protected function validateIngredientStock(array $ingredients): bool
     {
         foreach ($ingredients as $ingredient) {
-            if (!$ingredient || !$ingredient->stock > 0) {
+            if (! $ingredient || ! $ingredient->stock > 0) {
                 $this->addError('outOfStock', __(':name is out of stock.', ['name' => $ingredient?->name ?? 'Item']));
                 return false;
             }

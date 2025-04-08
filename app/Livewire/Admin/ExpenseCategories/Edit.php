@@ -6,14 +6,12 @@ namespace App\Livewire\Admin\ExpenseCategories;
 
 use App\Models\ExpenseCategory;
 use Illuminate\Support\Facades\Gate;
-
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Edit extends Component
 {
-
     public bool $editModal = false;
 
     public $expenseCategory;

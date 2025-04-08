@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Expense;
 
-use App\Livewire\Utils\WithModels;
-use Livewire\Component;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use Illuminate\Support\Facades\Gate;
-
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class Edit extends Component
 {
-
-
     /** @var bool */
     public $editModal = false;
 

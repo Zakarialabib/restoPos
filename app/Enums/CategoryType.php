@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum CategoryType: string
@@ -76,5 +78,5 @@ enum CategoryType: string
             self::SIZE => 'format_size',
         };
     }
-   
+
 }

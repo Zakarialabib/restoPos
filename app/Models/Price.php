@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\HasAdvancedFilter;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use App\Support\HasAdvancedFilter;
 
 class Price extends Model
 {
@@ -53,6 +53,8 @@ class Price extends Model
         'previous_price' => 'decimal:2',
         'is_current' => 'boolean',
         'effective_date' => 'datetime',
+        'expiry_date' => 'datetime',
+        'entry_date' => 'datetime',
         'metadata' => 'array'
     ];
 
@@ -60,67 +62,6 @@ class Price extends Model
     public function priceable(): MorphTo
     {
         return $this->morphTo();
-    }
-
-    // Computed Properties
-    protected function priceChange(): Attribute
-    {
-        return Attribute::make(
-            get: function (): float {
-                if (!$this->previous_price) {
-                    return 0;
-                }
-                return $this->price - $this->previous_price;
-            }
-        );
-    }
-
-    protected function costChange(): Attribute
-    {
-        return Attribute::make(
-            get: function (): float {
-                if (!$this->previous_cost) {
-                    return 0;
-                }
-                return $this->cost - $this->previous_cost;
-            }
-        );
-    }
-
-    protected function priceChangePercentage(): Attribute
-    {
-        return Attribute::make(
-            get: function (): float {
-                if (!$this->previous_price || $this->previous_price <= 0) {
-                    return 0;
-                }
-                return (($this->price - $this->previous_price) / $this->previous_price) * 100;
-            }
-        );
-    }
-
-    protected function costChangePercentage(): Attribute
-    {
-        return Attribute::make(
-            get: function (): float {
-                if (!$this->previous_cost || $this->previous_cost <= 0) {
-                    return 0;
-                }
-                return (($this->cost - $this->previous_cost) / $this->previous_cost) * 100;
-            }
-        );
-    }
-
-    protected function profitMargin(): Attribute
-    {
-        return Attribute::make(
-            get: function (): float {
-                if (!$this->price || $this->price <= 0) {
-                    return 0;
-                }
-                return (($this->price - $this->cost) / $this->price) * 100;
-            }
-        );
     }
 
     // Scopes
@@ -139,5 +80,66 @@ class Price extends Model
     public function scopeWithinPeriod($query, $startDate, $endDate)
     {
         return $query->whereBetween('effective_date', [$startDate, $endDate]);
+    }
+
+    // Computed Properties
+    protected function priceChange(): Attribute
+    {
+        return Attribute::make(
+            get: function (): float {
+                if ( ! $this->previous_price) {
+                    return 0.0;
+                }
+                return (float) ($this->price - $this->previous_price);
+            }
+        );
+    }
+
+    protected function costChange(): Attribute
+    {
+        return Attribute::make(
+            get: function (): float {
+                if ( ! $this->previous_cost) {
+                    return 0.0;
+                }
+                return (float) ($this->cost - $this->previous_cost);
+            }
+        );
+    }
+
+    protected function priceChangePercentage(): Attribute
+    {
+        return Attribute::make(
+            get: function (): float {
+                if ( ! $this->previous_price || $this->previous_price <= 0) {
+                    return 0.0;
+                }
+                return (float) ((($this->price - $this->previous_price) / $this->previous_price) * 100);
+            }
+        );
+    }
+
+    protected function costChangePercentage(): Attribute
+    {
+        return Attribute::make(
+            get: function (): float {
+                if ( ! $this->previous_cost || $this->previous_cost <= 0) {
+                    return 0.0;
+                }
+                return (float) ((($this->cost - $this->previous_cost) / $this->previous_cost) * 100);
+            }
+        );
+    }
+
+    protected function profitMargin(): Attribute
+    {
+        return Attribute::make(
+            get: function (): float {
+                if ( ! $this->price || $this->price <= 0) {
+                    return 0.0;
+                }
+                return (float) ((($this->price - $this->cost) / $this->price) * 100);
+            }
+        );
     }
 }

@@ -18,7 +18,8 @@ class ExpiryAlert extends Notification
      */
     public function __construct(
         protected Ingredient $ingredient
-    ) {}
+    ) {
+    }
 
     /**
      * Get the notification's delivery channels.

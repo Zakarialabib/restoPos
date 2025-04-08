@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Utils;
 
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 
 trait Datatable

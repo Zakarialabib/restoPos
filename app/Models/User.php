@@ -4,17 +4,35 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\UserRole;
+// use App\Enums\UserRole; // Commented out existing role enum
+use App\Support\HasAdvancedFilter;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Collection;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    use HasAdvancedFilter;
     use HasFactory;
+    use HasUuids;
     use Notifiable;
+    use HasRoles;
+
+    protected const ATTRIBUTES = [
+        'id',
+        'name',
+        'email',
+        // 'role' => UserRole::class, // Commented out existing role attribute
+    ];
+
+    public $orderable = self::ATTRIBUTES;
+
+    public $filterable = self::ATTRIBUTES;
 
     protected $fillable = [
         'name',
@@ -34,14 +52,18 @@ class User extends Authenticatable
         'password' => 'hashed',
         'settings' => 'array',
         'has_seen_tutorial' => 'boolean',
-        'role' => UserRole::class,
+        // 'role' => UserRole::class, // Commented out existing role cast
     ];
-
 
     // Relationships
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(DatabaseNotification::class, 'notifiable')->orderBy('created_at', 'desc');
     }
 
     // Methods

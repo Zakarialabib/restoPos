@@ -48,7 +48,7 @@ class FilterQueryBuilder
     {
         $filter['query_1'] = addslashes($filter['query_1']);
 
-        return $query->where($filter['column'], 'like', '%'.$filter['query_1'].'%', $filter['match']);
+        return $query->where($filter['column'], 'like', '%' . $filter['query_1'] . '%', $filter['match']);
     }
 
     /**
@@ -101,7 +101,7 @@ class FilterQueryBuilder
             $filter['match'] = 'and';
 
             // Use the `remember` method to cache the query.
-            $query->orWhereHas(Str::camel($callable), function ($q) use ($filter) {
+            $query->orWhereHas(Str::camel($callable), function ($q) use ($filter): void {
                 $this->{Str::camel($filter['operator'])}(
                     $filter,
                     $q
@@ -123,6 +123,6 @@ class FilterQueryBuilder
      */
     protected function isNestedColumn($column)
     {
-        return strpos($column, '.') !== false;
+        return str_contains($column, '.')  ;
     }
 }

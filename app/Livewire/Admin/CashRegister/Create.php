@@ -6,14 +6,12 @@ namespace App\Livewire\Admin\CashRegister;
 
 use App\Models\CashRegister;
 use Illuminate\Support\Facades\Gate;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Create extends Component
 {
-
     /** @var bool */
     public $createModal = false;
 

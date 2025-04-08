@@ -5,68 +5,44 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\Ingredient;
-use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Support\Facades\URL;
 
-class LowStockAlert extends Notification
+class LowStockAlert extends BaseNotification
 {
-    use Queueable;
-
-    protected Ingredient $ingredient;
-
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct(Ingredient $ingredient)
-    {
-        $this->ingredient = $ingredient;
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
-    {
-        return ['mail'];
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage())
-            ->subject('Low Stock Alert: ' . $this->ingredient->name)
-            ->line('The stock for the ingredient "' . $this->ingredient->name . '" is running low.')
-            ->line('Current stock level: ' . $this->ingredient->stock_quantity)
-            ->action('View Ingredient', url('/ingredients/' . $this->ingredient->id))
-            ->line('Please restock as soon as possible.');
-    }
-
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            'ingredient_id' => $this->ingredient->id,
-            'ingredient_name' => $this->ingredient->name,
-            'current_stock' => $this->ingredient->stock_quantity,
-        ];
-    }
-
-    public function toBroadcast($notifiable): BroadcastMessage
-    {
-        return new BroadcastMessage([
-            'type' => 'low_stock_alert',
-            'data' => $this->ingredient
+    public function __construct(
+        protected Ingredient $ingredient
+    ) {
+        parent::__construct([
+            'ingredient_id' => $ingredient->id,
+            'ingredient_name' => $ingredient->name,
+            'current_stock' => $ingredient->current_stock,
+            'minimum_stock' => $ingredient->minimum_stock,
+            'unit' => $ingredient->unit,
         ]);
+    }
+
+    public static function getType(): string
+    {
+        return 'low-stock';
+    }
+
+    protected function getMailSubject(): string
+    {
+        return "Low Stock Alert: {$this->ingredient->name}";
+    }
+
+    protected function getMailMessage(): string
+    {
+        return "The stock level for {$this->ingredient->name} is running low. Current stock: {$this->ingredient->current_stock} {$this->ingredient->unit}";
+    }
+
+    protected function getMailActionText(): string
+    {
+        return 'View Ingredient';
+    }
+
+    protected function getMailActionUrl(): string
+    {
+        return URL::route('admin.ingredients.show', $this->ingredient);
     }
 }

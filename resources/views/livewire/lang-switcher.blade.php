@@ -1,18 +1,18 @@
 <?php
 
-use function Livewire\Volt\{state, computed};
+use function Livewire\Volt\{state,};
 
 state(['locale' => app()->getLocale()]);
 
-$switch = computed(function () {
+$switch = function ($locale) {
     $locale = $this->locale;
 
     if (in_array($locale, ['ar', 'en', 'fr'])) {
         session()->put('locale', $locale);
     }
-    
+
     return redirect()->back();
-});
+};
 
 ?>
 
@@ -22,9 +22,9 @@ $switch = computed(function () {
             {{ strtoupper(app()->getLocale()) }} <i class="fas fa-chevron-down mr-1 text-xs"></i>
         </button>
         <div x-show="open" class="absolute mt-2 w-40 bg-white rounded-md shadow-lg py-1 left-0">
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">العربية</a>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">English</a>
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Français</a>
+            <a wire:click="switch('ar')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">العربية</a>
+            <a wire:click="switch('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">English</a>
+            <a wire:click="switch('fr')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Français</a>
         </div>
     </div>
 </div>

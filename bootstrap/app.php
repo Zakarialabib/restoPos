@@ -2,25 +2,35 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\Locale;
+use App\Http\Middleware\CheckInstallation;
+use App\Http\Middleware\EnsureInstallationComplete;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Middleware\HandleInertiaRequests;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
+        api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // SetLocale
-        $middleware->web(append: [
-            HandleInertiaRequests::class,
+        // $middleware->web(append: [
+        //     EnsureInstallationComplete::class,
+        // ]);
+        $middleware->append([
+            Locale::class,
         ]);
-        $middleware->append(SetLocale::class);
+        
+        // Register the named middleware for installation
+        $middleware->alias([
+            // 'installation.check' => CheckInstallation::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
-
-    })->create();
+    ->withExceptions(function (Exceptions $exceptions): void {})->create();

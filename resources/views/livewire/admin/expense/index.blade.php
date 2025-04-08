@@ -1,6 +1,6 @@
 <div>
     @section('title', __('Expenses'))
-    <x-theme.breadcrumb :title="__('Expenses List')" :parent="route('admin.expense')" :parentName="__('Expenses List')">
+    <x-theme.breadcrumb :title="__('Expenses List')" :parent="route('admin.expenses')" :parentName="__('Expenses List')">
         <x-button primary type="button" wire:click="dispatchTo('expense.create', 'createModal')">
             {{ __('Create Expense') }}
         </x-button>
