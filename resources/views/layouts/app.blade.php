@@ -1,22 +1,33 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="mainTheme" class="scroll-smooth">
 
-        <title>{{ config('app.name', 'RestoPos') }}</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <title>{{ config('app.name', 'RestoPos') }}</title>
 
-        <!-- Scripts -->
-        @vite(['resources/js/app.jsx', 'resources/css/app.css'])
-        @inertiaHead
-    </head>
-    <body class="font-sans antialiased">
-        @inertia
-        
-    </body>
-</html> 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+    <!-- Scripts -->
+    @livewireStyles
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireScriptConfig
+
+    @stack('scripts')
+
+</head>
+
+<body class="font-sans antialiased">
+    <!-- Main Content -->
+    <main>
+        {{ $slot }}
+    </main>
+
+</body>
+
+</html>

@@ -1,0 +1,68 @@
+/* Theme Base Styles */
+.theme-root {
+    @apply antialiased;
+    color-scheme: light dark;
+}
+
+/* Dark Mode Styles */
+.dark {
+    color-scheme: dark;
+}
+
+/* TV Mode Specific Styles */
+.tv-mode {
+    font-size: 120%;
+    letter-spacing: 0.02em;
+}
+
+.tv-mode .tv-container {
+    max-width: 90vw;
+    padding: 2rem;
+}
+
+/* Animation Classes */
+@layer utilities {
+    .theme-transition {
+        @apply transition-all duration-200;
+    }
+}
+
+/* Radix Theme Overrides */
+:root {
+    --radius-1: 4px;
+    --radius-2: 6px;
+    --radius-3: 8px;
+    --radius-4: 12px;
+    --radius-5: 16px;
+    --radius-6: 24px;
+    
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 40px;
+    --space-8: 48px;
+    --space-9: 64px;
+}
+
+/* TV Mode Scale Adjustments */
+.tv-mode {
+    --radius-1: 8px;
+    --radius-2: 12px;
+    --radius-3: 16px;
+    --radius-4: 24px;
+    --radius-5: 32px;
+    --radius-6: 48px;
+    
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 32px;
+    --space-5: 48px;
+    --space-6: 64px;
+    --space-7: 80px;
+    --space-8: 96px;
+    --space-9: 128px;
+} 

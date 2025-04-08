@@ -10,6 +10,22 @@ export default {
     ],
 
     theme: {
+        extend: {
+            keyframes: {
+                shimmer: {
+                    '0%': { backgroundPosition: '-200% 0' },
+                    '100%': { backgroundPosition: '200% 0' },
+                },
+            },
+            animation: {
+                shimmer: 'shimmer 2s linear infinite',
+                'bounce-slow': 'bounce 3s infinite',
+                'pulse-slow': 'pulse 5s infinite',
+            },
+            backgroundSize: {
+                'shimmer': '200% 100%',
+            },
+        },
         gridAutoColumns: {
             '2fr': 'minmax(0, 2fr)',
           },
@@ -385,6 +401,7 @@ export default {
             body: '#15181C',
         }),
     },
+
     corePlugins: {
         preflight: false,
     },

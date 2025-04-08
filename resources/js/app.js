@@ -14,86 +14,7 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 window.PerfectScrollbar = PerfectScrollbar;
 
 import mask from '@alpinejs/mask'; 
-Alpine.plugin(mask)
-import './bootstrap';
-import NotificationHandler from './handlers/notifications';
-import ModalHandler from './handlers/modal';
-
-// Initialize handlers
-document.addEventListener('DOMContentLoaded', () => {
-    window.notificationHandler = new NotificationHandler();
-    window.modalHandler = new ModalHandler();
-});
-
-// Alpine.js directives
-document.addEventListener('alpine:init', () => {
-    Alpine.directive('sortable', (el, { expression }, { evaluate }) => {
-        const options = evaluate(expression);
-        new Sortable(el, {
-            animation: 150,
-            ghostClass: 'bg-gray-100',
-            onEnd: ({ oldIndex, newIndex }) => {
-                if (oldIndex === newIndex) return;
-                
-                const items = Array.from(el.children).map(item => 
-                    parseInt(item.dataset.id)
-                );
-
-                if (options.onSort) {
-                    options.onSort(items);
-                }
-            }
-        });
-    });
-
-    Alpine.directive('tooltip', (el, { expression, modifiers }, { evaluate }) => {
-        const content = evaluate(expression);
-        const position = modifiers[0] || 'top';
-
-        tippy(el, {
-            content,
-            placement: position,
-            arrow: true,
-            theme: 'light-border'
-        });
-    });
-});
-
-// Custom events
-window.addEventListener('livewire:initialized', () => {
-    // Handle form submissions
-    Livewire.on('form-submitted', ({ message }) => {
-        window.dispatchEvent(new CustomEvent('notify', {
-            detail: {
-                type: 'success',
-                message
-            }
-        }));
-    });
-
-    // Handle form errors
-    Livewire.on('form-error', ({ message }) => {
-        window.dispatchEvent(new CustomEvent('notify', {
-            detail: {
-                type: 'error',
-                message
-            }
-        }));
-    });
-
-    // Handle modal events
-    Livewire.on('show-modal', ({ id, options }) => {
-        window.dispatchEvent(new CustomEvent('show-modal', {
-            detail: { id, options }
-        }));
-    });
-
-    Livewire.on('hide-modal', ({ id }) => {
-        window.dispatchEvent(new CustomEvent('hide-modal', {
-            detail: { id }
-        }));
-    });
-}); 
+Alpine.plugin(mask);
 
 Alpine.data("mainTheme", () => {
 
@@ -123,27 +44,45 @@ Alpine.data("mainTheme", () => {
     return {
         isRtl,
         loadingMask,
-        isSidebarOpen: sessionStorage.getItem("sidebarOpen") === "true",
+        isSidebarOpen: window.innerWidth >= 1024 ? sessionStorage.getItem("sidebarOpen") !== "false" : false,
+        isSidebarHovered: false,
+        viewMode: localStorage.getItem('viewMode') || 'grid',
+
+        init() {
+            // Initialize sidebar state based on screen size
+            this.handleWindowResize();
+            
+            // Listen for window resize events
+            window.addEventListener('resize', this.handleWindowResize.bind(this));
+
+            // Watch for viewMode changes and save to localStorage
+            this.$watch('viewMode', (newValue) => {
+                localStorage.setItem('viewMode', newValue);
+            });
+        },
+
         handleSidebarToggle() {
             this.isSidebarOpen = !this.isSidebarOpen;
-            sessionStorage.setItem("sidebarOpen", this.isSidebarOpen.toString());
-        },
-        isSidebarHovered: false,
-        handleSidebarHover(value) {
-            if (window.innerWidth < 1024) {
-                return;
+            if (window.innerWidth >= 1024) {
+                sessionStorage.setItem("sidebarOpen", this.isSidebarOpen.toString());
             }
+        },
+
+        handleSidebarHover(value) {
+            if (window.innerWidth < 1024) return;
             this.isSidebarHovered = value;
         },
+
         handleWindowResize() {
-            if (window.innerWidth <= 1024) {
+            if (window.innerWidth < 1024) {
                 this.isSidebarOpen = false;
-            } else {
-                this.isSidebarOpen = true;
+                this.isSidebarHovered = false;
             }
         },
+        
         scrollingDown: false,
         scrollingUp: false,
     };
 });
-Livewire.start()
+
+Livewire.start();

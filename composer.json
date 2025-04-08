@@ -7,12 +7,13 @@
     "require": {
         "php": "^8.2",
         "fakerphp/faker": "^1.23",
-        "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^11.9",
+        "laravel/prompts": "^0.3.5",
         "laravel/reverb": "^1.4",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.4",
-        "livewire/volt": "^1.0"
+        "livewire/volt": "^1.0",
+        "spatie/laravel-permission": "^6.16"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.13",
@@ -24,6 +25,9 @@
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin-laravel": "^3.1",
+        "pestphp/pest-plugin-livewire": "^3.0",
         "phpunit/phpunit": "^11.0.1",
         "recca0120/laravel-erd": "0.2.0"
     },
@@ -34,7 +38,7 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Support/helpers.php"
+            "app/helpers.php"
         ]
     },
     "autoload-dev": {
@@ -74,5 +78,11 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../livewire-pdf"
+        }
+    ]
 }

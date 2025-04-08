@@ -1,88 +1,39 @@
 {
-  "_bootstrap-Bux_OH3t.js": {
-    "file": "assets/bootstrap-Bux_OH3t.js",
-    "name": "bootstrap"
+  "_module.esm-!~{004}~.js": {
+    "file": "assets/module-DALuiRUK.css",
+    "src": "_module.esm-!~{004}~.js"
   },
-  "_image-3XTb1dam.js": {
-    "file": "assets/image-3XTb1dam.js",
-    "name": "image",
-    "imports": [
-      "resources/js/app.jsx"
-    ]
-  },
-  "_shopping-bag-Cm8KcK1a.js": {
-    "file": "assets/shopping-bag-Cm8KcK1a.js",
-    "name": "shopping-bag",
-    "imports": [
-      "resources/js/app.jsx"
+  "_module.esm-BL5RdS-9.js": {
+    "file": "assets/module.esm-BL5RdS-9.js",
+    "name": "module.esm",
+    "css": [
+      "assets/module-DALuiRUK.css"
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-Csv383zQ.css",
-    "src": "resources/js/app.jsx",
+    "file": "assets/app-xI3BK_l1.css",
+    "src": "resources/css/app.css",
     "isEntry": true
   },
-  "resources/js/Pages/Menu/Index.jsx": {
-    "file": "assets/Index-EDgLYszW.js",
-    "name": "Index",
-    "src": "resources/js/Pages/Menu/Index.jsx",
-    "isDynamicEntry": true,
+  "resources/js/admin.js": {
+    "file": "assets/admin-1stH_UuH.js",
+    "name": "admin",
+    "src": "resources/js/admin.js",
+    "isEntry": true,
     "imports": [
-      "resources/js/app.jsx",
-      "_bootstrap-Bux_OH3t.js",
-      "_shopping-bag-Cm8KcK1a.js",
-      "_image-3XTb1dam.js"
-    ]
-  },
-  "resources/js/Pages/Menu/TVMenu.jsx": {
-    "file": "assets/TVMenu-DJ2H7Ike.js",
-    "name": "TVMenu",
-    "src": "resources/js/Pages/Menu/TVMenu.jsx",
-    "isDynamicEntry": true,
-    "imports": [
-      "resources/js/app.jsx",
-      "_bootstrap-Bux_OH3t.js",
-      "_image-3XTb1dam.js"
-    ]
-  },
-  "resources/js/Pages/Orders/Track.jsx": {
-    "file": "assets/Track-CO-hKQGr.js",
-    "name": "Track",
-    "src": "resources/js/Pages/Orders/Track.jsx",
-    "isDynamicEntry": true,
-    "imports": [
-      "resources/js/app.jsx",
-      "_bootstrap-Bux_OH3t.js",
-      "_shopping-bag-Cm8KcK1a.js"
+      "_module.esm-BL5RdS-9.js"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Bd6GrkUX.js",
+    "file": "assets/app-BwIOnK2x.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_bootstrap-Bux_OH3t.js"
+      "_module.esm-BL5RdS-9.js"
     ],
     "css": [
-      "assets/app-Drcu4Bqt.css"
-    ]
-  },
-  "resources/js/app.jsx": {
-    "file": "assets/app-BLLBxoeX.js",
-    "name": "app",
-    "src": "resources/js/app.jsx",
-    "isEntry": true,
-    "imports": [
-      "_bootstrap-Bux_OH3t.js"
-    ],
-    "dynamicImports": [
-      "resources/js/Pages/Menu/Index.jsx",
-      "resources/js/Pages/Menu/TVMenu.jsx",
-      "resources/js/Pages/Orders/Track.jsx"
-    ],
-    "css": [
-      "assets/app-Csv383zQ.css"
+      "assets/app-CJ-KzOvo.css"
     ]
   }
 }
