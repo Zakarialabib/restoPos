@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Enums\UnitType;
 use App\Enums\IngredientType;
+use App\Enums\UnitType;
 use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\Price;

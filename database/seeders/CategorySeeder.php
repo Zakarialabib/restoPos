@@ -7,9 +7,7 @@ namespace Database\Seeders;
 use App\Enums\CategoryType;
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\Ingredient;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
@@ -143,6 +141,14 @@ class CategorySeeder extends Seeder
                 'status' => true,
                 'is_composable' => true,
                 'type' => CategoryType::COMPOSABLE->value,
+            ],
+            [
+                'name' => 'Layered Juice',
+                'description' => 'Custom layered fruit juices with various toppings',
+                'status' => true,
+                'is_composable' => true,
+                'type' => CategoryType::COMPOSABLE->value,
+                'slug' => 'layered-juice',
             ],
         ];
 

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Price;
 use App\Models\Product;
 use App\Models\Recipe;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -15,11 +16,13 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         // Fruits Category
-        $fruitsCategory = Category::firstOrCreate([
-            'id' => 1,
-            'name' => 'Fruits',
-            'status' => 1
-        ]);
+        $juicesCategory = Category::where('name', 'Juices')->first();
+        if ( ! $juicesCategory) {
+            $juicesCategory = Category::create([
+                'name' => 'Juices',
+                'status' => 1
+            ]);
+        }
 
         $fruits = [
             [
@@ -27,12 +30,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Fresh, crisp apples perfect for snacking or baking.',
                 'image' => 'https://example.com/images/apple.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => Recipe::where('name', 'Jus de pomme - عصير التفاح')->first()->id ?? null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -40,12 +43,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Fresh fruit mix juice',
                 'image' => 'https://example.com/images/panache.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -53,12 +56,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Ripe, yellow bananas rich in potassium.',
                 'image' => 'https://example.com/images/banana.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -66,12 +69,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Juicy oranges packed with vitamin C.',
                 'image' => 'https://example.com/images/orange.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 7.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 10.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 15.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 7.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 10.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 15.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -79,12 +82,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Sweet and tangy tropical pineapples.',
                 'image' => 'https://example.com/images/pineapple.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 18.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 22.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 25.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 18.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 22.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 25.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -92,12 +95,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Juicy and fragrant peaches, perfect for summer.',
                 'image' => 'https://example.com/images/peach.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -105,12 +108,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Creamy and nutritious avocados, great for salads and toast.',
                 'image' => 'https://example.com/images/avocado.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -118,12 +121,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Juicy and sweet pears with a delicate flavor.',
                 'image' => 'https://example.com/images/pear.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => Recipe::where('name', 'Jus de poire - عصير الاجاص')->first()->id ?? null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -131,12 +134,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Exotic dragon fruit with a unique appearance and mild, sweet taste.',
                 'image' => 'https://example.com/images/dragon_fruit.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 18.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 25.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 30.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 18.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 25.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 30.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -144,12 +147,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Tropical papaya with a sweet, musky flavor and soft texture.',
                 'image' => 'https://example.com/images/papaya.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -157,12 +160,12 @@ class ProductSeeder extends Seeder
                 'description' => 'Sweet and tropical mango juice.',
                 'image' => 'https://example.com/images/mango.jpg',
                 'status' => true,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'recipe_id' => Recipe::where('name', 'Jus de mangue - عصير المانجو')->first()->id ?? null,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 22.00, 'notes' => __('Large size')],
                 ]
             ],
             // Mixed Fruit Smoothies
@@ -172,11 +175,11 @@ class ProductSeeder extends Seeder
                 'image' => 'https://example.com/images/tropical_smoothie.jpg',
                 'status' => true,
                 'recipe_id' => null,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -185,11 +188,11 @@ class ProductSeeder extends Seeder
                 'image' => 'https://example.com/images/banana_orange_smoothie.jpg',
                 'status' => true,
                 'recipe_id' => null,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
                 ]
             ],
             // Layered Juices
@@ -199,11 +202,11 @@ class ProductSeeder extends Seeder
                 'image' => 'https://example.com/images/sunrise_layered.jpg',
                 'status' => true,
                 'recipe_id' => null,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' => __('Large size')],
                 ]
             ],
             // Energy Smoothies
@@ -213,11 +216,11 @@ class ProductSeeder extends Seeder
                 'image' => 'https://example.com/images/green_energy.jpg',
                 'status' => true,
                 'recipe_id' => null,
-                'category_id' => $fruitsCategory->id,
+                'category_id' => $juicesCategory->id,
                 'prices' => [
-                    ['size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
-                    ['size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
-                    ['size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' =>  __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 12.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 15.00, 'price' => 15.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 18.00, 'price' => 18.00, 'notes' =>  __('Large size')],
                 ]
             ]
         ];
@@ -234,7 +237,7 @@ class ProductSeeder extends Seeder
                     'priceable_id' => $product->id,
                     'cost' => $priceData['cost'],
                     'price' => $priceData['price'],
-                    'date' => now(),
+                    'entry_date' => now(),
                     'notes' => $priceData['notes'] ?? null,
                     'metadata' => [ // Changed 'prices' to 'metadata'
                         'size' => $priceData['size'],
@@ -260,9 +263,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -273,9 +276,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -286,9 +289,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -299,9 +302,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ]
             ],
             [
@@ -312,9 +315,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ],
             ],
             [
@@ -325,9 +328,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ],
             ],
             [
@@ -338,9 +341,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ]
             ],
             // Mixed Dried Fruit Packs
@@ -352,9 +355,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ],
             ],
             [
@@ -365,9 +368,9 @@ class ProductSeeder extends Seeder
                 'recipe_id' => null,
                 'category_id' => $driedFruitsCategory->id,
                 'prices' => [
-                    ['size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small 250gr'), 'cost' => 10.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium 500gr'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large 1kg'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
                 ]
             ]
         ];
@@ -384,7 +387,159 @@ class ProductSeeder extends Seeder
                     'priceable_id' => $product->id,
                     'cost' => $priceData['cost'],
                     'price' => $priceData['price'],
-                    'date' => now(),
+                    'entry_date' => now(),
+                    'notes' => $priceData['notes'] ?? null,
+                    'metadata' => [ // Changed 'prices' to 'metadata'
+                        'size' => $priceData['size'],
+                        'unit' => $priceData['unit'] ?? 'default',
+                    ],
+                ]);
+            }
+        }
+
+        // check if Salads Category already created in category seeder
+        $saladsCategory = Category::where('name', 'Salad')->first();
+        if ( ! $saladsCategory) {
+            $saladsCategory = Category::create([
+                'name' => 'Salad',
+                'status' => 1
+            ]);
+        }
+        $salades = [
+
+            [
+                'name' => 'Bakoula - بقولة',
+                'description' => 'Salade d\'épinards à la marocaine - سلطة السبانخ على الطريقة المغربية',
+                'category_id' => $saladsCategory->id,
+                'image' => 'products/bakoula.jpg',
+                'status' => true,
+                'prices' => [
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('normal'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('special'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                ]
+
+            ],
+            [
+                'name' => 'Carotte Râpée -  جزر مبشور',
+                'description' => 'Salade de carottes râpées à la marocaine - سلطة الجزر المبشور على الطريقة المغربية',
+                'category_id' => $saladsCategory->id,
+                'image' => 'products/carotte-rapee.jpg',
+                'status' => true,
+                'prices' => [
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                ]
+            ],
+        ];
+
+        foreach ($salades as $salade) {
+            $prices = $salade['prices'] ?? [];
+            unset($salade['prices']);
+
+            $product = Product::create($salade);
+
+            foreach ($prices as $priceData) {
+                Price::create([
+                    'priceable_type' => Product::class,
+                    'priceable_id' => $product->id,
+                    'cost' => $priceData['cost'],
+                    'price' => $priceData['price'],
+                    'entry_date' => now(),
+                    'notes' => $priceData['notes'] ?? null,
+                    'metadata' => [ // Changed 'prices' to 'metadata'
+                        'size' => $priceData['size'],
+                        'unit' => $priceData['unit'] ?? 'default',
+                    ],
+                ]);
+            }
+        }
+
+        // check if Breads Category already created in category seeder
+        $sandwichesCategory = Category::where('name', 'Sandwiches')->first();
+        if ( ! $sandwichesCategory) {
+            $sandwichesCategory = Category::create([
+                'name' => 'Sandwiche',
+                'status' => 1
+            ]);
+        }
+        $sandwiches = [
+            // More Moroccan Sandwiches
+            [
+                'name' => 'Sandwich Kefta - ساندويتش كفتة',
+                'description' => 'Sandwich à la viande hachée épicée avec sauce harissa - ساندويتش بالكفتة المتبلة مع صلصة الهريسة',
+                'category_id' => $sandwichesCategory->id,
+                'image' => 'products/sandwich-kefta.jpg',
+                'status' => true,
+                'prices' => [
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('normal'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('special'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                ]
+            ],
+            [
+                'name' => 'Sandwich Crevettes - ساندويتش قمرون',
+                'description' => 'Sandwich aux crevettes grillées avec sauce cocktail - ساندويتش بالقمرون المشوي مع صلصة كوكتيل',
+                'category_id' => $sandwichesCategory->id,
+                'image' => 'products/sandwich-crevettes.jpg',
+                'status' => true,
+                'prices' => [
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('normal'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('special'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                ]
+            ],
+            [
+                'name' => 'Sandwich Thon - ساندويتش تونة',
+                'description' => 'Sandwich au thon avec salade et mayonnaise - ساندويتش بالتونة والسلطة والمايونيز',
+                'category_id' => $sandwichesCategory->id,
+                'image' => 'products/sandwich-thon.jpg',
+                'status' => true,
+
+                'prices' => [
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('normal'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('special'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                ]
+            ],
+            [
+                'name' => 'Sandwich Poulet - ساندويتش دجاج',
+                'description' => 'Sandwich au poulet grillé avec sauce harissa - ساندويتش بالدجاج المشوي مع صلصة الهريسة',
+                'category_id' => $sandwichesCategory->id,
+                'image' => 'products/sandwich-poulet.jpg',
+                'status' => true,
+                'prices' => [
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('normal'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('special'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                ]
+            ],
+            [
+                'name' => 'Sandwich Viande - ساندويتش لحم',
+                'description' => 'Sandwich à la viande hachée épicée - ساندويتش باللحم المفروم المتبل',
+                'category_id' => $sandwichesCategory->id,
+                'image' => 'products/sandwich-viande.jpg',
+                'status' => true,
+                'prices' => [
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('normal'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
+                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('special'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                ]
+            ],
+        ];
+        foreach ($sandwiches as $sandwich) {
+            $prices = $sandwich['prices'] ?? [];
+            unset($sandwich['prices']);
+
+            $product = Product::create($sandwich);
+
+            foreach ($prices as $priceData) {
+                Price::create([
+                    'priceable_type' => Product::class,
+                    'priceable_id' => $product->id,
+                    'cost' => $priceData['cost'],
+                    'price' => $priceData['price'],
+                    'entry_date' => now(),
                     'notes' => $priceData['notes'] ?? null,
                     'metadata' => [ // Changed 'prices' to 'metadata'
                         'size' => $priceData['size'],

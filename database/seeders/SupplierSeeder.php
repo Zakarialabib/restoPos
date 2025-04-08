@@ -41,4 +41,4 @@ class SupplierSeeder extends Seeder
             Supplier::factory()->count(5)->create();
         }
     }
-} 
+}

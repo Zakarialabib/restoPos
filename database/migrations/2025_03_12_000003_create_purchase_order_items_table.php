@@ -9,19 +9,20 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::create('composable_ingredient', function (Blueprint $table): void {
+        Schema::create('purchase_order_items', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('composable_id')->constrained()->onDelete('cascade');
+            $table->foreignId('purchase_order_id')->constrained()->onDelete('cascade');
             $table->foreignUuid('ingredient_id')->constrained()->onDelete('cascade');
-            $table->decimal('quantity', 8, 2);
+            $table->decimal('quantity', 10, 2);
+            $table->decimal('unit_price', 10, 2);
+            $table->decimal('total_price', 10, 2);
+            $table->text('notes')->nullable();
             $table->timestamps();
-
-            $table->unique(['composable_id', 'ingredient_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('composable_ingredient');
+        Schema::dropIfExists('purchase_order_items');
     }
 };

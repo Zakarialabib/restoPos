@@ -34,14 +34,14 @@ class ProductFactory extends Factory
 
     public function unavailable(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => false,
         ]);
     }
 
     public function featured(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'is_featured' => true,
             'status' => true,
         ]);
@@ -49,7 +49,7 @@ class ProductFactory extends Factory
 
     public function composable(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'is_composable' => true,
             'status' => true,
         ]);
@@ -57,7 +57,7 @@ class ProductFactory extends Factory
 
     public function lowStock(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'min_stock' => 10,
         ])->afterCreating(function (Product $product): void {
             $product->adjustStock(5, 'Initial stock');

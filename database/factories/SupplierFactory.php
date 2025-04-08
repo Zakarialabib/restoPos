@@ -39,4 +39,4 @@ class SupplierFactory extends Factory
             'status' => false,
         ]);
     }
-} 
+}

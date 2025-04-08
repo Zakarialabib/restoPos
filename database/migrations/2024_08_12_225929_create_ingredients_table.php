@@ -6,14 +6,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class() extends Migration {
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('ingredients', function (Blueprint $table): void {
             $table->uuid('id')->primary();
+            $table->foreignid('category_id')->constrained();
             $table->string('name')->unique();
             $table->string('sku')->nullable();
-            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('conversion_rate', 10, 2)->default(1);
             $table->decimal('stock_quantity', 10, 2)->default(0);
             $table->date('entry_date')->nullable();
@@ -34,7 +34,7 @@ return new class() extends Migration {
             $table->integer('lead_time_days')->nullable();
             $table->json('allergens')->nullable();
             $table->string('type')->nullable();
-            
+
             // Indexes for better performance
             $table->index('type');
             $table->index(['stock_quantity', 'reorder_point']);
@@ -42,7 +42,7 @@ return new class() extends Migration {
             $table->index('is_seasonal');
             $table->index('popularity');
             $table->index('expiry_date');
-            
+
             $table->softDeletes();
             $table->timestamps();
         });

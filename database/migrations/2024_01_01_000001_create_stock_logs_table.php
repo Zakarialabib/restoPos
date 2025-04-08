@@ -11,12 +11,12 @@ return new class () extends Migration {
     {
         Schema::create('stock_logs', function (Blueprint $table): void {
             $table->id();
-            $table->morphs('stockable');
+            $table->uuidMorphs('stockable');
             $table->decimal('adjustment', 10, 2);
             $table->string('reason');
             $table->decimal('previous_quantity', 10, 2);
             $table->decimal('new_quantity', 10, 2);
-            $table->foreignId('user_id')->constrained();
+            $table->foreignUuid('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Models\Warehouse;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,9 +12,9 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('cash_registers', function (Blueprint $table) {
+        Schema::create('cash_registers', function (Blueprint $table): void {
             $table->id();
             $table->uuid('user_id')->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
@@ -32,7 +31,7 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('cash_registers');
     }

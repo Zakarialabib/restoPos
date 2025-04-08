@@ -27,12 +27,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'juice',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 95,
-                    'protein' => 0.5,
-                    'carbs' => 25,
-                    'fat' => 0.3
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Pomme - تفاح')->first()->id,
@@ -43,7 +37,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -60,12 +54,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 8,
                 'type' => 'juice',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 120,
-                    'protein' => 2,
-                    'carbs' => 28,
-                    'fat' => 0.4
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
@@ -76,13 +64,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 50,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -99,12 +87,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'juice',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 85,
-                    'protein' => 1.7,
-                    'carbs' => 21,
-                    'fat' => 0.2
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Orange - برتقال')->first()->id,
@@ -115,7 +97,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -132,12 +114,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'juice',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 60,
-                    'protein' => 1,
-                    'carbs' => 15,
-                    'fat' => 0.2
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Peach - الخوخ')->first()->id,
@@ -148,7 +124,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -165,12 +141,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'juice',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 100,
-                    'protein' => 1,
-                    'carbs' => 25,
-                    'fat' => 0.4
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
@@ -181,7 +151,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -198,12 +168,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'juice',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 70,
-                    'protein' => 0.5,
-                    'carbs' => 18,
-                    'fat' => 0.1
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Pear - الاجاص')->first()->id,
@@ -214,7 +178,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -231,12 +195,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'juice',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 80,
-                    'protein' => 1,
-                    'carbs' => 20,
-                    'fat' => 0.3
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Papaya - البابايا')->first()->id,
@@ -247,7 +205,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -264,12 +222,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'juice',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 50,
-                    'protein' => 1,
-                    'carbs' => 12,
-                    'fat' => 0.2
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Kiwi - كيوي')->first()->id,
@@ -280,7 +232,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -298,12 +250,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 15,
                 'type' => 'juice',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 120,
-                    'protein' => 1.5,
-                    'carbs' => 30,
-                    'fat' => 0.5
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Orange - برتقال')->first()->id,
@@ -326,7 +272,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -344,12 +290,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 12,
                 'type' => 'smoothie',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 180,
-                    'protein' => 3,
-                    'carbs' => 35,
-                    'fat' => 2
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
@@ -366,13 +306,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
@@ -396,12 +336,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 160,
-                    'protein' => 3.5,
-                    'carbs' => 32,
-                    'fat' => 1.5
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
@@ -418,13 +352,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 150,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
@@ -450,12 +384,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 20,
                 'type' => 'special',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 150,
-                    'protein' => 2,
-                    'carbs' => 35,
-                    'fat' => 0.5
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Dragon Fruit - فاكهة التنين')->first()->id,
@@ -478,7 +406,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -495,12 +423,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 250,
-                    'protein' => 4,
-                    'carbs' => 30,
-                    'fat' => 12
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Avocate - الافوكادو')->first()->id,
@@ -517,13 +439,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -540,12 +462,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 220,
-                    'protein' => 3,
-                    'carbs' => 40,
-                    'fat' => 2
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
@@ -568,13 +484,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 150,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -591,12 +507,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 15,
                 'type' => 'smoothie',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 200,
-                    'protein' => 3,
-                    'carbs' => 45,
-                    'fat' => 1
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Fruits Secs - فواكه مجففة')->first()->id,
@@ -607,13 +517,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -631,12 +541,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 50,
-            //         'protein' => 1,
-            //         'carbs' => 12,
-            //         'fat' => 0.1
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Fraise - فراولة')->first()->id,
@@ -664,12 +569,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 70,
-            //         'protein' => 1,
-            //         'carbs' => 18,
-            //         'fat' => 0.2
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Cerise - كرز')->first()->id,
@@ -697,12 +597,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 60,
-            //         'protein' => 1,
-            //         'carbs' => 14,
-            //         'fat' => 0.1
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Framboise - توت العليق')->first()->id,
@@ -730,12 +625,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 50,
-            //         'protein' => 1,
-            //         'carbs' => 13,
-            //         'fat' => 0.2
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Melon - شمام')->first()->id,
@@ -763,12 +653,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 15,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 80,
-            //         'protein' => 1,
-            //         'carbs' => 20,
-            //         'fat' => 0.3
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Grenade - رمان')->first()->id,
@@ -796,12 +681,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 16,
-            //         'protein' => 0.7,
-            //         'carbs' => 4,
-            //         'fat' => 0.1
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Concombre - خيار')->first()->id,
@@ -829,12 +709,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 41,
-            //         'protein' => 0.9,
-            //         'carbs' => 10,
-            //         'fat' => 0.2
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Carotte - جزر')->first()->id,
@@ -862,12 +737,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 43,
-            //         'protein' => 1.6,
-            //         'carbs' => 10,
-            //         'fat' => 0.2
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Betterave - شمندر')->first()->id,
@@ -895,12 +765,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'juice',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 18,
-            //         'protein' => 0.9,
-            //         'carbs' => 4,
-            //         'fat' => 0.2
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Tomate - طماطم')->first()->id,
@@ -928,12 +793,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 300,
-                    'protein' => 4,
-                    'carbs' => 40,
-                    'fat' => 15
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
@@ -950,13 +809,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -972,12 +831,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'smoothie',
             //     'is_featured' => false,
-            //     'nutritional_info' => [
-            //         'calories' => 220,
-            //         'protein' => 3,
-            //         'carbs' => 40,
-            //         'fat' => 1
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
@@ -1016,12 +870,7 @@ class RecipeSeeder extends Seeder
             //     'preparation_time' => 10,
             //     'type' => 'smoothie',
             //     'is_featured' => true,
-            //     'nutritional_info' => [
-            //         'calories' => 180,
-            //         'protein' => 4,
-            //         'carbs' => 35,
-            //         'fat' => 2
-            //     ],
+            //
             //     'ingredients' => [
             //         [
             //             'id' => Ingredient::where('name', 'Fraise - فراولة')->first()->id,
@@ -1065,12 +914,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => true,
-                'nutritional_info' => [
-                    'calories' => 250,
-                    'protein' => 3,
-                    'carbs' => 45,
-                    'fat' => 5
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Mangue - المانجو')->first()->id,
@@ -1087,13 +930,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait de Coco - حليب جوز الهند')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1109,12 +952,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 220,
-                    'protein' => 5,
-                    'carbs' => 40,
-                    'fat' => 3
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
@@ -1131,7 +968,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
@@ -1152,12 +989,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 180,
-                    'protein' => 4,
-                    'carbs' => 30,
-                    'fat' => 2
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Peach - الخوخ')->first()->id,
@@ -1174,7 +1005,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1189,12 +1020,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 200,
-                    'protein' => 2,
-                    'carbs' => 35,
-                    'fat' => 5
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Papaya - البابايا')->first()->id,
@@ -1205,13 +1030,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait de Coco - حليب جوز الهند')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1226,12 +1051,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 5,
                 'type' => 'smoothie',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 150,
-                    'protein' => 3,
-                    'carbs' => 30,
-                    'fat' => 2
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Bannane - الموز')->first()->id,
@@ -1242,13 +1061,13 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [
                         'id' => Ingredient::where('name', 'Glace - الماء مثلج')->first()->id,
                         'quantity' => 100,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ]
                 ]
@@ -1264,12 +1083,6 @@ class RecipeSeeder extends Seeder
                 'preparation_time' => 10,
                 'type' => 'smoothie',
                 'is_featured' => false,
-                'nutritional_info' => [
-                    'calories' => 220,
-                    'protein' => 5,
-                    'carbs' => 40,
-                    'fat' => 3
-                ],
                 'ingredients' => [
                     [
                         'id' => Ingredient::where('name', 'Avoine - شوفان')->first()->id,
@@ -1280,7 +1093,7 @@ class RecipeSeeder extends Seeder
                     [
                         'id' => Ingredient::where('name', 'Lait - حليب')->first()->id,
                         'quantity' => 200,
-                        'unit' => UnitType::Mililitre->value,
+                        'unit' => UnitType::Milliliter->value,
                         'preparation_notes' => null
                     ],
                     [

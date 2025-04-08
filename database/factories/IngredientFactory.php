@@ -29,64 +29,52 @@ class IngredientFactory extends Factory
 
     public function fruit(): self
     {
-        return $this->state(function () {
-            return [
-                'category_id' => Category::firstOrCreate([
-                    'name' => 'Fruits',
-                    'description' => 'Fresh fruits'
-                ])->id
-            ];
-        });
+        return $this->state(fn () => [
+            'category_id' => Category::firstOrCreate([
+                'name' => 'Fruits',
+                'description' => 'Fresh fruits'
+            ])->id
+        ]);
     }
 
     public function vegetable(): self
     {
-        return $this->state(function () {
-            return [
-                'category_id' => Category::firstOrCreate([
-                    'name' => 'Vegetables',
-                    'description' => 'Fresh vegetables'
-                ])->id
-            ];
-        });
+        return $this->state(fn () => [
+            'category_id' => Category::firstOrCreate([
+                'name' => 'Vegetables',
+                'description' => 'Fresh vegetables'
+            ])->id
+        ]);
     }
 
     public function supplement(): self
     {
-        return $this->state(function () {
-            return [
-                'category_id' => Category::firstOrCreate([
-                    'name' => 'Supplements',
-                    'description' => 'Nutritional supplements'
-                ])->id
-            ];
-        });
+        return $this->state(fn () => [
+            'category_id' => Category::firstOrCreate([
+                'name' => 'Supplements',
+                'description' => 'Nutritional supplements'
+            ])->id
+        ]);
     }
 
     public function lowStock(): self
     {
-        return $this->state(function () {
-            return [
-                'stock_quantity' => $this->faker->randomFloat(2, 0, 10)
-            ];
-        });
+        return $this->state(fn () => [
+            'stock_quantity' => $this->faker->randomFloat(2, 0, 10)
+        ]);
     }
 
     public function outOfStock(): self
     {
-        return $this->state(function () {
-            return [
-                'stock_quantity' => 0
-            ];
-        });
+        return $this->state(fn () => [
+            'stock_quantity' => 0
+        ]);
     }
 
     public function seasonal(): self
     {
-        return $this->state(function () {
-            return [
-                'is_seasonal' => true
-            ];
-        });
+        return $this->state(fn () => [
+            'is_seasonal' => true
+        ]);
     }
 }
