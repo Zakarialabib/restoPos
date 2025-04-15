@@ -28,6 +28,7 @@ return new class () extends Migration {
             $table->decimal('stock_quantity', 10, 2)->default(0);
             $table->decimal('reorder_point', 10, 2)->default(0);
             $table->boolean('status')->default(true);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

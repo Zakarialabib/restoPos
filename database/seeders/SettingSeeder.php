@@ -9,7 +9,6 @@ use Illuminate\Database\Seeder;
 
 class SettingSeeder extends Seeder
 {
-    /** @var array */
     protected $settings = [
         [
             'key'   => 'company_name',
@@ -42,6 +41,19 @@ class SettingSeeder extends Seeder
         [
             'key'   => 'site_favicon',
             'value' => '',
+        ],
+        // Visual Identity
+        ['key' => 'primary_color', 'value' => '#FF6B35'],
+        ['key' => 'secondary_color', 'value' => '#00A896'],
+        ['key' => 'font_family', 'value' => 'Inter'],
+        // Theme Switching
+        // [
+        //     'key' => 'available_themes',
+        //     'value' => json_encode(['light', 'dark', 'nature']),
+        // ],
+        [
+            'key' => 'default_theme',
+            'value' => 'light'
         ],
         [
             'key'   => 'footer_copyright_text',
@@ -111,6 +123,31 @@ class SettingSeeder extends Seeder
             'key'   => 'homepage_type',
             'value' => 'welcome',
         ],
+        // Banner Settings
+        [
+            'key'   => 'show_promotional_banner',
+            'value' => true,
+        ],
+        [
+            'key'   => 'banner_title',
+            'value' => 'Craft Your Perfect Juice',
+        ],
+        [
+            'key'   => 'banner_description',
+            'value' => 'Select from the freshest ingredients and design your custom juice blend with our easy-to-use system. Pure refreshment awaits!',
+        ],
+        [
+            'key'   => 'banner_button_text',
+            'value' => 'Make Your Juice Now',
+        ],
+        [
+            'key'   => 'banner_button_url',
+            'value' => '/compose/fruits',
+        ],
+        [
+            'key'   => 'banner_image',
+            'value' => 'images/make-juice.webp',
+        ],
         [
             'key'   => 'is_installed',
             'value' => false,
@@ -131,12 +168,12 @@ class SettingSeeder extends Seeder
         foreach ($this->settings as $index => $setting) {
             $result = Settings::create($setting);
 
-            if ( ! $result) {
+            if (! $result) {
                 $this->command->info("Insert failed at record $index.");
 
                 return;
             }
         }
-        $this->command->info('Inserted '.count($this->settings).' records');
+        $this->command->info('Inserted ' . count($this->settings) . ' records');
     }
 }

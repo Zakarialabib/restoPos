@@ -20,19 +20,86 @@ class RolesAndPermissionsSeeder extends Seeder
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create roles
-        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);
-        // You could create a 'user' role here too if needed for the demo user
-        // Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        // Create permissions
+        $permissions = [
+            // Menu Management
+            'view menu',
+            'create menu',
+            'edit menu',
+            'delete menu',
+            
+            // Order Management
+            'view orders',
+            'create orders',
+            'edit orders',
+            'delete orders',
+            
+            // User Management
+            'view users',
+            'create users',
+            'edit users',
+            'delete users',
+            
+            // Role & Permission Management
+            'view roles',
+            'create roles',
+            'edit roles',
+            'delete roles',
+            
+            // Dashboard & Reports
+            'view dashboard',
+            'view reports',
+            
+            // Settings
+            'manage settings',
+            
+            // Customer specific permissions
+            'place orders',
+            'view own orders',
+            'edit own orders',
+            'cancel own orders',
+        ];
 
-        // Example of creating a permission (optional for now)
-        // Permission::firstOrCreate(['name' => 'manage settings', 'guard_name' => 'web']);
+        // Create permissions for both guards
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission, 'guard_name' => 'web']);
+            Permission::create(['name' => $permission, 'guard_name' => 'admin']);
+        }
 
-        // Example of assigning a permission to a role (optional for now)
-        // $adminRole = Role::findByName('admin');
-        // if ($adminRole) {
-        //     $adminRole->givePermissionTo('manage settings');
-        // }
+        // Create admin roles and assign permissions
+        $admin = Role::create(['name' => 'admin', 'guard_name' => 'admin']);
+        $admin->givePermissionTo(Permission::where('guard_name', 'admin')->get());
+
+        $manager = Role::create(['name' => 'manager', 'guard_name' => 'admin']);
+        $manager->givePermissionTo([
+            'view menu',
+            'create menu',
+            'edit menu',
+            'view orders',
+            'create orders',
+            'edit orders',
+            'view users',
+            'view dashboard',
+            'view reports',
+        ]);
+
+        $staff = Role::create(['name' => 'staff', 'guard_name' => 'admin']);
+        $staff->givePermissionTo([
+            'view menu',
+            'view orders',
+            'create orders',
+            'edit orders',
+            'view dashboard',
+        ]);
+
+        // Create customer role and assign permissions
+        $customer = Role::create(['name' => 'customer', 'guard_name' => 'web']);
+        $customer->givePermissionTo([
+            'view menu',
+            'place orders',
+            'view own orders',
+            'edit own orders',
+            'cancel own orders',
+        ]);
     }
 }

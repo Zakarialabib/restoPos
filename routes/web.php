@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Auth\PhoneVerificationController;
-use App\Http\Controllers\CheckoutController;
-use App\Livewire\Admin\Dashboard\Index as AdminDashboardIndex;
+use App\Livewire\Admin\Dashboard\Index as Dashboard;
 use App\Livewire\Admin\Products\Index as AdminProductIndex;
 use App\Livewire\Admin\Products\Composable\Index as AdminComposableProductIndex;
 use App\Livewire\Admin\Categories\Index as AdminCategoryIndex;
@@ -35,8 +34,17 @@ use App\Livewire\Installation\StepManager;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Livewire\DynamicPage;
+use App\Http\Controllers\TvMenuController;
+use App\Livewire\TvMenu\Index as TvMenuIndex;
+use App\Livewire\Pages\Auth\Login;
+use App\Livewire\Pages\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Pages\Customer\Dashboard as CustomerDashboard;
 
 // Public routes
+Route::middleware('guest')->group(function () {
+    Volt::route('login', 'pages.auth.login')->name('login');
+});
+
 Route::get('/', MenuIndex::class)->name('index');
 
 Route::get('/menu/tv', TvMenu::class)->name('menu.tv');
@@ -52,80 +60,49 @@ Route::get('/composable/{productType}', ComposableProductIndex::class)
 
 Route::get('/pos', Pos::class)->name('pos');
 
-// Admin routes
-Route::prefix('admin')
-    ->middleware(['auth', 'role:admin'])
-    ->name('admin.')
-    ->group(function (): void {
-    // Dashboard
-    Route::get('/dashboard', AdminDashboardIndex::class)->name('dashboard');
 
-    // Product Management
-    Route::get('/products', AdminProductIndex::class)->name('products');
-    Route::get('/categories', AdminCategoryIndex::class)->name('categories');
-
-    // Inventory Management (Ingredients, Recipes, Waste)
-    Route::get('/inventory', AdminInventoryIndex::class)->name('inventory');
-    Route::get('/inventory/ingredients', AdminIngredientIndex::class)->name('inventory.ingredients');
-    Route::get('/inventory/recipes', AdminRecipeIndex::class)->name('inventory.recipes');
-    Route::get('/inventory/waste', AdminWasteIndex::class)->name('inventory.waste');
-
-    // Composable Products Management
-    Route::get('/products/composable', AdminComposableProductIndex::class)->name('products.composable');
-
-    // Operations Management
-    Route::get('/orders', AdminOrderIndex::class)->name('orders');
-
-    // Finance Management (Cash Register, Purchases, Expenses, Expense Categories)
-    Route::get('/finance/cash-register', AdminCashRegisterIndex::class)->name('finance.cash-register');
-    Route::get('/finance/purchases', AdminPurchaseIndex::class)->name('finance.purchases');
-    Route::get('/finance/expenses', AdminExpenseIndex::class)->name('finance.expenses');
-    Route::get('/finance/expense-categories', AdminExpenseCategoryIndex::class)->name('finance.expense-categories');
-
-    // Supplier Management Routes
-    Route::get('/suppliers', AdminSupplierIndex::class)->name('suppliers');
-
-    // Kitchen Management
-    Route::get('/kitchen', AdminKitchenIndex::class)->name('kitchen');
-    Route::get('/kitchen/display', AdminKitchenDisplay::class)->name('kitchen.display');
-    Route::get('/kitchen/dashboard', AdminKitchenDashboard::class)->name('kitchen.dashboard');
-
-    // Settings
-    Route::get('/settings', AdminSettingsIndex::class)->name('settings');
-    Route::get('/settings/languages', AdminLanguageIndex::class)->name('settings.languages');
-
-    // Analytics
-    // Route::get('/analytics', AdminAnalyticsIndex::class)->name('analytics');
-});
-
-// Profile routes
-Route::middleware('auth')->group(function (): void {
+// Customer routes
+Route::prefix('customer')->name('customer.')->middleware('customer')->group(function () {
     Route::view('profile', 'profile')->name('profile');
+    // Add other customer routes here
 });
+
+// Home route (redirects based on role)
+// Route::get('/', function () {
+//     if (auth()->check()) {
+//         if (auth()->user()->hasRole(['admin', 'manager', 'staff'])) {
+//             return redirect()->route('admin.dashboard');
+//         }
+//         return redirect()->route('customer.dashboard');
+//     }
+//     return redirect()->route('login');
+// })->name('home');
 
 // if not found redirect to home page
 // Route::fallback(fn () => redirect()->route('index'));
 
 Route::middleware('guest')->group(function (): void {
-    Route::get('/register', function (): void {})->name('register');
 
     Route::post('/register', [PhoneVerificationController::class, 'register'])
         ->name('register.store');
 });
 
 
-Volt::route('test-pdf', 'pages.test-pdf')
-    ->name('test-pdf');
-
-
 // Installation route - only accessible if not installed
-Route::middleware(['installation.check'])->group(function () {
-    Route::get('/install', StepManager::class)->name('installation');
-});
+// Route::middleware(['installation.check'])->group(function () {
+Route::get('/install', StepManager::class)->name('installation');
+// });
 
 // Dynamic page routes
 // Route::get('/page/{slug}', DynamicPage::class)
 //     ->where('slug', '^(?!admin|install|shop).*$')
 //     ->name('page.show');
 
-require __DIR__ . '/auth.php';
+Route::get('/tv-menu', TvMenuIndex::class)->name('tv-menu');
+
+// Include all route files
+require __DIR__.'/auth.php';
+require __DIR__.'/admin.php';
+
+// Fallback route
+Route::fallback(fn () => redirect()->route('home'));

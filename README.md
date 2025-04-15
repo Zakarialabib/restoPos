@@ -1,146 +1,182 @@
-# 🍽️ Restaurant Management System
+# 🍽️ Premium Fruit Bar Management System
 
-A modern, comprehensive system built using the TALL stack (Tailwind, Alpine.js, Laravel, Livewire) and React with Inertia. This application streamlines restaurant operations with features like dynamic product composition, real-time inventory management, and advanced analytics.
+A modern, comprehensive system built using the **TALL stack (Tailwind CSS, Alpine.js, Livewire, Laravel)**. This application streamlines the operations of a premium fruit bar, specializing in fresh juices, fruit salads, and fruit-based desserts.
+
+Key features include **dynamic product composition (build-your-own juices/items) powered by Livewire**, real-time inventory management linked to ingredients, order processing, and essential analytics for cost management and quality control. Designed initially for a small team, it emphasizes quality and customization.
 
 ---
 
 ## 📖 Table of Contents
 
-1. [Technical Stack](#-technical-stack)  
-2. [System Architecture](#-system-architecture)  
-   - [Admin Dashboard](#1-admin-dashboard)  
-   - [Customer Experience](#2-customer-experience)  
-   - [Order Management](#3-order-management)  
-   - [Upcoming Features](#4-upcoming-features)  
-   - [Analytics & Reporting](#5-analytics--reporting)  
-3. [Development Setup](#-development-setup)  
-4. [Requirements](#-requirements)  
-5. [Contributing](#-contributing)  
-6. [Acknowledgments](#-acknowledgments)  
-7. [Support](#-support)  
-8. [License](#-license)  
+1. [Technical Stack](#-technical-stack)
+2. [System Architecture](#-system-architecture)
+   - [Admin Dashboard (Livewire + Alpine.js)](#1-admin-dashboard-)
+   - [Customer Experience (Livewire)](#2-customer-experience-)
+   - [Composable Product Feature](#3-composable-product-feature)
+   - [Order Management](#4-order-management-)
+   - [Analytics & Reporting](#5-analytics--reporting-)
+3. [Core Models Overview](#-core-models-overview)
+4. [Product Lines & Strategies](#-product-lines--strategies)
+5. [Development Setup](#-development-setup)
+6. [Requirements](#-requirements)
+7. [Contributing](#-contributing)
+8. [Acknowledgments](#-acknowledgments)
+9. [Support](#-support)
+10. [License](#-license)
 
 ---
 
 ## 🚀 Technical Stack
 
-- **Laravel**: Robust PHP web application framework  
-- **MySQL**: Reliable relational database management  
-- **Tailwind CSS**: Utility-first CSS for rapid UI design  
-- **Alpine.js**: Lightweight JavaScript framework for interactivity  
-- **Livewire**: Full-stack dynamic interface framework  
-- **React**: Frontend library for interactive UIs  
-- **Inertia.js**: Modern monolithic framework connector  
+- **Backend Framework**: Laravel (PHP 8.1+)
+- **Database**: MySQL 8.0+
+- **Frontend & UI (Admin)**: Livewire & Alpine.js for dynamic interfaces.
+- **Frontend & UI (Customer)**: Livewire for interactive menu display and product composition.
+- **Styling**: Tailwind CSS (Utility-first)
+- **Localization**: Built-in support (Arabic, French, English via JSON files).
 
 ---
 
 ## 🔍 System Architecture
 
-### 1. Admin Dashboard 🛠️
+The application leverages Livewire extensively for both the customer-facing interactions and the administrative backend, creating reactive interfaces with minimal JavaScript.
+
+### Testing
+
+The application uses Laravel Dusk for browser testing. Test screenshots are stored in the `tests/Browser/screenshots` directory. See the `tests/LIVEWIRE_TESTING.md` file for detailed instructions on running tests.
+
+### 1. Admin Dashboard 🛠️ (Livewire + Alpine.js)
+
+A comprehensive backend powered by Livewire components, enhanced with Alpine.js for minor frontend interactions.
 
 #### Key Functionalities
-- Real-time analytics with dynamic dashboards  
-- Inventory, order, and product management systems  
-- Ingredient tracking and stock monitoring  
-- Kitchen display system for order management  
+- Real-time dashboard (`Admin\\Dashboard`).
+- Management Modules (Livewire Components):
+    - `ProductManagement`, `CategoryManagement`, `IngredientManagement`, `RecipeManagement`
+    - `OrderManagement`, `KitchenManagement`, `KitchenDisplay`, `CashRegister\\Index`
+    - `InventoryManagement`, `PurchaseManagement`, `SupplierManagement`
+    - `ExpenseManagement`, `ExpenseCategories\\Index`, `WasteManagement`
+    - `ComposableConfigurationManager` (Configures rules for custom products)
+    - Settings, Languages, etc.
+- Ingredient tracking, stock monitoring, and cost analysis.
 
-#### Admin Workflow  
-1. **Product Setup**: Create/edit products, associate ingredients, set pricing rules  
-2. **Inventory Management**: Track stock levels, process deliveries, automate low-stock alerts  
-3. **Order Monitoring**: Track order statuses, analyze sales performance, and manage workflows  
-
-#### Admin Components
-- **Dashboard**: Real-time sales monitoring, low-stock alerts, and category performance tracking  
-- **Analytics**: Predictive sales analysis, trend visualizations, and dynamic data charts  
-- **Inventory Management**: Stock tracking, automated alerts, and bulk operations  
-- **Order Management**: Real-time order status updates and payment tracking  
-- **Product Management**: Price configuration, ingredient association, and nutritional data tracking  
-
----
-
-### 2. Customer Experience 🍽️
-
-#### Key Features
-- Interactive product customization with live updates  
-- Multi-language support for a global audience  
-- Real-time cart management and order tracking  
-
-#### Customer Journey
-1. Choose a category or start building a custom product  
-2. Select ingredients and extras via a guided composition wizard  
-3. Review cart and finalize the order  
-4. Receive an order number and track status in real time  
-
-#### Composition Wizard  
-- **Base Selection**: Choose size and base ingredient  
-- **Ingredient Customization**: Select main components with real-time visual and price updates  
-- **Extras and Add-ons**: Optional add-ons to enhance the product  
-- **Real-time Cart Updates**: Monitor cost and nutritional information instantly  
-
-#### Customer Interface
-- Product browsing with intuitive filters  
-- Detailed product views with pricing and nutritional information  
-- Secure authentication and order history management  
+#### Admin Workflow Example (Product Setup)
+1. Define categories (`CategoryManagement`).
+2. Configure composable rules per category (`ComposableConfigurationManager`) - e.g., Does it need a base? How many ingredients? What sizes are offered and what's their price multiplier?
+3. Add ingredients (`IngredientManagement`), specifying cost, unit, stock, and if usable in compositions (`is_composable`).
+4. Add standard products (`ProductManagement`), defining recipes using ingredients, setting price/cost. Mark products as `is_composable=true` if they serve as starting points for customization.
 
 ---
 
-### 3. Order Management 🛒
+### 2. Customer Experience 🍽️ (Livewire)
+
+The customer interface relies on Livewire for dynamic content loading and interactions.
+
+#### Key Features & Components
+- **Menu Display**: `MenuIndex` component shows available products (standard and composable starting points).
+- **TV Display**: `TvMenu` offers a dedicated view for screen displays.
+- **Product Composition**: `ComposableProductIndex` handles the interactive "build-your-own" process (see details below).
+- **Shopping Cart**: `CartDrawer` manages the user's cart in real-time.
+- **Order Tracking**: `OrderTrack` allows customers to view their order status.
+- Multi-language support via Laravel localization.
+
+---
+
+### 3. Composable Product Feature
+
+This core feature allows customers to build custom items (e.g., juices) interactively.
+
+#### Key Components & Flow:
+1.  **Initiation**: User selects a composable product type (e.g., "Juices") from the menu (`MenuIndex`). This loads the `ComposableProductIndex` Livewire component via the `/compose/{productType}` route.
+2.  **Configuration Loading**: `ComposableProductIndex` fetches the `Category` and its linked `ComposableConfiguration` to determine the rules (required base/sugar/size, min/max ingredients, available sizes with price multipliers).
+3.  **Interactive Selection**: The user selects ingredients, base, sugar, size, and addons using the UI managed by `ComposableProductIndex`. Available options (ingredients, bases) are filtered based on availability and the `is_composable` flag.
+4.  **Real-time Price Calculation**: With each selection change, `ComposableProductIndex` calls the `ComposablePriceCalculator` service. This service calculates the price based on:
+    *   Sum of selected ingredient costs (fetched from `Ingredient` model, potentially using price history or current price).
+    *   Fixed costs for selected base and sugar (currently hardcoded in the service).
+    *   Fixed cost per addon (currently hardcoded).
+    *   Application of a size multiplier (from hardcoded values in the service, potentially diverging from `ComposableConfiguration`).
+5.  **Add to Cart**: `ComposableProductIndex` validates the selection, generates a name, bundles the selected options (ingredients, base, size, etc.) and the final price into an array, and adds it to the session cart (`CartDrawer` updates).
+6.  **Order Placement**: When the order is placed:
+    *   An `Order` record is created.
+    *   An `OrderItem` record is created for the custom item. The `OrderItem` stores:
+        *   The final calculated `price`.
+        *   The calculated `cost`.
+        *   The detailed user selections (ingredients, base, size etc.) in a `details` or `composition` field (likely JSON).
+
+---
+
+### 4. Order Management 🛒
 
 #### Core Functionalities
-- Real-time order queue and status updates  
-- Integration with the kitchen display system for preparation monitoring  
-- Customer-facing interfaces for order tracking  
-
-#### Kitchen Display System  
-- Order queue with preparation timers  
-- Priority-based task organization  
-- Easy status updates for seamless workflow  
-
----
-
-### 4. Upcoming Features 🔮
-
-#### Inventory Control  
-- Automated stock deduction for sold items  
-- Supplier integration with purchase order generation  
-- Waste tracking and usage analytics  
+- `Order` model tracks overall order details, status (`OrderStatus` enum), payment (`PaymentStatus`, `PaymentMethod` enums), totals, customer info.
+- `OrderItem` model stores details of each item within an order, including the specific composition of custom-built products.
+- Real-time updates possible via Livewire components (`Admin\\OrderManagement`, `KitchenDisplay`).
+- Inventory deduction occurs during order placement (needs verification for accuracy, especially for composed items).
+- Order cancellation includes logic placeholders for inventory restoration.
 
 ---
 
 ### 5. Analytics & Reporting 📊
 
-#### Sales Analytics  
-- Track peak hours, popular products, and revenue trends  
-- Identify seasonal preferences for better planning  
+- **Sales:** Track performance via `OrderItem` static methods (`getTopPerformers`, `getDailyRevenue`). Analyze peak hours, popular products, revenue trends.
+- **Inventory:** `Ingredient` model includes methods for analyzing usage, wastage, turnover, and efficiency, likely relying on `StockLog` data (`calculateWastage`, `calculateTurnoverRate`, etc.). Services like `IngredientAnalyticsService` (mentioned previously) likely leverage these.
 
-#### Inventory Analytics  
-- Analyze usage patterns and waste to optimize costs  
-- Seasonal trend identification for efficient stocking  
+---
+
+## 🏛️ Core Models Overview
+
+- **`Product`**: Represents sellable items. Can be standard (fixed recipe using `ingredients` relationship) or a starting point for customization (`is_composable=true`). Includes inventory (`HasInventory` trait) and pricing (`HasPricing` trait).
+- **`Ingredient`**: Raw materials. Stores cost, stock (`HasInventory`), unit, expiry (`HasExpiry`), availability, and `is_composable` flag. Central to inventory control and costing.
+- **`Category`**: Groups products and ingredients. Links to `ComposableConfiguration`.
+- **`ComposableConfiguration`**: Defines the rules for building a composable product within a specific category (min/max ingredients, required steps, available sizes with price multipliers).
+- **`Order`**: Header information for a customer order, including status, totals, and customer details.
+- **`OrderItem`**: Line item within an order. Stores quantity, final price/cost. For composed items, stores the user's specific choices in a `details`/`composition` field.
+- **`User`**: Standard user model for authentication.
+- **`StockLog`**: (Inferred) Tracks adjustments to ingredient stock levels (usage, deliveries, waste). Used by `Ingredient` analytics methods.
+
+*(Other models exist for Suppliers, Purchases, Expenses, Cash Registers, Recipes, etc.)*
+
+---
+
+## 🍹 Product Lines & Strategies
+
+This system supports various product lines:
+
+- **Fresh Juices**: Standard single-fruit, signature blends, and the "Build Your Own" composable feature. Pricing considers ingredients and size.
+- **Fruit Salads & Bowls**: Standard and potentially customizable using the composable framework extension.
+- **Artisanal Desserts**: Managed as standard products.
+- **Smoothies**: Can be managed as standard products or adapted using the composable feature.
+- **Dried Fruits & Nuts**: Managed as standard products or ingredients/addons.
 
 ---
 
 ## 🛠️ Development Setup
 
-1. Clone the repository: `git clone https://github.com/zakarialabib/restopos.git`  
-2. Install dependencies: `composer install && npm install`  
-3. Configure the environment: Rename `.env.example` to `.env` and update settings  
-4. Run database migrations: `php artisan migrate --seed`  
-5. Start development servers: `php artisan serve` and `npm run dev`  
+1.  Clone the repository: `git clone https://github.com/zakarialabib/restopos.git`
+2.  Navigate to directory: `cd restopos`
+3.  Install PHP dependencies: `composer install`
+4.  Install frontend dependencies: `npm install`
+5.  Setup environment: Copy `.env.example` to `.env` and configure database, app URL, etc.
+6.  Generate app key: `php artisan key:generate`
+7.  Run database migrations and seeders: `php artisan migrate --seed`
+8.  Compile frontend assets: `npm run dev` (for development) or `npm run build` (for production)
+9.  Start the development server: `php artisan serve`
+10. Access the application in your browser (usually http://127.0.0.1:8000).
 
 ---
 
 ## 📋 Requirements
 
-- PHP 8.2+  
-- Node.js 16+  
-- MySQL 8.0+  
-- Composer 2.0+  
+- PHP 8.1+
+- Node.js 16+ / npm
+- MySQL 8.0+
+- Composer 2.0+
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please fork the repository, create a feature branch, and submit a pull request. For more details, refer to our contributing guidelines.
+Contributions are welcome! Please fork the repository, create a feature branch (`git checkout -b feature/YourFeature`), commit your changes, and submit a pull request. Adhere to PSR-12 coding standards.
 
 ---
 
@@ -152,7 +188,7 @@ Special thanks to the TALL stack community, Laravel ecosystem contributors, and 
 
 ## 📞 Support
 
-For any issues or inquiries, contact [zakarialabib@gmail.com](mailto:zakarialabib@gmail.com).
+For issues or inquiries, contact [zakarialabib@gmail.com](mailto:zakarialabib@gmail.com).
 
 ---
 
