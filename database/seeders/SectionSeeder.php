@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\PageType;
 use App\Models\Language;
 use App\Models\Section;
 use Illuminate\Database\Seeder;
@@ -15,75 +16,61 @@ class SectionSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $language = Language::where('is_default', true)->first();
 
-        Section::insert([
+        $sections = [
             [
                 'id'             => 1,
-                'title'          => 'Welcome to',
-                // 'image'          => uploadImage('images/sections', 640, 480),
-                'featured_title' => 'CorporateWeb',
-                'subtitle'       => 'CorporateWeb',
-                'label'          => 'Read Moe',
-                'link'           => 'https://github.com/zakarialabib',
-                'description'    => 'Salam, Thank you for having this project on we welcome you with  a good heart',
+                'title'          => 'Signature Blends',
+                'featured_title' => 'Our Most Popular Creations',
+                'subtitle'       => 'Ready-to-order favorites crafted from customer favorites',
+                'label'          => 'View Menu',
+                'link'           => '/menu',
+                'description'    => 'Skip the composition and enjoy our expertly crafted signature blends. Each recipe is based on the most popular combinations ordered by our customers.',
                 'status'         => '1',
-                'bg_color'       => '#effaeb',
-                'text_color'     => 'black',
-                'position'       => '1',
+                'bg_color'       => '#f8fafc',
+                'text_color'     => '#1f2937',
+                'position'       => '2',
                 'language_id'    => $language->id,
-                'type'           => 'home',
+                'type'           => PageType::MARKETING_PRODUCT,
             ],
             [
                 'id'             => 2,
-                'title'          => 'About us',
-                // 'image'          => uploadImage('images/sections', 640, 480),
-                'featured_title' => 'CorporateWeb',
-                'subtitle'       => 'CorporateWeb',
-                'label'          => 'CorporateWeb',
-                'link'           => 'https://github.com/zakarialabib',
-                'description'    => 'Making the world a better place',
+                'title'          => 'Customer Favorites',
+                'featured_title' => 'Most Ordered Combinations',
+                'subtitle'       => 'See what others are loving',
+                'label'          => 'Try Popular',
+                'link'           => '/menu?filter=popular',
+                'description'    => 'These combinations have been ordered multiple times by our customers. Try them yourself or use them as inspiration for your own creation.',
                 'status'         => '1',
-                'bg_color'       => '#effaeb',
-                'text_color'     => 'black',
-                'position'       => '1',
+                'bg_color'       => '#ffffff',
+                'text_color'     => '#1f2937',
+                'position'       => '3',
                 'language_id'    => $language->id,
-                'type'           => 'about',
+                'type'           => PageType::HOME,
             ],
             [
                 'id'             => 3,
-                'title'          => 'Contact',
-                // 'image'          => uploadImage('images/sections', 640, 480),
-                'featured_title' => 'CorporateWeb',
-                'subtitle'       => 'CorporateWeb',
-                'label'          => 'CorporateWeb',
-                'link'           => 'https://github.com/zakarialabib',
-                'description'    => 'Get in touch with us',
+                'title'          => 'Create Your Own',
+                'featured_title' => 'Compose Your Perfect Blend',
+                'subtitle'       => 'Full control over every ingredient',
+                'label'          => 'Start Composing',
+                'link'           => '#compose',
+                'description'    => 'Want something completely unique? Use our composition tool to build your perfect blend from scratch with premium ingredients.',
                 'status'         => '1',
-                'bg_color'       => '#effaeb',
-                'text_color'     => 'black',
-                'position'       => '1',
+                'bg_color'       => '#fef3e2',
+                'text_color'     => '#1f2937',
+                'position'       => '4',
                 'language_id'    => $language->id,
-                'type'           => 'contact',
+                'type'           => PageType::POPULAR_COMBINATIONS,
             ],
-            [
-                'id'             => 4,
-                'title'          => 'Services',
-                // 'image'          => uploadImage('images/sections', 640, 480),
-                'featured_title' => 'CorporateWeb',
-                'subtitle'       => 'We have a wide range of services.',
-                'label'          => 'Read More',
-                'link'           => 'https://github.com/zakarialabib',
-                'description'    => ' Dev solutions, to serve small and large companies, we can facilitate the delivery of your projects from our many points.',
-                'status'         => '1',
-                'bg_color'       => '#effaeb',
-                'text_color'     => 'black',
-                'position'       => '1',
-                'language_id'    => $language->id,
-                'type'           => 'service',
-            ],
-        ]);
+        ];
+
+        foreach ($sections as $sectionData) {
+            Section::firstOrCreate(['id' => $sectionData['id']], $sectionData);
+        }
+
     }
 }

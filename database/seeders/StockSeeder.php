@@ -16,14 +16,19 @@ class StockSeeder extends Seeder
 
         foreach ($ingredients as $ingredient) {
             Stock::create([
-                'ingredient_id' => $ingredient->id,
+                'stockable_type' => Ingredient::class,
+                'stockable_id' => $ingredient->id,
                 'quantity' => rand(10, 100),
-                'unit' => $ingredient->unit ?? 'kg',
                 'minimum_quantity' => 5,
-                'reorder_point' => 10,
-                'location' => 'Main Storage',
+                'maximum_quantity' => 200,
+                'notes' => "Initial stock for {$ingredient->name}",
+                'metadata' => [
+                    'unit' => $ingredient->unit ?? 'kg',
+                    'location' => 'Main Storage',
+                    'reorder_point' => 10,
+                ],
                 'last_restocked_at' => now(),
-                'last_checked_at' => now(),
+                'last_used_at' => now(),
             ]);
         }
     }

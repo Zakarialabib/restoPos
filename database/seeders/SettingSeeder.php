@@ -163,13 +163,13 @@ class SettingSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         foreach ($this->settings as $index => $setting) {
             $result = Settings::create($setting);
 
-            if (! $result) {
-                $this->command->info("Insert failed at record $index.");
+            if ( ! $result) {
+                $this->command->info("Insert failed at record {$index}.");
 
                 return;
             }

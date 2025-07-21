@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Recipe;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
@@ -28,14 +29,46 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Jus de pomme - عصير التفاح',
                 'description' => 'Fresh, crisp apples perfect for snacking or baking.',
+                'slug' => Str::slug('Jus de pomme - عصير التفاح'),
                 'image' => 'https://example.com/images/apple.jpg',
                 'status' => true,
+                'status' => true,
+                'is_featured' => false,
+                'is_customizable' => false,
+                'is_composable' => false,
+                'base_price' => 15.00,
+                'composable_rules' => null,
+                'allergens' => null,
+                'preparation_time' => 5,
+                'stock_quantity' => 100,
+                'reorder_point' => 20,
                 'category_id' => $juicesCategory->id,
                 'recipe_id' => Recipe::where('name', 'Jus de pomme - عصير التفاح')->first()->id ?? null,
                 'prices' => [
-                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('small'), 'cost' => 8.00, 'price' => 15.00, 'notes' => __('Small size')],
-                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('medium'), 'cost' => 12.00, 'price' => 18.00, 'notes' => __('Medium size')],
-                    ['entry_date' => Carbon::now()->format('Y-m-d'), 'size' => __('large'), 'cost' => 15.00, 'price' => 20.00, 'notes' => __('Large size')],
+                    [
+                        'entry_date' => Carbon::now()->format('Y-m-d'),
+                        'size' => 'small',
+                        'cost' => 8.00,
+                        'price' => 15.00,
+                        'notes' => 'Small size',
+                        'is_current' => true
+                    ],
+                    [
+                        'entry_date' => Carbon::now()->format('Y-m-d'),
+                        'size' => 'medium',
+                        'cost' => 12.00,
+                        'price' => 18.00,
+                        'notes' => 'Medium size',
+                        'is_current' => true
+                    ],
+                    [
+                        'entry_date' => Carbon::now()->format('Y-m-d'),
+                        'size' => 'large',
+                        'cost' => 15.00,
+                        'price' => 20.00,
+                        'notes' => 'Large size',
+                        'is_current' => true
+                    ],
                 ]
             ],
             [
@@ -229,7 +262,11 @@ class ProductSeeder extends Seeder
             $prices = $fruitData['prices'] ?? [];
             unset($fruitData['prices']);
 
-            $product = Product::create($fruitData);
+            // Ensure slug exists for firstOrCreate
+            if ( ! isset($fruitData['slug'])) {
+                $fruitData['slug'] = Str::slug($fruitData['name']);
+            }
+            $product = Product::firstOrCreate(['slug' => $fruitData['slug']], $fruitData);
 
             foreach ($prices as $priceData) {
                 Price::create([
@@ -237,11 +274,14 @@ class ProductSeeder extends Seeder
                     'priceable_id' => $product->id,
                     'cost' => $priceData['cost'],
                     'price' => $priceData['price'],
-                    'entry_date' => now(),
-                    'notes' => $priceData['notes'] ?? null,
-                    'metadata' => [ // Changed 'prices' to 'metadata'
-                        'size' => $priceData['size'],
-                        'unit' => $priceData['unit'] ?? 'default',
+                    'previous_cost' => 0,
+                    'size' => $priceData['size'],
+                    'entry_date' => $priceData['entry_date'],
+                    'effective_date' => $priceData['entry_date'],
+                    'notes' => $priceData['notes'],
+                    // 'is_current' => $priceData['is_current'],
+                    'metadata' => [
+                        'unit' => 'piece',
                     ],
                 ]);
             }
@@ -379,7 +419,11 @@ class ProductSeeder extends Seeder
             $prices = $driedFruit['prices'] ?? [];
             unset($driedFruit['prices']);
 
-            $product = Product::create($driedFruit);
+            // Ensure slug exists for firstOrCreate
+            if ( ! isset($driedFruit['slug'])) {
+                $driedFruit['slug'] = Str::slug($driedFruit['name']);
+            }
+            $product = Product::firstOrCreate(['slug' => $driedFruit['slug']], $driedFruit);
 
             foreach ($prices as $priceData) {
                 Price::create([
@@ -387,11 +431,14 @@ class ProductSeeder extends Seeder
                     'priceable_id' => $product->id,
                     'cost' => $priceData['cost'],
                     'price' => $priceData['price'],
-                    'entry_date' => now(),
-                    'notes' => $priceData['notes'] ?? null,
-                    'metadata' => [ // Changed 'prices' to 'metadata'
-                        'size' => $priceData['size'],
-                        'unit' => $priceData['unit'] ?? 'default',
+                    'previous_cost' => 0,
+                    'size' => $priceData['size'],
+                    'entry_date' => $priceData['entry_date'],
+                    'effective_date' => $priceData['entry_date'],
+                    'notes' => $priceData['notes'],
+                    'is_current' => true,
+                    'metadata' => [
+                        'unit' => 'piece',
                     ],
                 ]);
             }
@@ -437,7 +484,11 @@ class ProductSeeder extends Seeder
             $prices = $salade['prices'] ?? [];
             unset($salade['prices']);
 
-            $product = Product::create($salade);
+            // Ensure slug exists for firstOrCreate
+            if ( ! isset($salade['slug'])) {
+                $salade['slug'] = Str::slug($salade['name']);
+            }
+            $product = Product::firstOrCreate(['slug' => $salade['slug']], $salade);
 
             foreach ($prices as $priceData) {
                 Price::create([
@@ -445,11 +496,14 @@ class ProductSeeder extends Seeder
                     'priceable_id' => $product->id,
                     'cost' => $priceData['cost'],
                     'price' => $priceData['price'],
-                    'entry_date' => now(),
-                    'notes' => $priceData['notes'] ?? null,
-                    'metadata' => [ // Changed 'prices' to 'metadata'
-                        'size' => $priceData['size'],
-                        'unit' => $priceData['unit'] ?? 'default',
+                    'previous_cost' => 0,
+                    'size' => $priceData['size'],
+                    'entry_date' => $priceData['entry_date'],
+                    'effective_date' => $priceData['entry_date'],
+                    'notes' => $priceData['notes'],
+                    'is_current' => true,
+                    'metadata' => [
+                        'unit' => 'piece',
                     ],
                 ]);
             }
@@ -531,7 +585,11 @@ class ProductSeeder extends Seeder
             $prices = $sandwich['prices'] ?? [];
             unset($sandwich['prices']);
 
-            $product = Product::create($sandwich);
+            // Ensure slug exists for firstOrCreate
+            if ( ! isset($sandwich['slug'])) {
+                $sandwich['slug'] = Str::slug($sandwich['name']);
+            }
+            $product = Product::firstOrCreate(['slug' => $sandwich['slug']], $sandwich);
 
             foreach ($prices as $priceData) {
                 Price::create([
@@ -539,14 +597,41 @@ class ProductSeeder extends Seeder
                     'priceable_id' => $product->id,
                     'cost' => $priceData['cost'],
                     'price' => $priceData['price'],
-                    'entry_date' => now(),
-                    'notes' => $priceData['notes'] ?? null,
-                    'metadata' => [ // Changed 'prices' to 'metadata'
-                        'size' => $priceData['size'],
-                        'unit' => $priceData['unit'] ?? 'default',
+                    'previous_cost' => 0,
+                    'size' => $priceData['size'],
+                    'entry_date' => $priceData['entry_date'],
+                    'effective_date' => $priceData['entry_date'],
+                    'notes' => $priceData['notes'],
+                    'is_current' => true,
+                    'metadata' => [
+                        'unit' => 'piece',
                     ],
                 ]);
             }
+        }
+
+        $fruitBowlsCategory = Category::where('name', 'Fruit Bowls')->first();
+
+        $products = [
+            [
+                'name' => 'Custom Fruit Bowl',
+                'is_composable' => true,
+                'base_price' => 15.00,
+                'category_id' => $fruitBowlsCategory->id,
+                'composable_rules' => [
+                    'min_ingredients' => 3,
+                    'max_ingredients' => 6,
+                    'base_required' => true
+                ]
+            ]
+        ];
+
+        foreach ($products as $productData) {
+            // Ensure slug exists for firstOrCreate
+            if ( ! isset($productData['slug'])) {
+                $productData['slug'] = Str::slug($productData['name']);
+            }
+            $product = Product::firstOrCreate(['slug' => $productData['slug']], $productData);
         }
     }
 }

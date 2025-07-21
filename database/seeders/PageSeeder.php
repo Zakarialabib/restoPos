@@ -27,7 +27,7 @@ class PageSeeder extends Seeder
         //     'is_homepage' => true,
         //     'status' => true,
         // ]);
-        
+
         // Create additional pages
         Page::factory(5)->create();
     }

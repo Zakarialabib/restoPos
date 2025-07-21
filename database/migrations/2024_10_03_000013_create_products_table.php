@@ -20,23 +20,22 @@ return new class () extends Migration {
             $table->foreignId('category_id')->nullable()->constrained('categories')->cascadeOnDelete();
             $table->foreignUuid('recipe_id')->nullable()->constrained('recipes')->cascadeOnDelete();
             $table->string('image')->nullable();
+            $table->boolean('status')->default(true);
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_customizable')->default(false);
             $table->boolean('is_composable')->default(false);
+            $table->decimal('base_price', 10, 2)->nullable();
+            $table->json('composable_rules')->nullable();
             $table->json('allergens')->nullable();
             $table->integer('preparation_time')->nullable();
             $table->decimal('stock_quantity', 10, 2)->default(0);
+            $table->decimal('minimum_quantity', 10, 2)->default(0);
             $table->decimal('reorder_point', 10, 2)->default(0);
-            $table->boolean('status')->default(true);
-            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('products');

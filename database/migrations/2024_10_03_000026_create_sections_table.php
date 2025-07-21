@@ -12,9 +12,9 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('sections', function (Blueprint $table) {
+        Schema::create('sections', function (Blueprint $table): void {
             $table->id();
             $table->text('title');
             $table->string('image')->nullable();
@@ -28,7 +28,7 @@ return new class () extends Migration {
             $table->string('text_color')->nullable();
             $table->string('position')->nullable();
             $table->text('embeded_video')->nullable();
-            $table->string('type')->unique()->nullable();
+            $table->string('type')->nullable();
             $table->foreignId('page_id')->nullable()->constrained('pages')->nullOnDelete();
             $table->foreignId('language_id')->nullable()->constrained('languages')->nullOnDelete();
             $table->timestamps();
@@ -41,7 +41,7 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('sections');
     }

@@ -14,19 +14,33 @@ class ComposableProductsSeeder extends Seeder
     {
         $categories = Category::with('ingredients')->get();
 
-        Composable::chunk(200, function ($composables) use ($categories): void {
-            foreach ($composables as $composable) {
-                $category = $categories->random();
-                $composable->category()->associate($category);
+        // Assuming you have some products that are composable
+        // For demonstration, let's create some dummy composables
+        // In a real application, these would likely be linked to actual products
+        for ($i = 0; $i < 10; $i++) {
+            $category = $categories->random();
+            $composable = Composable::create([
+                'name' => 'Composable Item ' . ($i + 1),
+                'description' => 'Description for composable item ' . ($i + 1),
+                'price' => rand(10, 50),
+                'type' => 'product',
+                'category_id' => $category->id,
+                'configuration_rules' => json_encode(['customizable' => true]),
+                'min_ingredients' => 1,
+                'max_ingredients' => 5,
+                'base_required' => false,
+                'base_price' => rand(10, 50),
+                'status' => true
+            ]);
 
-                $ingredients = $category->ingredients()->inRandomOrder()->take(5)->get();
-                $composable->ingredients()->attach(
-                    $ingredients->pluck('id')->toArray(),
-                    ['quantity' => rand(1, 5), 'unit' => 'ml', 'is_optional' => false]
-                );
-
-                $composable->save();
+            $ingredients = $category->ingredients()->inRandomOrder()->take(rand(1, 5))->get();
+            foreach ($ingredients as $ingredient) {
+                $composable->ingredients()->attach($ingredient->id, [
+                    'quantity' => rand(1, 5),
+                    'unit' => 'ml',
+                ]);
             }
-        });
+            $composable->save();
+        }
     }
 }

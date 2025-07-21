@@ -14,9 +14,9 @@ class LanguagesSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
-        Language::insert([
+        $languages = [
             [
                 'id'         => 1,
                 'name'       => 'English',
@@ -38,6 +38,11 @@ class LanguagesSeeder extends Seeder
                 'status'     => 1,
                 'is_default' => 1,
             ],
-        ]);
+        ];
+
+        foreach ($languages as $languageData) {
+            Language::firstOrCreate(['id' => $languageData['id']], $languageData);
+        }
+
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -13,12 +13,12 @@ use Spatie\Permission\Models\Role;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
-class UserFactory extends Factory
+class AdminFactory extends Factory
 {
     /**
      * The model that the factory corresponds to.
      */
-    protected $model = User::class;
+    protected $model = Admin::class;
 
     /**
      * The current password being used by the factory.
@@ -33,7 +33,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
+            'full_name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -56,11 +56,9 @@ class UserFactory extends Factory
      */
     public function withRole(string $role): static
     {
-        return $this->afterCreating(function ($user) use ($role): void {
-            if ( ! Role::where('name', $role)->exists()) {
-                Role::create(['name' => $role]);
-            }
-            $user->assignRole($role);
+        return $this->afterCreating(function ($admin) use ($role): void {
+            $roleModel = Role::firstOrCreate(['name' => $role, 'guard_name' => 'admin']);
+            $admin->assignRole($roleModel);
         });
     }
 }

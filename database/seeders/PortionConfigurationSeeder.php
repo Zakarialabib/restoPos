@@ -87,4 +87,4 @@ class PortionConfigurationSeeder extends Seeder
             ]);
         }
     }
-} 
+}

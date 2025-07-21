@@ -12,7 +12,7 @@ return new class () extends Migration {
         Schema::create('kitchen_order_items', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('kitchen_order_id')->constrained()->onDelete('cascade');
-            $table->foreignId('order_item_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('order_item_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
             $table->text('notes')->nullable();
             $table->timestamp('started_at')->nullable();

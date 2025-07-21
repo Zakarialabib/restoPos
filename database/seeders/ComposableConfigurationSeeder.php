@@ -12,85 +12,108 @@ class ComposableConfigurationSeeder extends Seeder
 {
     public function run(): void
     {
-        // Coffee Configurations
-        $coffeeCategory = Category::where('name', 'Coffee')->first();
-        if ($coffeeCategory) {
-            ComposableConfiguration::create([
-                'category_id' => $coffeeCategory->id,
-                'name' => 'Coffee Customization',
-                'description' => 'Customize your coffee with various options',
-                'has_base' => true,
-                'has_sugar' => true,
-                'has_size' => true,
-                'has_addons' => true,
-                'min_ingredients' => 1,
-                'max_ingredients' => 5,
-                'sizes' => ['small', 'medium', 'large', 'x-large'],
-                'base_types' => ['espresso', 'americano', 'latte', 'cappuccino', 'mocha'],
-                'sugar_types' => ['none', 'regular', 'brown', 'honey', 'stevia'],
-                'addon_types' => ['milk', 'cream', 'whipped_cream', 'chocolate_syrup', 'caramel_syrup'],
-                'icons' => [
-                    'base' => 'coffee',
-                    'sugar' => 'sugar',
-                    'size' => 'size',
-                    'addons' => 'addons'
+        // Fresh Juices Configurations
+        $juicesCategory = Category::where('name', 'Fresh Juices')->first();
+        if ($juicesCategory) {
+            ComposableConfiguration::firstOrCreate(
+                [
+                    'category_id' => $juicesCategory->id,
+                    'type' => 'juice',
                 ],
-                'is_active' => true,
-            ]);
+                [
+                    'category_id' => $juicesCategory->id,
+                    'name' => 'Juice Customization',
+                    'type' => 'juice',
+                    'customization_options' => [
+                        'has_base' => true,
+                        'has_sugar' => true,
+                        'has_size' => true,
+                        'has_addons' => true,
+                        'min_ingredients' => 1,
+                        'max_ingredients' => 5,
+                    ],
+                    'sizes' => ['small', 'medium', 'large'],
+                    'base_types' => ['orange', 'apple', 'pineapple', 'mixed'],
+                    'sugar_types' => ['none', 'regular', 'low'],
+                    'addon_types' => ['ice', 'mint', 'ginger'],
+                    'icons' => [
+                        'base' => 'juice',
+                        'sugar' => 'sugar',
+                        'size' => 'size',
+                        'addons' => 'addons'
+                    ],
+                    'status' => true,
+                ]
+            );
         }
 
-        // Tea Configurations
-        $teaCategory = Category::where('name', 'Tea')->first();
-        if ($teaCategory) {
-            ComposableConfiguration::create([
-                'category_id' => $teaCategory->id,
-                'name' => 'Tea Customization',
-                'description' => 'Customize your tea with various options',
-                'has_base' => true,
-                'has_sugar' => true,
-                'has_size' => true,
-                'has_addons' => true,
-                'min_ingredients' => 1,
-                'max_ingredients' => 4,
-                'sizes' => ['small', 'medium', 'large'],
-                'base_types' => ['black', 'green', 'herbal', 'oolong', 'white'],
-                'sugar_types' => ['none', 'regular', 'honey', 'stevia'],
-                'addon_types' => ['lemon', 'milk', 'honey', 'mint'],
-                'icons' => [
-                    'base' => 'tea',
-                    'sugar' => 'sugar',
-                    'size' => 'size',
-                    'addons' => 'addons'
+        // Fruit Bowls Configurations
+        $fruitBowlsCategory = Category::where('name', 'Fruit Bowls')->first();
+        if ($fruitBowlsCategory) {
+            ComposableConfiguration::firstOrCreate(
+                [
+                    'category_id' => $fruitBowlsCategory->id,
+                    'type' => 'fruit_bowl',
                 ],
-                'is_active' => true,
-            ]);
+                [
+                    'category_id' => $fruitBowlsCategory->id,
+                    'name' => 'Fruit Bowl Customization',
+                    'type' => 'fruit_bowl',
+                    'customization_options' => [
+                        'has_base' => false,
+                        'has_sugar' => true,
+                        'has_size' => true,
+                        'has_addons' => true,
+                        'min_ingredients' => 3,
+                        'max_ingredients' => 7,
+                    ],
+                    'sizes' => ['small', 'medium', 'large'],
+                    'base_types' => [],
+                    'sugar_types' => ['none', 'honey', 'yogurt'],
+                    'addon_types' => ['nuts', 'seeds', 'dried_fruits'],
+                    'icons' => [
+                        'sugar' => 'sugar',
+                        'size' => 'size',
+                        'addons' => 'addons'
+                    ],
+                    'status' => true,
+                ]
+            );
         }
 
-        // Smoothie Configurations
+        // Smoothies Configurations
         $smoothieCategory = Category::where('name', 'Smoothies')->first();
         if ($smoothieCategory) {
-            ComposableConfiguration::create([
-                'category_id' => $smoothieCategory->id,
-                'name' => 'Smoothie Customization',
-                'description' => 'Customize your smoothie with various options',
-                'has_base' => true,
-                'has_sugar' => true,
-                'has_size' => true,
-                'has_addons' => true,
-                'min_ingredients' => 2,
-                'max_ingredients' => 6,
-                'sizes' => ['small', 'medium', 'large'],
-                'base_types' => ['fruit', 'vegetable', 'protein', 'yogurt'],
-                'sugar_types' => ['none', 'honey', 'agave', 'stevia'],
-                'addon_types' => ['protein_powder', 'chia_seeds', 'flax_seeds', 'coconut_flakes'],
-                'icons' => [
-                    'base' => 'smoothie',
-                    'sugar' => 'sugar',
-                    'size' => 'size',
-                    'addons' => 'addons'
+            ComposableConfiguration::firstOrCreate(
+                [
+                    'category_id' => $smoothieCategory->id,
+                    'type' => 'smoothie',
                 ],
-                'is_active' => true,
-            ]);
+                [
+                    'category_id' => $smoothieCategory->id,
+                    'name' => 'Smoothie Customization',
+                    'type' => 'smoothie',
+                    'customization_options' => [
+                        'has_base' => true,
+                        'has_sugar' => true,
+                        'has_size' => true,
+                        'has_addons' => true,
+                        'min_ingredients' => 2,
+                        'max_ingredients' => 6,
+                    ],
+                    'sizes' => ['small', 'medium', 'large'],
+                    'base_types' => ['fruit', 'vegetable', 'protein', 'yogurt'],
+                    'sugar_types' => ['none', 'honey', 'agave', 'stevia'],
+                    'addon_types' => ['protein_powder', 'chia_seeds', 'flax_seeds', 'coconut_flakes'],
+                    'icons' => [
+                        'base' => 'smoothie',
+                        'sugar' => 'sugar',
+                        'size' => 'size',
+                        'addons' => 'addons'
+                    ],
+                    'status' => true,
+                ]
+            );
         }
     }
 }

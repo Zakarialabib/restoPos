@@ -14,6 +14,7 @@ return new class () extends Migration {
             $table->foreignId('composable_id')->constrained()->onDelete('cascade');
             $table->foreignUuid('ingredient_id')->constrained()->onDelete('cascade');
             $table->decimal('quantity', 8, 2);
+            $table->string('unit');
             $table->timestamps();
 
             $table->unique(['composable_id', 'ingredient_id']);

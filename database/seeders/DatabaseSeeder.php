@@ -16,28 +16,19 @@ class DatabaseSeeder extends Seeder
         // First, create roles and permissions
         $this->call([
             RolesAndPermissionsSeeder::class,
-        ]);
-
-        // Then create users and admins
-        $this->call([
-            AdminSeeder::class,
             UserSeeder::class,
+            // MenuSeeder::class,
+            LanguagesSeeder::class,
+            SettingSeeder::class,
+            SectionSeeder::class,
+            CategorySeeder::class,
+            IngredientSeeder::class,
+            ComposableConfigurationSeeder::class,
+            PortionConfigurationSeeder::class,
+            ProductSeeder::class,
+            ComposableProductsSeeder::class,
+            StockSeeder::class,
+            PriceSeeder::class,
         ]);
-
-        // Run other seeders if in local or staging environment
-        if (app()->environment('local', 'staging')) {
-            $this->call([
-                LanguagesSeeder::class,
-                SettingSeeder::class,
-                SectionSeeder::class,
-                CategorySeeder::class,
-                IngredientSeeder::class,
-                ComposableConfigurationSeeder::class,
-                PortionConfigurationSeeder::class,
-                ProductSeeder::class,
-                ComposableProductsSeeder::class,
-                StockSeeder::class,
-            ]);
-        }
     }
 }
