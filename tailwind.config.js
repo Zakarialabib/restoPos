@@ -413,6 +413,5 @@ export default {
     }),
       require('@tailwindcss/aspect-ratio'),
       require('@tailwindcss/container-queries'),  
-      "prettier-plugin-tailwindcss",
     ],
 };

@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-use Tests\TestCase;
-use Pest\Laravel\TestCase as PestTestCase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\DuskTestCase;
 
-uses(TestCase::class)->in('Feature');
-uses(TestCase::class)->in('Unit');
+uses(RefreshDatabase::class)->in('Feature');
+uses(DatabaseMigrations::class)->in('Browser');
+uses(DuskTestCase::class)->in('Browser');

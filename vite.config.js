@@ -1,13 +1,11 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import autoprefixer from 'autoprefixer';
-import tailwindcss from 'tailwindcss';
-import postcssImport from 'postcss-import';
-import postcssNesting from 'postcss-nesting';
+import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'path';
 
 export default defineConfig({
     plugins: [
+        tailwindcss(),
         laravel({
             input: [
                 'resources/js/app.js',
@@ -29,14 +27,6 @@ export default defineConfig({
         },
     },
     css: {
-        postcss: {
-            plugins: [
-                postcssImport(),
-                postcssNesting(),
-                tailwindcss(),
-                autoprefixer(),
-            ],
-        },
         devSourcemap: true,
     },
     build: {
