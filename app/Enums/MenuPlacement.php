@@ -9,26 +9,33 @@ enum MenuPlacement: string
     case HEADER = 'header';
     case FOOTER_SECTION_1 = 'footer_section_1';
     case FOOTER_SECTION_2 = 'footer_section_2';
-    case FOOTER = 'footer';
-    case SIDEBAR = 'sidebar';
-    case TOPBAR = 'topbar';
-    case MOBILE_HEADER = 'mobile_header';
+    case USER_DASHBOARD = 'user_dashboard';
+
+    public static function forSelect(): array
+    {
+        return collect(self::cases())->map(fn ($case) => [
+            'value' => $case->value,
+            'label' => $case->label(),
+        ])->toArray();
+    }
 
     public function label(): string
     {
-        return match ($this) {
-            static::HEADER           => __('Header'),
-            static::FOOTER_SECTION_1 => __('Footer section 1'),
-            static::FOOTER_SECTION_2 => __('Footer section 2'),
-            static::FOOTER           => __('Footer'),
-            static::SIDEBAR          => __('Sidebar'),
-            static::TOPBAR           => __('Topbar'),
-            static::MOBILE_HEADER    => __('Mobile header'),
+        return match($this) {
+            self::HEADER => 'Header Navigation',
+            self::FOOTER_SECTION_1 => 'Footer Section 1',
+            self::FOOTER_SECTION_2 => 'Footer Section 2',
+            self::USER_DASHBOARD => 'User Dashboard',
         };
     }
 
-    public static function values(): array
+    public function icon(): string
     {
-        return array_column(self::cases(), 'name', 'value');
+        return match($this) {
+            self::HEADER => 'menu',
+            self::FOOTER_SECTION_1 => 'article',
+            self::FOOTER_SECTION_2 => 'info',
+            self::USER_DASHBOARD => 'dashboard',
+        };
     }
 }

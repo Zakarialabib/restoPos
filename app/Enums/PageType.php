@@ -11,22 +11,9 @@ enum PageType: string
     case BLOG = 'blog';
     case CONTACT = 'contact';
     case SERVICE = 'service';
-
-    public function label(): string
-    {
-        return match ($this) {
-            static::HOME    => __('Home'),
-            static::ABOUT   => __('About'),
-            static::BLOG    => __('blog'),
-            static::CONTACT => __('contact'),
-            static::SERVICE => __('service'),
-        };
-    }
-
-    public function getValue(): string
-    {
-        return $this->value;
-    }
+    case MARKETING_PRODUCT = 'marketing_product';
+    case POPULAR_COMBINATIONS = 'popular_combinations';
+    case COMPOSE_CTA = 'compose_cta';
 
     public static function options(): array
     {
@@ -47,6 +34,25 @@ enum PageType: string
     public static function values(): array
     {
         return array_column(self::cases(), 'name', 'value');
+    }
+
+    public function label(): string
+    {
+        return match ($this) {
+            static::HOME => __('Home'),
+            static::ABOUT => __('About'),
+            static::BLOG => __('blog'),
+            static::CONTACT => __('contact'),
+            static::SERVICE => __('service'),
+            static::MARKETING_PRODUCT => __('marketing_product'),
+            static::POPULAR_COMBINATIONS => __('popular_combinations'),
+            static::COMPOSE_CTA => __('compose_cta'),
+        };
+    }
+
+    public function getValue(): string
+    {
+        return $this->value;
     }
 
     // loop through the values:

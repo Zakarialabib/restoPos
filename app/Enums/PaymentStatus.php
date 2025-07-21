@@ -6,70 +6,70 @@ namespace App\Enums;
 
 enum PaymentStatus: string
 {
-    case Pending = 'pending';
-    case Processing = 'processing';
-    case Completed = 'completed';
-    case Failed = 'failed';
-    case Refunded = 'refunded';
-    case Cancelled = 'cancelled';
+    case PENDING = 'pending';
+    case PROCESSING = 'processing';
+    case COMPLETED = 'completed';
+    case FAILED = 'failed';
+    case REFUNDED = 'refunded';
+    case CANCELLED = 'cancelled';
 
     public function label(): string
     {
         return match($this) {
-            self::Pending => 'Pending',
-            self::Processing => 'Processing',
-            self::Completed => 'Completed',
-            self::Failed => 'Failed',
-            self::Refunded => 'Refunded',
-            self::Cancelled => 'Cancelled',
+            self::PENDING => 'Pending',
+            self::PROCESSING => 'Processing',
+            self::COMPLETED => 'Completed',
+            self::FAILED => 'Failed',
+            self::REFUNDED => 'Refunded',
+            self::CANCELLED => 'Cancelled',
         };
     }
 
     public function color(): string
     {
         return match($this) {
-            self::Pending => 'yellow',
-            self::Processing => 'blue',
-            self::Completed => 'green',
-            self::Failed => 'red',
-            self::Refunded => 'gray',
-            self::Cancelled => 'gray',
+            self::PENDING => 'yellow',
+            self::PROCESSING => 'blue',
+            self::COMPLETED => 'green',
+            self::FAILED => 'red',
+            self::REFUNDED => 'gray',
+            self::CANCELLED => 'gray',
         };
     }
 
     public function icon(): string
     {
         return match($this) {
-            self::Pending => 'clock',
-            self::Processing => 'refresh',
-            self::Completed => 'check',
-            self::Failed => 'x',
-            self::Refunded => 'arrow-left',
-            self::Cancelled => 'ban',
+            self::PENDING => 'clock',
+            self::PROCESSING => 'refresh',
+            self::COMPLETED => 'check',
+            self::FAILED => 'x',
+            self::REFUNDED => 'arrow-left',
+            self::CANCELLED => 'ban',
         };
     }
 
     public function description(): string
     {
         return match($this) {
-            self::Pending => 'Payment is awaiting processing',
-            self::Processing => 'Payment is being processed',
-            self::Completed => 'Payment has been completed successfully',
-            self::Failed => 'Payment has failed',
-            self::Refunded => 'Payment has been refunded',
-            self::Cancelled => 'Payment has been cancelled',
+            self::PENDING => 'Payment is awaiting processing',
+            self::PROCESSING => 'Payment is being processed',
+            self::COMPLETED => 'Payment has been completed successfully',
+            self::FAILED => 'Payment has failed',
+            self::REFUNDED => 'Payment has been refunded',
+            self::CANCELLED => 'Payment has been cancelled',
         };
     }
 
     public function canTransitionTo(self $status): bool
     {
         return match($this) {
-            self::Pending => in_array($status, [self::Processing, self::Failed, self::Cancelled]),
-            self::Processing => in_array($status, [self::Completed, self::Failed]),
-            self::Completed => in_array($status, [self::Refunded]),
-            self::Failed => false,
-            self::Refunded => false,
-            self::Cancelled => false,
+            self::PENDING => in_array($status, [self::PROCESSING, self::FAILED, self::CANCELLED]),
+            self::PROCESSING => in_array($status, [self::COMPLETED, self::FAILED]),
+            self::COMPLETED => in_array($status, [self::REFUNDED]),
+            self::FAILED => false,
+            self::REFUNDED => false,
+            self::CANCELLED => false,
         };
     }
 }
