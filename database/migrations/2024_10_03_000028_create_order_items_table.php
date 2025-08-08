@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -23,6 +24,13 @@ return new class () extends Migration {
             $table->json('details')->nullable();
             $table->boolean('is_composable')->default(false);
             $table->json('composition')->nullable();
+            
+            // Kitchen-specific fields
+            $table->string('status')->default(OrderStatus::PENDING->value);
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->text('kitchen_notes')->nullable();
+            
             $table->timestamps();
 
             // Indexes for better performance
@@ -30,6 +38,8 @@ return new class () extends Migration {
             $table->index('is_composable');
             $table->index('product_id');
             $table->index('order_id');
+            $table->index('status');
+            $table->index(['order_id', 'status']);
         });
     }
 

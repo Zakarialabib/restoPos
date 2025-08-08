@@ -1,0 +1,427 @@
+/* Custom RestoPos Documentation Styles */
+
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+/* Root variables */
+:root {
+  /* Brand colors */
+  --rp-primary: #3b82f6;
+  --rp-primary-light: #60a5fa;
+  --rp-primary-dark: #1d4ed8;
+  --rp-secondary: #10b981;
+  --rp-secondary-light: #34d399;
+  --rp-secondary-dark: #059669;
+  --rp-accent: #f59e0b;
+  --rp-accent-light: #fbbf24;
+  --rp-accent-dark: #d97706;
+  
+  /* Gradients */
+  --rp-gradient-primary: linear-gradient(135deg, var(--rp-primary) 0%, var(--rp-secondary) 100%);
+  --rp-gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --rp-gradient-card: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  
+  /* Shadows */
+  --rp-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --rp-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --rp-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --rp-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --rp-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Animations */
+  --rp-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --rp-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Font family overrides */
+.VPDoc {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+.vp-code-group .tabs,
+.vp-code,
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, Courier, monospace !important;
+}
+
+/* Hero section enhancements */
+.VPHero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--rp-gradient-hero);
+  opacity: 0.1;
+  z-index: -1;
+}
+
+.VPHero .VPButton {
+  transition: var(--rp-transition);
+  box-shadow: var(--rp-shadow);
+}
+
+.VPHero .VPButton:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--rp-shadow-lg);
+}
+
+/* Features section */
+.VPFeatures {
+  position: relative;
+}
+
+.features-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+  z-index: -1;
+}
+
+.VPFeature {
+  transition: var(--rp-transition);
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-border);
+  background: var(--vp-c-bg-soft);
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--rp-shadow-xl);
+  border-color: var(--rp-primary);
+}
+
+.VPFeature .icon {
+  transition: var(--rp-transition);
+}
+
+.VPFeature:hover .icon {
+  transform: scale(1.1);
+}
+
+/* Navigation enhancements */
+.VPNav {
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.02) 0%, rgba(16, 185, 129, 0.02) 100%);
+  z-index: -1;
+}
+
+/* Sidebar enhancements */
+.VPSidebar {
+  backdrop-filter: blur(12px);
+}
+
+.VPSidebarItem.level-0 .text {
+  font-weight: 600;
+  color: var(--rp-primary);
+}
+
+.VPSidebarItem.is-active .indicator {
+  background: var(--rp-gradient-primary);
+  border-radius: 2px;
+}
+
+/* Code blocks */
+.vp-code-group {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--rp-shadow-md);
+  border: 1px solid var(--vp-c-border);
+}
+
+.vp-code-group .tabs {
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-border);
+}
+
+.vp-code-group .tabs .tab {
+  transition: var(--rp-transition-fast);
+  border-radius: 6px 6px 0 0;
+  margin: 4px 2px 0;
+  padding: 8px 16px;
+}
+
+.vp-code-group .tabs .tab:hover {
+  background: var(--vp-c-bg-mute);
+}
+
+.vp-code-group .tabs .tab.active {
+  background: var(--rp-primary);
+  color: white;
+}
+
+/* Custom containers */
+.custom-block {
+  border-radius: 8px;
+  border-left: 4px solid;
+  margin: 16px 0;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.custom-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.05;
+  z-index: -1;
+}
+
+.custom-block.tip {
+  border-left-color: var(--rp-secondary);
+  background: var(--vp-custom-block-tip-bg);
+}
+
+.custom-block.tip::before {
+  background: var(--rp-secondary);
+}
+
+.custom-block.warning {
+  border-left-color: var(--rp-accent);
+  background: var(--vp-custom-block-warning-bg);
+}
+
+.custom-block.warning::before {
+  background: var(--rp-accent);
+}
+
+.custom-block.danger {
+  border-left-color: #ef4444;
+  background: var(--vp-custom-block-danger-bg);
+}
+
+.custom-block.danger::before {
+  background: #ef4444;
+}
+
+/* API endpoint styling */
+.api-endpoint {
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.api-method {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-right: 8px;
+}
+
+.api-method.get { background: #10b981; color: white; }
+.api-method.post { background: #3b82f6; color: white; }
+.api-method.put { background: #f59e0b; color: white; }
+.api-method.delete { background: #ef4444; color: white; }
+.api-method.patch { background: #8b5cf6; color: white; }
+
+.api-url {
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.stable { background: #dcfce7; color: #166534; }
+.status-badge.beta { background: #fef3c7; color: #92400e; }
+.status-badge.deprecated { background: #fee2e2; color: #991b1b; }
+.status-badge.new { background: #dbeafe; color: #1e40af; }
+
+/* Copy to clipboard toast */
+.copy-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--rp-primary);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--rp-shadow-lg);
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Table enhancements */
+.vp-doc table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--rp-shadow);
+  border: 1px solid var(--vp-c-border);
+}
+
+.vp-doc th {
+  background: var(--vp-c-bg-soft);
+  font-weight: 600;
+  color: var(--rp-primary);
+}
+
+.vp-doc tr:hover {
+  background: var(--vp-c-bg-soft);
+}
+
+/* Search enhancements */
+.DocSearch-Button {
+  border-radius: 8px;
+  transition: var(--rp-transition);
+}
+
+.DocSearch-Button:hover {
+  box-shadow: var(--rp-shadow-md);
+}
+
+/* Footer gradient */
+.doc-footer-gradient {
+  height: 1px;
+  background: var(--rp-gradient-primary);
+  margin: 24px 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .VPFeature {
+    margin-bottom: 16px;
+  }
+  
+  .api-endpoint {
+    padding: 12px;
+  }
+  
+  .copy-toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    text-align: center;
+  }
+}
+
+/* Dark mode adjustments */
+.dark {
+  --rp-primary: #60a5fa;
+  --rp-secondary: #34d399;
+  --rp-accent: #fbbf24;
+}
+
+.dark .hero-gradient {
+  opacity: 0.05;
+}
+
+.dark .features-gradient {
+  background: linear-gradient(45deg, rgba(96, 165, 250, 0.03) 0%, rgba(52, 211, 153, 0.03) 100%);
+}
+
+.dark .VPFeature {
+  background: var(--vp-c-bg-alt);
+}
+
+.dark .custom-block::before {
+  opacity: 0.03;
+}
+
+/* Print styles */
+@media print {
+  .hero-gradient,
+  .features-gradient,
+  .nav-gradient,
+  .doc-footer-gradient {
+    display: none;
+  }
+  
+  .VPFeature {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+  
+  .copy-toast {
+    display: none;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .VPFeature:hover {
+    transform: none;
+  }
+  
+  .VPHero .VPButton:hover {
+    transform: none;
+  }
+}
+
+/* Focus styles for better accessibility */
+.VPButton:focus-visible,
+.VPSidebarItem .link:focus-visible,
+.VPNavBarMenuLink:focus-visible {
+  outline: 2px solid var(--rp-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .VPFeature {
+    border: 2px solid var(--vp-c-border);
+  }
+  
+  .custom-block {
+    border-left-width: 6px;
+  }
+  
+  .api-method {
+    border: 1px solid currentColor;
+  }
+}

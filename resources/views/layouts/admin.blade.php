@@ -15,14 +15,15 @@
 
     <meta name="robots" content="noindex, nofollow">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <title>{{ $title ?? '' }} - {{ config('app.name', 'RestoPos') }} </title>
     <style>
+        :root {
+            {!! app(\App\Services\ThemeService::class)->getCssVariables() !!}
+        }
         [x-cloak] {
             display: none;
         }
@@ -63,7 +64,7 @@
             <!-- Page Loader -->
 
             <!-- Theme Customizer -->
-            <livewire:theme-customizer />
+            {{-- <livewire:theme-customizer /> --}}
 
             <!-- Sidebar -->
             <x-sidebar />
@@ -77,12 +78,29 @@
                 }">
 
                 <!-- Page Content -->
-                <main class="flex-1 flex-grow w-full mx-auto">
+                <main class="flex-1 grow w-full mx-auto">
                     {{ $slot }}
                 </main>
             </div>
         </div>
     </div>
+
+    <!-- Alpine.js global data for sidebar state -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('mainTheme', () => ({
+                // Theme-related data can go here
+                currentTheme: '{{ session("theme.currentTheme", "default") }}',
+                
+                // Listen for theme changes
+                init() {
+                    window.addEventListener('theme-changed', (event) => {
+                        this.currentTheme = event.detail.theme;
+                    });
+                }
+            }));
+        });
+    </script>
 </body>
 
 </html>

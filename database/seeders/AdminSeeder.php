@@ -44,4 +44,4 @@ class AdminSeeder extends Seeder
         $manager->assignRole('manager');
         $staff->assignRole('staff');
     }
-} 
+}

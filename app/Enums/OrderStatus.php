@@ -16,6 +16,7 @@ enum OrderStatus: string
     case CANCELLED = 'cancelled';
     case REFUNDED = 'refunded';
     case ON_HOLD = 'on_hold';
+    case DELAYED = 'delayed';
 
     public function label(): string
     {
@@ -30,6 +31,7 @@ enum OrderStatus: string
             self::CANCELLED => 'Cancelled',
             self::REFUNDED => 'Refunded',
             self::ON_HOLD => 'On Hold',
+            self::DELAYED => 'Delayed',
         };
     }
 
@@ -46,6 +48,7 @@ enum OrderStatus: string
             self::CANCELLED => 'red',
             self::REFUNDED => 'pink',
             self::ON_HOLD => 'orange',
+            self::DELAYED => 'orange',
         };
     }
 
@@ -53,10 +56,16 @@ enum OrderStatus: string
     {
         return match($this) {
             self::PENDING => 'clock',
+            self::CONFIRMED => 'check-circle',
             self::PREPARING => 'refresh',
-            self::COMPLETED => 'check',
+            self::READY => 'check',
+            self::IN_DELIVERY => 'truck',
+            self::DELIVERED => 'package',
+            self::COMPLETED => 'check-circle',
             self::CANCELLED => 'x',
             self::REFUNDED => 'arrow-left',
+            self::ON_HOLD => 'pause',
+            self::DELAYED => 'hourglass',
         };
     }
 
@@ -73,6 +82,7 @@ enum OrderStatus: string
             self::CANCELLED => 'Order has been cancelled',
             self::REFUNDED => 'Payment has been refunded to customer',
             self::ON_HOLD => 'Order temporarily paused',
+            self::DELAYED => 'Order preparation has been delayed',
         };
     }
 
@@ -81,7 +91,7 @@ enum OrderStatus: string
         return match ($this) {
             self::PENDING => in_array($newStatus, [self::CONFIRMED, self::CANCELLED, self::ON_HOLD]),
             self::CONFIRMED => in_array($newStatus, [self::PREPARING, self::CANCELLED, self::ON_HOLD]),
-            self::PREPARING => in_array($newStatus, [self::READY, self::CANCELLED, self::ON_HOLD]),
+            self::PREPARING => in_array($newStatus, [self::READY, self::CANCELLED, self::ON_HOLD, self::DELAYED]),
             self::READY => in_array($newStatus, [self::IN_DELIVERY, self::COMPLETED, self::CANCELLED]),
             self::IN_DELIVERY => in_array($newStatus, [self::DELIVERED, self::CANCELLED]),
             self::DELIVERED => in_array($newStatus, [self::COMPLETED, self::REFUNDED]),
@@ -89,6 +99,35 @@ enum OrderStatus: string
             self::CANCELLED => in_array($newStatus, [self::REFUNDED]),
             self::REFUNDED => false,
             self::ON_HOLD => in_array($newStatus, [self::PREPARING, self::CANCELLED]),
+            self::DELAYED => in_array($newStatus, [self::PREPARING, self::CANCELLED]),
         };
+    }
+
+    public function isKitchenStatus(): bool
+    {
+        return in_array($this, [
+            self::PENDING,
+            self::CONFIRMED,
+            self::PREPARING,
+            self::DELAYED,
+        ]);
+    }
+
+    public function isDeliveryStatus(): bool
+    {
+        return in_array($this, [
+            self::READY,
+            self::IN_DELIVERY,
+            self::DELIVERED,
+        ]);
+    }
+
+    public function isFinalStatus(): bool
+    {
+        return in_array($this, [
+            self::COMPLETED,
+            self::CANCELLED,
+            self::REFUNDED,
+        ]);
     }
 }

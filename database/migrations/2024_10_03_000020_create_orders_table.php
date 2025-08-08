@@ -35,10 +35,17 @@ return new class () extends Migration {
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignIdFor(CashRegister::class)->nullable()->constrained()->nullOnDelete();
             $table->string('guest_token', 32)->nullable();
-            $table->string('priority')->default('normal');
+            $table->string('priority')->default('medium');
             $table->text('kitchen_notes')->nullable();
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            
+            // Kitchen-specific fields (merged from kitchen_orders)
+            $table->foreignUuid('assigned_to')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->integer('estimated_preparation_time')->nullable()->comment('in minutes');
+            
             $table->timestamps();
             $table->softDeletes();
 
@@ -52,6 +59,8 @@ return new class () extends Migration {
             $table->index(['status', 'created_at']);
             $table->index(['customer_email', 'created_at']);
             $table->index(['payment_status', 'created_at']);
+            $table->index('priority');
+            $table->index('assigned_to');
         });
     }
 

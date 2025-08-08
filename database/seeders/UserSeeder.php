@@ -12,36 +12,6 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create admin user
-        $admin = \App\Models\Admin::updateOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'full_name' => 'Admin User',
-                'password' => Hash::make('password'),
-            ]
-        );
-        $admin->assignRole('admin');
-
-        // // Create manager user
-        // $manager = User::updateOrCreate(
-        //     ['email' => 'manager@example.com'],
-        //     [
-        //         'name' => 'Manager User',
-        //         'password' => Hash::make('password'),
-        //     ]
-        // );
-        // $manager->assignRole('manager');
-
-        // // Create staff user
-        // $staff = User::updateOrCreate(
-        //     ['email' => 'staff@example.com'],
-        //     [
-        //         'name' => 'Staff User',
-        //         'password' => Hash::make('password'),
-        //     ]
-        // );
-        // $staff->assignRole('staff');
-
         // Create demo customer
         $demoUser = User::updateOrCreate(
             ['email' => 'customer@example.com'],
@@ -51,5 +21,24 @@ class UserSeeder extends Seeder
             ]
         );
         $demoUser->assignRole('customer');
+
+        // Create additional demo customers
+        $customer2 = User::updateOrCreate(
+            ['email' => 'john.doe@example.com'],
+            [
+                'name' => 'John Doe',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $customer2->assignRole('customer');
+
+        $customer3 = User::updateOrCreate(
+            ['email' => 'jane.smith@example.com'],
+            [
+                'name' => 'Jane Smith',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $customer3->assignRole('customer');
     }
 }

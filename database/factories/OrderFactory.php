@@ -22,14 +22,14 @@ class OrderFactory extends Factory
     public function pending(): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => OrderStatus::Pending,
+            'status' => OrderStatus::PENDING,
         ]);
     }
 
     public function completed(): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => OrderStatus::Completed,
+            'status' => OrderStatus::COMPLETED,
         ]);
     }
 }

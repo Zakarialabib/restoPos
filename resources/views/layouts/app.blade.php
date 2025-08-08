@@ -20,6 +20,11 @@
 
     @stack('scripts')
 
+    <style>
+        :root {
+            {!! app(\App\Services\ThemeService::class)->getCssVariables() !!}
+        }
+    </style>
 </head>
 
 <body class="font-sans antialiased">

@@ -75,7 +75,7 @@ enum IngredientType: string
             self::LEGUME => ['bg' => 'violet-100', 'text' => 'violet-800'],
             self::NUT => ['bg' => 'rose-100', 'text' => 'rose-800'],
             self::FRUIT => ['bg' => 'blue-100', 'text' => 'blue-800'],
-            self::PROTEIN => ['bg' => 'indigo-100', 'text' => 'indigo-800'],
+            self::PROTEIN => ['bg' => 'orange-100', 'text' => 'orange-800'],
             self::VEGETABLE => ['bg' => 'purple-100', 'text' => 'purple-800'],
             self::CONDIMENT => ['bg' => 'gray-100', 'text' => 'gray-800'],
             self::GRAIN => ['bg' => 'teal-100', 'text' => 'teal-800'],

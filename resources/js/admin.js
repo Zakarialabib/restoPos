@@ -1,5 +1,5 @@
 import './bootstrap';
-import './echo';
+// import './echo';
 
 import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
 import flatpickr from "flatpickr";
@@ -12,11 +12,15 @@ window.PerfectScrollbar = PerfectScrollbar;
 import mask from '@alpinejs/mask'; 
 Alpine.plugin(mask);
 
+
 // Admin theme configuration
-Alpine.data("mainTheme", () => ({
-    loadingMask: {
+Alpine.data("mainTheme", () => {
+
+    const loadingMask = {
         pageLoaded: false,
         showText: false,
+        isDarkMode: localStorage.getItem('darkMode') === 'true',
+
         init() {
             window.onload = () => {
                 this.pageLoaded = true;
@@ -31,40 +35,54 @@ Alpine.data("mainTheme", () => ({
                 }, 2000);
             }, 4000);
         },
-    },
+    };
 
-    isRtl() {
+    const isRtl = () => {
         return document.documentElement.getAttribute('dir') === 'rtl';
-    },
+    };
 
-    isSidebarOpen: window.innerWidth >= 1024 ? sessionStorage.getItem("sidebarOpen") !== "false" : false,
-    isSidebarHovered: false,
-    scrollingDown: false,
-    scrollingUp: false,
+    return {
+        isRtl,
+        loadingMask,
+        isSidebarOpen: window.innerWidth >= 1024 ? sessionStorage.getItem("sidebarOpen") !== "false" : false,
+        isSidebarHovered: false,
+        viewMode: localStorage.getItem('viewMode') || 'grid',
 
-    init() {
-        this.handleWindowResize();
-        window.addEventListener('resize', this.handleWindowResize.bind(this));
-    },
+        init() {
+            // Initialize sidebar state based on screen size
+            this.handleWindowResize();
+            
+            // Listen for window resize events
+            window.addEventListener('resize', this.handleWindowResize.bind(this));
 
-    handleSidebarToggle() {
-        this.isSidebarOpen = !this.isSidebarOpen;
-        if (window.innerWidth >= 1024) {
-            sessionStorage.setItem("sidebarOpen", this.isSidebarOpen.toString());
-        }
-    },
+            // Watch for viewMode changes and save to localStorage
+            this.$watch('viewMode', (newValue) => {
+                localStorage.setItem('viewMode', newValue);
+            });
+        },
 
-    handleSidebarHover(value) {
-        if (window.innerWidth < 1024) return;
-        this.isSidebarHovered = value;
-    },
+        handleSidebarToggle() {
+            this.isSidebarOpen = !this.isSidebarOpen;
+            if (window.innerWidth >= 1024) {
+                sessionStorage.setItem("sidebarOpen", this.isSidebarOpen.toString());
+            }
+        },
 
-    handleWindowResize() {
-        if (window.innerWidth < 1024) {
-            this.isSidebarOpen = false;
-            this.isSidebarHovered = false;
-        }
-    }
-}));
+        handleSidebarHover(value) {
+            if (window.innerWidth < 1024) return;
+            this.isSidebarHovered = value;
+        },
 
-Livewire.start(); 
+        handleWindowResize() {
+            if (window.innerWidth < 1024) {
+                this.isSidebarOpen = false;
+                this.isSidebarHovered = false;
+            }
+        },
+        
+        scrollingDown: false,
+        scrollingUp: false,
+    };
+});
+
+Livewire.start();

@@ -25,15 +25,43 @@ export default {
             backgroundSize: {
                 'shimmer': '200% 100%',
             },
+            maxWidth: {
+                'container': '1280px',
+                'classic': '1200px',
+                'modern': '1280px',
+                'minimal': '1024px',
+                'vintage': '1100px',
+                'dark': '1280px',
+            },
+            height: {
+                'header-sm': '64px',
+                'header-md': '72px',
+                'header-lg': '80px',
+                'header-xl': '90px',
+            },
+            fontFamily: {
+                'classic': 'Georgia, serif',
+                'classic-heading': 'Playfair Display, serif',
+                'modern': 'Inter, sans-serif',
+                'modern-heading': 'Poppins, sans-serif',
+                'minimal': 'Helvetica Neue, sans-serif',
+                'minimal-heading': 'Helvetica Neue, sans-serif',
+                'vintage': 'Crimson Text, serif',
+                'vintage-heading': 'Abril Fatface, serif',
+                'dark': 'Inter, sans-serif',
+                'dark-heading': 'Space Grotesk, sans-serif',
+            },
         },
         gridAutoColumns: {
             '2fr': 'minmax(0, 2fr)',
           },
         screens: {
-            'sm': {'min': '350px', 'max': '639px'},
+            xs: '475px',
+            sm: '640px',
             md: '768px',
             lg: '1024px',
-            xl: '1156px'
+            xl: '1280px',
+            '2xl': '1536px'
         },
         colors: {
             current: 'currentColor',
@@ -54,7 +82,7 @@ export default {
                 200: '#90caf9',
                 300: '#64b5f6',
                 400: '#42a5f5',
-                500: '#2196f3',  // Primary color
+                500: 'var(--primary-color, #2196f3)',  // Primary color
                 600: '#1e88e5',
                 700: '#1976d2',
                 800: '#1565c0',
@@ -66,7 +94,7 @@ export default {
                 200: '#f48fb1',
                 300: '#f06292',
                 400: '#ec407a',
-                500: '#e91e63',  // Secondary color
+                500: 'var(--secondary-color, #e91e63)',  // Secondary color
                 600: '#d81b60',
                 700: '#c2185b',
                 800: '#ad1457',
